@@ -120,6 +120,12 @@
     overflow-x: clip;
   }
 
+  @media (max-width: 767px) {
+    html {
+      scroll-padding-bottom: 5.5rem;
+    }
+  }
+
   body {
     margin: 0;
     background-color: var(--surface-canvas);
@@ -202,6 +208,7 @@
     font-weight: var(--weight-bold);
     line-height: var(--leading-hero);
     letter-spacing: var(--tracking-hero);
+    overflow-wrap: break-word;
   }
 
   .type-h2 {
@@ -210,6 +217,7 @@
     font-weight: var(--weight-semibold);
     line-height: var(--leading-h2);
     letter-spacing: var(--tracking-h2);
+    overflow-wrap: break-word;
   }
 
   .type-h3 {
@@ -218,6 +226,7 @@
     font-weight: var(--weight-semibold);
     line-height: var(--leading-h3);
     letter-spacing: var(--tracking-h3);
+    overflow-wrap: break-word;
   }
 
   .type-lead {
@@ -242,6 +251,7 @@
     font-weight: var(--weight-medium);
     line-height: var(--leading-meta);
     letter-spacing: var(--tracking-meta);
+    overflow-wrap: anywhere;
   }
 
   .section-rail {

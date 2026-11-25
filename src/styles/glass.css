@@ -50,8 +50,8 @@
     background: linear-gradient(
       90deg,
       var(--surface-scrim) 0%,
-      var(--surface-scrim) 45%,
-      transparent 100%
+      var(--surface-scrim) 65%,
+      color-mix(in srgb, var(--surface-scrim) 55%, transparent) 100%
     );
   }
 

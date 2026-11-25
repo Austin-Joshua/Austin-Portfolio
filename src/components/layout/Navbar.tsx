@@ -61,7 +61,7 @@ export function Navbar({
     <>
       <header className="fixed inset-x-0 top-3 z-40 pointer-events-none">
         <div className="container-portfolio">
-          <div className="relative glass-surface pointer-events-auto flex min-h-[56px] md:min-h-[64px] items-center justify-between gap-3 px-3 md:px-4 lg:px-6">
+          <div className="relative glass-surface pointer-events-auto flex flex-wrap md:flex-nowrap min-h-[56px] md:min-h-[64px] items-center justify-between gap-x-3 gap-y-1.5 px-3 py-1 md:py-0 md:px-4 lg:px-6 max-w-full">
             <a
               href="#hero"
               onClick={(event) => handleAnchorClick(event, 'hero')}
@@ -77,7 +77,7 @@ export function Navbar({
               <span>AJ //</span>
             </a>
 
-            <nav aria-label="Primary" className="hidden md:flex items-center gap-1 lg:gap-2">
+            <nav aria-label="Primary" className="hidden md:flex flex-wrap items-center justify-center gap-1 lg:gap-2 min-w-0">
               {PRIMARY_NAV_SECTIONS.map((section) => {
                 const isActive = activeSection === section.id;
 
@@ -158,7 +158,7 @@ export function Navbar({
           paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))',
         }}
       >
-        <div className="flex items-center justify-between sm:justify-around gap-1 overflow-x-auto px-2 py-2">
+        <div className="grid grid-cols-6 gap-0.5 px-1 py-1.5">
           {PRIMARY_NAV_SECTIONS.map((section) => {
             const isActive = activeSection === section.id;
             const Icon = SECTION_ICONS[section.id as Exclude<SectionId, 'hero'>];
@@ -170,8 +170,8 @@ export function Navbar({
                 onClick={(event) => handleAnchorClick(event, section.id)}
                 aria-current={isActive ? 'location' : undefined}
                 className={[
-                  'relative inline-flex min-h-[44px] min-w-[44px] shrink-0 flex-col items-center justify-center gap-1',
-                  'px-2.5 py-1.5 rounded-[var(--radius-control)]',
+                  'relative inline-flex min-h-[44px] min-w-0 w-full flex-col items-center justify-center gap-1',
+                  'px-0.5 py-1.5 rounded-[var(--radius-control)]',
                   'transition-colors duration-[var(--transition-theme)]',
                   'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                   isActive
@@ -182,11 +182,11 @@ export function Navbar({
                 {isActive && (
                   <span
                     aria-hidden="true"
-                    className="absolute inset-x-2 top-0 h-[2px] bg-[var(--accent-primary)]"
+                    className="absolute inset-x-1.5 top-0 h-[2px] bg-[var(--accent-primary)]"
                   />
                 )}
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="text-[11px] leading-none whitespace-nowrap">
+                <span className="max-w-full truncate text-[0.625rem] leading-none">
                   {section.label}
                 </span>
               </a>

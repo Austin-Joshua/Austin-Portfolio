@@ -14,9 +14,9 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Fluid typography scale (interpolated across 320px–1440px) */
-  --text-hero: clamp(2.75rem, 1.9643rem + 3.9286vw, 5.5rem);
-  --text-h2: clamp(1.875rem, 1.4821rem + 1.9643vw, 3.25rem);
+  /* Fluid typography scale (interpolated across 320px–1440px; capped by vw so 200% text zoom never overflows narrow viewports) */
+  --text-hero: min(clamp(2.75rem, 1.9643rem + 3.9286vw, 5.5rem), 13.75vw);
+  --text-h2: min(clamp(1.875rem, 1.4821rem + 1.9643vw, 3.25rem), 11vw);
   --text-h3: clamp(1.25rem, 1.1429rem + 0.5357vw, 1.625rem);
   --text-lead: clamp(1.0625rem, 1.0089rem + 0.2679vw, 1.25rem);
   --text-body: 1rem;
@@ -53,15 +53,15 @@
   --space-24: 6rem;
   --space-32: 8rem;
 
-  /* Layout, container & Swiss grid geometry */
+  /* Layout, container & Swiss grid geometry (px gutters preserve content room at 200% text zoom) */
   --container-max: 85rem; /* 1360px */
-  --gutter-mobile: 1.25rem; /* 20px */
-  --gutter-tablet: 2rem; /* 32px */
-  --gutter-desktop: 3rem; /* 48px */
-  --gutter-wide: 4rem; /* 64px */
-  --grid-gap-mobile: 1rem; /* 16px */
-  --grid-gap-tablet: 1.25rem; /* 20px */
-  --grid-gap-desktop: 1.5rem; /* 24px */
+  --gutter-mobile: 20px;
+  --gutter-tablet: 32px;
+  --gutter-desktop: 48px;
+  --gutter-wide: 64px;
+  --grid-gap-mobile: 16px;
+  --grid-gap-tablet: 20px;
+  --grid-gap-desktop: 24px;
   --section-py-mobile: 4.5rem; /* 72px */
   --section-py-desktop: 7.5rem; /* 120px */
   --nav-offset: 5.5rem; /* 88px sticky header scroll clearance */
@@ -90,13 +90,13 @@
   --surface-canvas: #061a1d;
   --surface-elevated: #0b262b;
   --surface-card: #0e3137;
-  --surface-glass: rgba(11, 38, 43, 0.72);
-  --surface-glass-strong: rgba(11, 38, 43, 0.88);
-  --surface-scrim: rgba(6, 26, 29, 0.84);
+  --surface-glass: rgba(11, 38, 43, 0.84);
+  --surface-glass-strong: rgba(11, 38, 43, 0.92);
+  --surface-scrim: rgba(6, 26, 29, 0.9);
 
   --text-primary: #e8fffc;
   --text-secondary: #9cc7c3;
-  --text-muted: #76a19e;
+  --text-muted: #84b0ad;
   --text-on-accent: #061a1d;
 
   --accent-primary: #00d5c5;
@@ -109,8 +109,8 @@
   --accent-copper: #d07a68;
   --accent-copper-deep: #9a453b;
 
-  --border-subtle: rgba(168, 183, 188, 0.18);
-  --border-glass: rgba(0, 213, 197, 0.28);
+  --border-subtle: rgba(168, 183, 188, 0.22);
+  --border-glass: rgba(0, 213, 197, 0.44);
   --focus-ring: #00d5c5;
 
   --status-success: #34e0a1;
@@ -127,13 +127,13 @@
   --surface-canvas: #faf6f6;
   --surface-elevated: #ffffff;
   --surface-card: #f3ebeb;
-  --surface-glass: rgba(255, 255, 255, 0.78);
-  --surface-glass-strong: rgba(255, 255, 255, 0.9);
-  --surface-scrim: rgba(250, 246, 246, 0.88);
+  --surface-glass: rgba(255, 255, 255, 0.88);
+  --surface-glass-strong: rgba(255, 255, 255, 0.94);
+  --surface-scrim: rgba(250, 246, 246, 0.92);
 
   --text-primary: #1c090d;
   --text-secondary: #54383e;
-  --text-muted: #6e4e55;
+  --text-muted: #66474d;
   --text-on-accent: #ffffff;
 
   --accent-primary: #b0122e;
@@ -145,8 +145,8 @@
   --accent-copper: #7c2a24;
   --accent-copper-deep: #a6463b;
 
-  --border-subtle: rgba(28, 9, 13, 0.12);
-  --border-glass: rgba(176, 18, 46, 0.22);
+  --border-subtle: rgba(28, 9, 13, 0.14);
+  --border-glass: rgba(122, 12, 32, 0.46);
   --focus-ring: #b0122e;
 
   --status-success: #0f6e4e;
