@@ -1,0 +1,68 @@
+/*
+ * Restrained Glassmorphism & Scrim Utilities
+ *
+ * Uses solid opaque theme surfaces by default and progressively applies
+ * translucent glass + blur only when backdrop-filter is supported.
+ */
+
+@layer components {
+  .glass-surface {
+    background-color: var(--surface-elevated);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-glass);
+    transition:
+      background-color var(--transition-theme),
+      border-color var(--transition-theme),
+      box-shadow var(--transition-theme);
+  }
+
+  .glass-surface-strong {
+    background-color: var(--surface-elevated);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-elevated);
+    transition:
+      background-color var(--transition-theme),
+      border-color var(--transition-theme),
+      box-shadow var(--transition-theme);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-surface {
+      background-color: var(--surface-glass);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .glass-surface-strong {
+      background-color: var(--surface-glass-strong);
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+    }
+  }
+
+  .scrim-surface {
+    background-color: var(--surface-scrim);
+  }
+
+  .scrim-hero-gradient {
+    background: linear-gradient(
+      90deg,
+      var(--surface-scrim) 0%,
+      var(--surface-scrim) 45%,
+      transparent 100%
+    );
+  }
+
+  .glass-border {
+    border: 1px solid var(--border-glass);
+  }
+
+  .surface-elevated-fallback {
+    background-color: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-elevated);
+  }
+}
