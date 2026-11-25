@@ -6,6 +6,8 @@ import {
 } from '@react-three/fiber';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
+  BufferAttribute,
+  BufferGeometry,
   Group,
   IcosahedronGeometry,
   Mesh,
@@ -38,6 +40,12 @@ extend({
   >,
   MeshBasicMaterial: MeshBasicMaterial as unknown as new () => ThreeElement<
     typeof MeshBasicMaterial
+  >,
+  BufferGeometry: BufferGeometry as unknown as new () => ThreeElement<
+    typeof BufferGeometry
+  >,
+  BufferAttribute: BufferAttribute as unknown as new () => ThreeElement<
+    typeof BufferAttribute
   >,
 });
 
@@ -217,7 +225,7 @@ export function UniverseCanvas({
           alpha: true,
           powerPreference: 'high-performance',
         },
-        camera: { position: [0, 0, 6.2], fov: 46, near: 0.1, far: 40 },
+        camera: { position: [0, 0, 5.5], fov: 52, near: 0.1, far: 50 },
         dpr: [qualityTier.dpr[0], qualityTier.dpr[1]],
         frameloop: effectiveFrameloop,
         size: {

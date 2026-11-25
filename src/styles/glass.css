@@ -1,11 +1,9 @@
 /*
- * Restrained Glassmorphism & Scrim Utilities
- *
- * Uses solid opaque theme surfaces by default and progressively applies
- * translucent glass + blur only when backdrop-filter is supported.
+ * Glassmorphism, atmospheric surfaces and cinematic card utilities
  */
 
 @layer components {
+  /* ── Core glass surfaces ───────────────────────────────────────────────── */
   .glass-surface {
     background-color: var(--surface-elevated);
     border: 1px solid var(--border-glass);
@@ -19,7 +17,7 @@
 
   .glass-surface-strong {
     background-color: var(--surface-elevated);
-    border: 1px solid var(--border-glass);
+    border: 1px solid var(--border-glass-strong);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-elevated);
     transition:
@@ -37,32 +35,114 @@
 
     .glass-surface-strong {
       background-color: var(--surface-glass-strong);
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+      backdrop-filter: blur(var(--glass-blur-strong));
     }
   }
 
+  /* ── Atmospheric hero gradient overlay ───────────────────────────────── */
   .scrim-surface {
     background-color: var(--surface-scrim);
   }
 
   .scrim-hero-gradient {
-    background: linear-gradient(
-      90deg,
-      var(--surface-scrim) 0%,
-      var(--surface-scrim) 65%,
-      color-mix(in srgb, var(--surface-scrim) 55%, transparent) 100%
-    );
+    background:
+      var(--grad-hero-radial),
+      linear-gradient(
+        180deg,
+        var(--surface-canvas) 0%,
+        rgba(6, 26, 29, 0.0) 30%,
+        rgba(6, 26, 29, 0.0) 70%,
+        var(--surface-canvas) 100%
+      );
   }
 
+  [data-theme='light'] .scrim-hero-gradient {
+    background:
+      var(--grad-hero-radial),
+      linear-gradient(
+        180deg,
+        var(--surface-canvas) 0%,
+        rgba(250, 246, 246, 0.0) 30%,
+        rgba(250, 246, 246, 0.0) 70%,
+        var(--surface-canvas) 100%
+      );
+  }
+
+  /* ── Cinematic card with accent gradient ─────────────────────────────── */
+  .glass-card-cinematic {
+    background: color-mix(in srgb, var(--surface-card) 90%, var(--accent-primary) 10%);
+    background-image: var(--grad-card-accent);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-glass);
+    transition:
+      background-color var(--transition-theme),
+      border-color var(--transition-theme),
+      box-shadow var(--transition-theme),
+      transform 180ms ease;
+  }
+
+  .glass-card-cinematic:hover {
+    border-color: var(--border-glass-strong);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  /* ── Atmospheric glow halo ───────────────────────────────────────────── */
+  .accent-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* ── Glass borders ───────────────────────────────────────────────────── */
   .glass-border {
     border: 1px solid var(--border-glass);
   }
 
+  .glass-border-strong {
+    border: 1px solid var(--border-glass-strong);
+  }
+
+  /* ── Elevated fallback (no backdrop-filter) ──────────────────────────── */
   .surface-elevated-fallback {
     background-color: var(--surface-elevated);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-elevated);
+  }
+
+  /* ── Portrait frame ──────────────────────────────────────────────────── */
+  .portrait-frame {
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-portrait);
+    overflow: hidden;
+    box-shadow: var(--shadow-elevated), var(--shadow-glow);
+    transition:
+      border-color var(--transition-theme),
+      box-shadow var(--transition-theme);
+  }
+
+  /* ── Accent hairline ─────────────────────────────────────────────────── */
+  .accent-hairline {
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--accent-primary) 0%,
+      var(--accent-primary-deep) 60%,
+      transparent 100%
+    );
+    border-radius: 999px;
+    opacity: 0.7;
+  }
+
+  /* ── Section label (replaces index numbering) ────────────────────────── */
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-primary);
+    opacity: 0.8;
   }
 }

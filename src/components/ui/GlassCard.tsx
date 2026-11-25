@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
 export type GlassCardElement = 'div' | 'article' | 'section' | 'aside' | 'li';
-export type GlassCardVariant = 'default' | 'strong' | 'elevated';
+export type GlassCardVariant = 'default' | 'strong' | 'elevated' | 'cinematic';
 export type GlassCardPadding = 'none' | 'sm' | 'md' | 'lg';
 
 export interface GlassCardProps extends HTMLAttributes<HTMLElement> {
@@ -16,6 +16,7 @@ const VARIANT_CLASSES: Record<GlassCardVariant, string> = {
   default: 'glass-surface',
   strong: 'glass-surface-strong',
   elevated: 'surface-elevated-fallback',
+  cinematic: 'glass-card-cinematic',
 };
 
 const PADDING_CLASSES: Record<GlassCardPadding, string> = {
@@ -41,7 +42,7 @@ export function GlassCard({
         VARIANT_CLASSES[variant],
         PADDING_CLASSES[padding],
         interactive
-          ? 'transition-[background-color,border-color,box-shadow] duration-[var(--transition-theme)] hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)]'
+          ? 'cursor-pointer transition-[background-color,border-color,box-shadow,transform] duration-200 hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)] hover:-translate-y-0.5'
           : '',
         className,
       ]

@@ -19,9 +19,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   const hairlineRef = useRef<HTMLDivElement>(null);
   const portraitParallaxRef = useRef<HTMLDivElement>(null);
 
-  const validParagraphs = profile.aboutParagraphs.filter((paragraph) =>
-    hasNonEmptyText(paragraph),
-  );
+  const validParagraphs = profile.aboutParagraphs.filter((p) => hasNonEmptyText(p));
   const hasResume =
     profile.resume !== null && isValidLocalOrHttpAssetUrl(profile.resume.url);
 
@@ -29,9 +27,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
     const scope = contentScopeRef.current;
     const hairline = hairlineRef.current;
     const portraitFrame = portraitParallaxRef.current;
-    if (!scope || !hairline || !portraitFrame) {
-      return;
-    }
+    if (!scope || !hairline || !portraitFrame) return;
 
     return setupScopedScrollAnimation(
       contentScopeRef,
@@ -56,9 +52,9 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
         mm.add('(min-width: 1024px)', () => {
           gsap.fromTo(
             portraitFrame,
-            { y: 12 },
+            { y: 16 },
             {
-              y: -12,
+              y: -16,
               ease: 'none',
               scrollTrigger: {
                 trigger: scope,
@@ -82,19 +78,21 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       <div
         ref={contentScopeRef}
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
-        className="space-y-6"
+        className="space-y-10"
       >
+        {/* Animated accent hairline */}
         <div
           ref={hairlineRef}
           aria-hidden="true"
           data-testid="about-hairline"
-          className="h-px w-full origin-left bg-[var(--border-glass)]"
+          className="accent-hairline w-full origin-left"
         />
 
-        <div className="swiss-grid items-start">
-          <div className="col-span-4 md:col-span-5 lg:col-span-7 space-y-5">
+        <div className="swiss-grid items-start gap-y-10">
+          {/* Text column */}
+          <div className="col-span-4 md:col-span-5 lg:col-span-7 space-y-6">
             {validParagraphs.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {validParagraphs.map((paragraph, idx) => (
                   <p
                     key={`${idx}-${paragraph.slice(0, 24)}`}
@@ -102,7 +100,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                       idx === 0
                         ? 'type-lead text-[var(--text-primary)]'
                         : 'type-body text-[var(--text-secondary)]',
-                      'max-w-[68ch]',
+                      'max-w-[62ch]',
                     ].join(' ')}
                   >
                     {paragraph}
@@ -120,20 +118,22 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               </GlassCard>
             )}
 
+            {/* Résumé link */}
             {hasResume && profile.resume && (
               <div className="pt-2">
                 <a
                   href={profile.resume.url}
-                  target="_blank"
+                  download
                   rel="noopener noreferrer"
                   className={[
-                    'glass-surface inline-flex min-h-[44px] items-center gap-2 px-4 py-2.5',
+                    'glass-surface inline-flex min-h-[44px] items-center gap-2 px-5 py-2.5',
                     'rounded-[var(--radius-control)] font-mono text-xs font-medium text-[var(--text-primary)]',
-                    'transition-[background-color,border-color] duration-[var(--transition-theme)]',
-                    'hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)]',
+                    'transition-[background-color,border-color,transform] duration-200',
+                    'hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)] hover:-translate-y-0.5',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
+                  <span>↓</span>
                   <span>{profile.resume.label}</span>
                   {hasNonEmptyText(profile.resume.sizeLabel) && (
                     <span className="text-[var(--text-muted)]">
@@ -146,6 +146,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
             )}
           </div>
 
+          {/* Portrait column */}
           <div
             ref={portraitParallaxRef}
             data-testid="about-portrait-parallax"

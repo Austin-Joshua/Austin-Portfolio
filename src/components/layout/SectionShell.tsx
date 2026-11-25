@@ -16,8 +16,10 @@ export interface SectionShellProps {
 
 export function SectionShell({
   id,
-  index,
-  indexLabel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  index: _index,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  indexLabel: _indexLabel,
   title,
   description,
   headingLevel = 2,
@@ -27,21 +29,16 @@ export function SectionShell({
   children,
 }: SectionShellProps) {
   const headingId = `${id}-heading`;
-  const indexId = `${id}-index`;
-  const resolvedIndexLabel = (indexLabel ?? title ?? id).toUpperCase();
 
-  const headerContent = (
-    <div className="mb-8 md:mb-12">
-      <p id={indexId} className="type-meta uppercase text-[var(--text-muted)]">
-        {index} {'//'} {resolvedIndexLabel}
-      </p>
+  const headerContent = title ? (
+    <div className="mb-10 md:mb-14">
       {title &&
         (headingLevel === 1 ? (
-          <h1 id={headingId} className="type-hero text-[var(--text-primary)] mt-3">
+          <h1 id={headingId} className="type-hero text-[var(--text-primary)]">
             {title}
           </h1>
         ) : (
-          <h2 id={headingId} className="type-h2 text-[var(--text-primary)] mt-3">
+          <h2 id={headingId} className="type-h2 text-[var(--text-primary)]">
             {title}
           </h2>
         ))}
@@ -51,12 +48,12 @@ export function SectionShell({
         </p>
       )}
     </div>
-  );
+  ) : null;
 
   return (
     <section
       id={id}
-      aria-labelledby={title ? headingId : indexId}
+      aria-labelledby={title ? headingId : undefined}
       className={[
         'scroll-mt-[var(--nav-offset)] section-rhythm',
         withDivider ? 'border-t border-[var(--border-subtle)]' : '',
@@ -67,7 +64,9 @@ export function SectionShell({
     >
       {fullBleed ? (
         <>
-          <div className="container-portfolio">{headerContent}</div>
+          {headerContent && (
+            <div className="container-portfolio">{headerContent}</div>
+          )}
           {children}
         </>
       ) : (

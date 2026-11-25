@@ -29,8 +29,8 @@ export function DesktopSectionRail({
                 href={`#${section.id}`}
                 onClick={(event) => onSectionSelect?.(event, section.id)}
                 aria-current={isActive ? 'location' : undefined}
-                aria-label={`${section.index} ${section.label}`}
-                title={`${section.index} // ${section.label}`}
+                aria-label={section.label}
+                title={section.label}
                 className={[
                   'group inline-flex min-h-[28px] min-w-[28px] items-center justify-end gap-1',
                   'px-1 py-0.5 rounded-[var(--radius-control)]',
@@ -42,7 +42,6 @@ export function DesktopSectionRail({
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
                 ].join(' ')}
               >
-                <span>{section.index}</span>
                 <span
                   aria-hidden="true"
                   className={[

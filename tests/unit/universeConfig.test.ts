@@ -54,7 +54,7 @@ describe('Three theme palettes & adaptive quality tiers', () => {
     expect(mobile.tier).toBe('mobile-conserving');
     expect(mobile.dpr[1]).toBeLessThanOrEqual(1.5);
     expect(mobile.enablePointerParallax).toBe(false);
-    expect(mobile.focalOffset).toEqual([0, 0.22, 0]);
+    expect(mobile.focalOffset).toEqual([0, 0.15, 0]);
 
     const saveDataTier = resolveQualityTier({
       viewportWidth: 1440,

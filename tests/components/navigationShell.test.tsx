@@ -68,7 +68,7 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     const section = document.getElementById('about');
     expect(section).toBeInTheDocument();
     expect(section).toHaveAttribute('aria-labelledby', 'about-heading');
-    expect(screen.getByText('02 // ABOUT')).toBeInTheDocument();
+    // Index metadata is no longer rendered visually (removed in cinematic redesign)
     expect(screen.getByRole('heading', { level: 2, name: 'About' })).toBeInTheDocument();
   });
 

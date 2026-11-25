@@ -142,6 +142,7 @@
   :focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 3px;
+    border-radius: 2px;
   }
 }
 
@@ -252,6 +253,42 @@
     line-height: var(--leading-meta);
     letter-spacing: var(--tracking-meta);
     overflow-wrap: anywhere;
+  }
+
+  /* Section eyebrow label — replaces numbered index */
+  .eyebrow-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-primary);
+    opacity: 0.75;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  /* Accent text gradient */
+  .text-gradient-accent {
+    background: linear-gradient(
+      135deg,
+      var(--accent-primary) 0%,
+      var(--accent-chrome) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  [data-theme='light'] .text-gradient-accent {
+    background: linear-gradient(
+      135deg,
+      var(--accent-primary) 0%,
+      var(--accent-copper) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .section-rail {

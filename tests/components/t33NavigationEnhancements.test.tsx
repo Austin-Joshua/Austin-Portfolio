@@ -140,7 +140,7 @@ describe('T3.3 Navigation Enhancements', () => {
 
     for (const section of PORTFOLIO_SECTIONS) {
       const link = within(railNav).getByRole('link', {
-        name: `${section.index} ${section.label}`,
+        name: section.label,
       });
       expect(link).toHaveAttribute('href', `#${section.id}`);
 
@@ -151,7 +151,7 @@ describe('T3.3 Navigation Enhancements', () => {
       }
     }
 
-    await user.click(within(railNav).getByRole('link', { name: '07 Contact' }));
+    await user.click(within(railNav).getByRole('link', { name: 'Contact' }));
     expect(onSectionSelect).toHaveBeenCalledTimes(1);
     expect(onSectionSelect.mock.calls[0]?.[1]).toBe('contact');
     expect(await axe(container)).toHaveNoViolations();

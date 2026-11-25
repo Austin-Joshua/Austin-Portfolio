@@ -52,16 +52,18 @@ export function resolveQualityTier({
   saveData = false,
 }: QualityTierInput): QualityTierConfig {
   const isMobileWidth = viewportWidth < 768;
+  // Desktop: offset right so 3D sits behind the right column of the Hero
+  // Mobile: centred, slightly elevated
   const focalOffset: readonly [number, number, number] = isMobileWidth
-    ? [0, 0.22, 0]
-    : [0.85, 0.05, 0];
+    ? [0, 0.15, 0]
+    : [1.1, -0.05, 0];
 
   if (prefersReducedMotion) {
     return {
       tier: 'static',
       dpr: [1, 1.5],
-      particleCount: 450,
-      ringSegments: 48,
+      particleCount: 600,
+      ringSegments: 56,
       enablePointerParallax: false,
       driftSpeed: 0,
       frameloop: 'demand',
@@ -76,10 +78,10 @@ export function resolveQualityTier({
     return {
       tier: 'mobile-conserving',
       dpr: [1, 1.5],
-      particleCount: 520,
-      ringSegments: 48,
+      particleCount: 700,
+      ringSegments: 56,
       enablePointerParallax: false,
-      driftSpeed: 0.016,
+      driftSpeed: 0.018,
       frameloop: 'always',
       focalOffset,
     };
@@ -89,10 +91,10 @@ export function resolveQualityTier({
     return {
       tier: 'tablet-balanced',
       dpr: [1, 1.5],
-      particleCount: 950,
-      ringSegments: 72,
+      particleCount: 1200,
+      ringSegments: 80,
       enablePointerParallax: false,
-      driftSpeed: 0.022,
+      driftSpeed: 0.024,
       frameloop: 'always',
       focalOffset,
     };
@@ -101,10 +103,10 @@ export function resolveQualityTier({
   return {
     tier: 'desktop-high',
     dpr: [1, 2],
-    particleCount: 1600,
-    ringSegments: 96,
+    particleCount: 2200,
+    ringSegments: 112,
     enablePointerParallax: true,
-    driftSpeed: 0.028,
+    driftSpeed: 0.032,
     frameloop: 'always',
     focalOffset,
   };

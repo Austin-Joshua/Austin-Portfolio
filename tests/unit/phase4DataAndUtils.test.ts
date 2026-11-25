@@ -38,14 +38,18 @@ describe('Phase 4 data modules and utilities', () => {
 
   it('keeps initial data modules neutral, unfabricated, and free of literal TBD strings', () => {
     expect(profileData.name).toBe('Austin Joshua');
-    expect(profileData.portrait).toBeNull();
-    expect(profileData.resume).toBeNull();
-    expect(skillsData).toEqual([]);
+    // Portrait and resume are now populated with real assets
+    expect(profileData.portrait).not.toBeNull();
+    expect(profileData.resume).not.toBeNull();
+    // Skills are populated with real categories
+    expect(skillsData.length).toBeGreaterThan(0);
+    // These remain empty until verified entries exist
     expect(projectsData).toEqual([]);
     expect(experienceData).toEqual([]);
     expect(achievementsData).toEqual([]);
-    expect(contactData.email).toBeNull();
-    expect(contactData.socialLinks).toEqual([]);
+    // Contact is now populated with real data
+    expect(contactData.email).not.toBeNull();
+    expect(contactData.socialLinks.length).toBeGreaterThan(0);
 
     const serialized = JSON.stringify({
       profileData,
