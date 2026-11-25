@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PORTFOLIO_SECTIONS } from '@/data/sections';
+import { PORTFOLIO_SECTIONS, parseSectionHash } from '@/data/sections';
 
 export interface UseActiveSectionOptions {
   sectionIds?: readonly string[];
@@ -52,7 +52,37 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
     [idsKey],
   );
 
-  const [activeSection, setActiveSection] = useState<string>(defaultSection);
+  const [activeSection, setActiveSection] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const fromHash = parseSectionHash(window.location.hash);
+      if (fromHash && sectionIds.includes(fromHash)) {
+        return fromHash;
+      }
+    }
+    return defaultSection;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || stableSectionIds.length === 0) {
+      return;
+    }
+
+    const syncFromLocation = () => {
+      const parsed = parseSectionHash(window.location.hash);
+      if (parsed && stableSectionIds.includes(parsed)) {
+        setActiveSection(parsed);
+      } else if (window.location.hash === '') {
+        setActiveSection(defaultSection);
+      }
+    };
+
+    window.addEventListener('hashchange', syncFromLocation);
+    window.addEventListener('popstate', syncFromLocation);
+    return () => {
+      window.removeEventListener('hashchange', syncFromLocation);
+      window.removeEventListener('popstate', syncFromLocation);
+    };
+  }, [stableSectionIds, defaultSection]);
 
   useEffect(() => {
     if (

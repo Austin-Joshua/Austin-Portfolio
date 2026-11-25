@@ -17,141 +17,117 @@ export function UniverseFallback({
       data-testid="universe-fallback"
       data-universe-theme={theme}
       className={[
-        'pointer-events-none select-none fixed inset-0 z-0 overflow-hidden',
-        'bg-[var(--surface-canvas)] transition-colors duration-[var(--transition-theme)]',
+        'pointer-events-none select-none absolute inset-0 h-full w-full overflow-hidden',
+        'transition-colors duration-[var(--transition-theme)]',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {/* Primary radial atmospheric glow */}
+      {/* Centered radial atmospheric glow */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 55% 65% at 72% 42%, color-mix(in srgb, var(--accent-primary) 16%, transparent) 0%, color-mix(in srgb, var(--accent-primary-deep) 10%, transparent) 40%, transparent 70%)',
+            'radial-gradient(circle 68% at 50% 50%, color-mix(in srgb, var(--accent-primary) 22%, transparent) 0%, color-mix(in srgb, var(--accent-primary-deep) 14%, transparent) 42%, transparent 72%)',
         }}
       />
 
-      {/* Secondary ambient glow */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 35% 45% at 25% 65%, color-mix(in srgb, var(--accent-primary-deep) 8%, transparent) 0%, transparent 60%)',
-        }}
-      />
-
-      {/* Swiss orbital coordinate diagram — larger and more prominent */}
+      {/* Swiss orbital coordinate diagram centered cleanly inside the Hero stage */}
       <svg
-        viewBox="0 0 1200 900"
-        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 800 800"
+        preserveAspectRatio="xMidYMid meet"
         className="h-full w-full"
         fill="none"
       >
-        <g transform="translate(840 390)">
-          {/* Outermost drift ring */}
+        <g transform="translate(400 400)">
           <circle
             cx="0"
             cy="0"
-            r="380"
+            r="340"
             stroke="var(--text-primary)"
-            strokeOpacity={isDark ? '0.07' : '0.08'}
+            strokeOpacity={isDark ? '0.1' : '0.12'}
             strokeWidth="1"
             strokeDasharray="3 9"
           />
-          {/* Outer ellipse */}
           <ellipse
             cx="0"
             cy="0"
-            rx="310"
-            ry="155"
-            transform="rotate(-18)"
+            rx="290"
+            ry="145"
+            transform="rotate(-22)"
             stroke="var(--accent-primary)"
-            strokeOpacity={isDark ? '0.22' : '0.18'}
+            strokeOpacity={isDark ? '0.32' : '0.28'}
             strokeWidth="1.5"
           />
-          {/* Mid ellipse */}
           <ellipse
             cx="0"
             cy="0"
-            rx="230"
-            ry="108"
+            rx="220"
+            ry="104"
             transform="rotate(28)"
             stroke="var(--accent-primary-deep)"
-            strokeOpacity={isDark ? '0.35' : '0.22'}
+            strokeOpacity={isDark ? '0.45' : '0.3'}
             strokeWidth="1.2"
           />
-          {/* Inner orbit */}
           <circle
             cx="0"
             cy="0"
-            r="140"
+            r="142"
             stroke="var(--accent-primary)"
-            strokeOpacity={isDark ? '0.28' : '0.2'}
-            strokeWidth="1"
+            strokeOpacity={isDark ? '0.35' : '0.26'}
+            strokeWidth="1.2"
           />
-          {/* Core circle */}
           <circle
             cx="0"
             cy="0"
-            r="58"
+            r="64"
             stroke="var(--accent-primary)"
-            strokeOpacity={isDark ? '0.5' : '0.35'}
+            strokeOpacity={isDark ? '0.6' : '0.42'}
             strokeWidth="1.5"
           />
-          {/* Axes */}
           <line
-            x1="-460"
+            x1="-360"
             y1="0"
-            x2="460"
+            x2="360"
             y2="0"
             stroke="var(--border-subtle)"
             strokeWidth="1"
           />
           <line
             x1="0"
-            y1="-400"
+            y1="-360"
             x2="0"
-            y2="400"
+            y2="360"
             stroke="var(--border-subtle)"
             strokeWidth="1"
           />
-          {/* Orbital bodies */}
           <circle
             cx="218"
             cy="-92"
-            r="4"
+            r="5"
             fill="var(--accent-primary)"
-            fillOpacity={isDark ? '0.8' : '0.6'}
+            fillOpacity={isDark ? '0.85' : '0.7'}
           />
           <circle
             cx="-162"
             cy="130"
-            r="3"
+            r="3.5"
             fill="var(--accent-primary)"
-            fillOpacity={isDark ? '0.55' : '0.45'}
+            fillOpacity={isDark ? '0.65' : '0.5'}
           />
           <circle
-            cx="90"
-            cy="110"
-            r="2.5"
+            cx="96"
+            cy="108"
+            r="3.5"
             fill="var(--accent-gold)"
-            fillOpacity={isDark ? '0.6' : '0.5'}
+            fillOpacity={isDark ? '0.75' : '0.6'}
           />
-          <circle
-            cx="-75"
-            cy="-85"
-            r="2"
-            fill="var(--text-primary)"
-            fillOpacity={isDark ? '0.4' : '0.3'}
-          />
-          {/* Core polygon */}
           <polygon
-            points="0,-38 33,19 -33,19"
+            points="0,-42 36,21 -36,21"
             stroke="var(--accent-primary)"
-            strokeOpacity={isDark ? '0.45' : '0.3'}
-            strokeWidth="1"
+            strokeOpacity={isDark ? '0.55' : '0.38'}
+            strokeWidth="1.2"
             fill="none"
           />
         </g>

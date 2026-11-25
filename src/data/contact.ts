@@ -1,9 +1,10 @@
 import type { ContactData } from '@/types/portfolio';
 
 export const contactData: ContactData = {
-  headline: "Open to new opportunities and interesting collaborations. Let's build something remarkable.",
+  headline:
+    'Seeking internships and collaborative opportunities in Software Engineering, Python Development, and AI/ML.',
   email: 'austinjoshuamj@gmail.com',
-  availabilityNote: 'Available for full-time roles and select freelance projects',
+  availabilityNote: 'Based in Chennai, India · Open to Software Engineering & AI/ML opportunities',
   socialLinks: [
     {
       id: 'github',

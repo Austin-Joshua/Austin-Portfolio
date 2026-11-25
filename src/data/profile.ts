@@ -2,18 +2,18 @@ import type { ProfileData } from '@/types/portfolio';
 
 export const profileData: ProfileData = {
   name: 'Austin Joshua',
-  roleLabel: 'Software Engineer & AI Systems Developer',
+  roleLabel: 'Computer Science Engineering Student · Software & AI Developer',
   heroTagline:
-    'Building intelligent systems at the intersection of software engineering, machine learning, and interactive 3D craft.',
+    'Building full-stack web applications and AI-driven systems with Python, TypeScript, React, and modern cloud tooling.',
   aboutParagraphs: [
-    'I am a software engineer with a passion for crafting intelligent, high-performance systems. My work spans full-stack development, AI/ML pipelines, and interactive 3D experiences.',
-    'I thrive at the intersection of rigorous engineering and creative problem-solving — turning complex technical challenges into polished, user-centred products.',
+    'I am a third-year B.E. Computer Science and Engineering student at Rajalakshmi Institute of Technology (2024–2028) in Chennai, focused on full-stack software development, Python backend systems, and applied machine learning.',
+    'Across hackathon-awarded team projects including AgriFlux, CIVIQ, and ResQ Meal, I have engineered production-oriented web platforms with React, Next.js, TypeScript, Node.js, Go, Spring Boot, and scikit-learn—alongside leading the Infinitus Mathematics Club at RIT.',
   ],
   aboutPendingNotice:
     'Verified personal narrative and academic profile details will be published here prior to release.',
   portrait: {
     src: '/assets/portrait/austin-joshua.jpg',
-    alt: 'Austin Joshua — Software Engineer',
+    alt: 'Austin Joshua — Computer Science Engineering student and developer',
     width: 760,
     height: 1013,
   },

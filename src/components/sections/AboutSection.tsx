@@ -123,8 +123,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               <div className="pt-2">
                 <a
                   href={profile.resume.url}
-                  download
-                  rel="noopener noreferrer"
+                  download="Austin_Joshua_Resume.pdf"
                   className={[
                     'glass-surface inline-flex min-h-[44px] items-center gap-2 px-5 py-2.5',
                     'rounded-[var(--radius-control)] font-mono text-xs font-medium text-[var(--text-primary)]',

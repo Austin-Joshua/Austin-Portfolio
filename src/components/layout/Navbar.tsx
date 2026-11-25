@@ -2,6 +2,7 @@ import {
   Award,
   Briefcase,
   Cpu,
+  Download,
   FolderGit2,
   Mail,
   User,
@@ -55,29 +56,14 @@ export function Navbar({
   };
 
   const hasValidResume = Boolean(resumeAsset?.url && resumeAsset.url.trim().length > 0);
-  const resumeLabel = resumeAsset?.label?.trim() || 'Résumé';
+  const resumeLabel = resumeAsset?.label?.trim() || 'Download Résumé (PDF)';
 
   return (
     <>
       <header className="fixed inset-x-0 top-3 z-40 pointer-events-none">
         <div className="container-portfolio">
-          <div className="relative glass-surface pointer-events-auto flex flex-wrap md:flex-nowrap min-h-[56px] md:min-h-[64px] items-center justify-between gap-x-3 gap-y-1.5 px-3 py-1 md:py-0 md:px-4 lg:px-6 max-w-full">
-            <a
-              href="#hero"
-              onClick={(event) => handleAnchorClick(event, 'hero')}
-              aria-label="AJ // — Back to Hero"
-              className={[
-                'inline-flex min-h-[44px] min-w-[44px] items-center px-2 shrink-0',
-                'font-display text-base md:text-lg font-bold tracking-tight text-[var(--text-primary)]',
-                'rounded-[var(--radius-control)]',
-                'transition-colors duration-[var(--transition-theme)] hover:text-[var(--accent-primary)]',
-                'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
-              ].join(' ')}
-            >
-              <span>AJ //</span>
-            </a>
-
-            <nav aria-label="Primary" className="hidden md:flex flex-wrap items-center justify-center gap-1 lg:gap-2 min-w-0">
+          <div className="relative glass-surface pointer-events-auto flex flex-wrap md:flex-nowrap w-fit ml-auto md:w-full md:ml-0 min-h-[48px] md:min-h-[64px] items-center justify-between gap-x-3 gap-y-1.5 px-2 py-1 md:py-0 md:px-4 lg:px-6 max-w-full">
+            <nav aria-label="Primary" className="hidden md:flex flex-wrap items-center gap-1 lg:gap-2 min-w-0">
               {PRIMARY_NAV_SECTIONS.map((section) => {
                 const isActive = activeSection === section.id;
 
@@ -118,22 +104,22 @@ export function Navbar({
               })}
             </nav>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
               {hasValidResume && resumeAsset && (
                 <a
                   href={resumeAsset.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  download="Austin_Joshua_Resume.pdf"
+                  aria-label={resumeLabel}
+                  title={resumeLabel}
                   className={[
-                    'hidden md:inline-flex min-h-[44px] items-center px-3 py-2',
-                    'font-mono text-xs font-medium text-[var(--text-secondary)]',
-                    'border border-[var(--border-subtle)] rounded-[var(--radius-control)]',
-                    'transition-colors duration-[var(--transition-theme)]',
-                    'hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]',
+                    'inline-flex min-h-[44px] min-w-[44px] items-center justify-center',
+                    'rounded-[var(--radius-control)]',
+                    'text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--surface-card)]',
+                    'transition-[background-color,color] duration-[var(--transition-theme)]',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
-                  {resumeLabel}
+                  <Download className="size-5 shrink-0" aria-hidden="true" />
                 </a>
               )}
               <ThemeToggle />

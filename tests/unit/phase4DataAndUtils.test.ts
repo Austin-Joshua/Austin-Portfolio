@@ -43,8 +43,9 @@ describe('Phase 4 data modules and utilities', () => {
     expect(profileData.resume).not.toBeNull();
     // Skills are populated with real categories
     expect(skillsData.length).toBeGreaterThan(0);
-    // These remain empty until verified entries exist
-    expect(projectsData).toEqual([]);
+    // Curated verified projects populated
+    expect(projectsData.length).toBeGreaterThanOrEqual(5);
+    // Experience and Achievements remain neutral empty states until verified entries exist
     expect(experienceData).toEqual([]);
     expect(achievementsData).toEqual([]);
     // Contact is now populated with real data

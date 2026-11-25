@@ -6,6 +6,7 @@ export interface SectionShellProps {
   index: string;
   indexLabel?: string;
   title?: string;
+  labelledbyId?: string;
   description?: string;
   headingLevel?: 1 | 2;
   fullBleed?: boolean;
@@ -21,6 +22,7 @@ export function SectionShell({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   indexLabel: _indexLabel,
   title,
+  labelledbyId,
   description,
   headingLevel = 2,
   fullBleed = false,
@@ -29,6 +31,7 @@ export function SectionShell({
   children,
 }: SectionShellProps) {
   const headingId = `${id}-heading`;
+  const resolvedLabelledBy = title ? headingId : labelledbyId;
 
   const headerContent = title ? (
     <div className="mb-10 md:mb-14">
@@ -53,7 +56,7 @@ export function SectionShell({
   return (
     <section
       id={id}
-      aria-labelledby={title ? headingId : undefined}
+      aria-labelledby={resolvedLabelledBy}
       className={[
         'scroll-mt-[var(--nav-offset)] section-rhythm',
         withDivider ? 'border-t border-[var(--border-subtle)]' : '',

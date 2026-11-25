@@ -52,11 +52,8 @@ export function resolveQualityTier({
   saveData = false,
 }: QualityTierInput): QualityTierConfig {
   const isMobileWidth = viewportWidth < 768;
-  // Desktop: offset right so 3D sits behind the right column of the Hero
-  // Mobile: centred, slightly elevated
-  const focalOffset: readonly [number, number, number] = isMobileWidth
-    ? [0, 0.15, 0]
-    : [1.1, -0.05, 0];
+  // Centered inside the dedicated Hero 3D visual stage on both desktop and mobile
+  const focalOffset: readonly [number, number, number] = [0, 0, 0];
 
   if (prefersReducedMotion) {
     return {

@@ -67,11 +67,10 @@ export function UniverseCanvas({
   const rootRef = useRef<ReconcilerRoot<HTMLCanvasElement> | null>(null);
   const pointerRef = useRef<PointerVector>({ x: 0, y: 0 });
 
-  const [size, setSize] = useState<{ width: number; height: number }>(() =>
-    typeof window === 'undefined'
-      ? { width: 1280, height: 800 }
-      : { width: window.innerWidth, height: window.innerHeight },
-  );
+  const [size, setSize] = useState<{ width: number; height: number }>(() => ({
+    width: 560,
+    height: 540,
+  }));
   const [isReady, setIsReady] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const [initError, setInitError] = useState<Error | null>(null);
@@ -86,7 +85,20 @@ export function UniverseCanvas({
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
-    if (!wrapper || typeof ResizeObserver === 'undefined') {
+    if (!wrapper) {
+      return;
+    }
+
+    const measureNow = () => {
+      const rect = wrapper.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    measureNow();
+
+    if (typeof ResizeObserver === 'undefined') {
       return;
     }
 
@@ -225,7 +237,7 @@ export function UniverseCanvas({
           alpha: true,
           powerPreference: 'high-performance',
         },
-        camera: { position: [0, 0, 5.5], fov: 52, near: 0.1, far: 50 },
+        camera: { position: [0, 0, 5.4], fov: 46, near: 0.1, far: 50 },
         dpr: [qualityTier.dpr[0], qualityTier.dpr[1]],
         frameloop: effectiveFrameloop,
         size: {
@@ -299,8 +311,7 @@ export function UniverseCanvas({
       data-quality-tier={qualityTier.tier}
       data-frameloop={effectiveFrameloop}
       className={[
-        'pointer-events-none select-none fixed inset-0 z-0 overflow-hidden',
-        'bg-[var(--surface-canvas)]',
+        'pointer-events-none select-none absolute inset-0 h-full w-full overflow-hidden',
         prefersReducedMotion
           ? 'opacity-100 transition-none'
           : `transition-opacity duration-500 ${isReady ? 'opacity-100' : 'opacity-0'}`,

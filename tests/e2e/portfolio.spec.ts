@@ -240,4 +240,72 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     expect(robotsText).toContain('User-agent: *');
     expect(robotsText).toContain('Allow: /');
   });
+
+  test('verifies navbar icon controls, real Hero 3D stage geometry, static assets & MIME types, hash deep links, and Browser Back/Forward', async ({
+    page,
+    request,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/', { waitUntil: 'networkidle' });
+
+    // Navbar: no AJ // mark; ThemeToggle & Résumé download are icon-only controls
+    await expect(page.locator('header').getByText('AJ //')).toHaveCount(0);
+    const navResume = page.locator('header a[download="Austin_Joshua_Resume.pdf"]');
+    await expect(navResume).toHaveCount(1);
+    await expect(navResume).toHaveText('');
+
+    // Real 3D Hero stage is present inside #hero and does not overlap left-column h1
+    const stageBox = await page.getByTestId('hero-3d-stage').boundingBox();
+    const headingBox = await page.locator('#hero h1').boundingBox();
+    expect(stageBox).not.toBeNull();
+    expect(headingBox).not.toBeNull();
+    expect(stageBox!.width).toBeGreaterThan(300);
+    expect(stageBox!.height).toBeGreaterThan(300);
+    expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
+
+    // Static assets HTTP 200 & accurate Content-Types
+    const portraitRes = await request.get('/assets/portrait/austin-joshua.jpg');
+    expect(portraitRes.status()).toBe(200);
+    expect(portraitRes.headers()['content-type']).toContain('image/jpeg');
+    expect((await portraitRes.body()).byteLength).toBeGreaterThan(10_000);
+
+    const resumeRes = await request.get('/assets/resume/Austin_Joshua_Resume.pdf');
+    expect(resumeRes.status()).toBe(200);
+    expect(resumeRes.headers()['content-type']).toContain('application/pdf');
+    expect((await resumeRes.body()).byteLength).toBeGreaterThan(10_000);
+
+    const fontRes = await request.get('/fonts/syne-700-latin.woff2');
+    expect(fontRes.status()).toBe(200);
+    expect(fontRes.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2|application\/octet-stream/);
+
+    // Direct load and reload of all 7 section hashes
+    for (const sectionId of SECTION_IDS) {
+      await page.goto(`/#${sectionId}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(200);
+      await expect(page).toHaveURL(new RegExp(`#${sectionId}$`));
+      const railActive = page.getByTestId('desktop-section-rail').locator(`a[href="#${sectionId}"]`);
+      await expect(railActive).toHaveAttribute('aria-current', 'location');
+    }
+
+    // Reload on #contact stays anchored cleanly on Contact
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForTimeout(200);
+    const contactTop = await page.locator('#contact').evaluate((el) => el.getBoundingClientRect().top);
+    expect(Math.abs(contactTop)).toBeLessThan(260);
+
+    // Valid project deep-link -> modal opens -> Browser Back closes -> Forward reopens
+    await page.goto('/?project=agriflux#projects', { waitUntil: 'networkidle' });
+    await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+
+    await page.goto('/#skills', { waitUntil: 'networkidle' });
+    await page.goto('/?project=agriflux#projects', { waitUntil: 'networkidle' });
+    await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+
+    await page.goBack({ waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/#skills$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.goForward({ waitUntil: 'networkidle' });
+    await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+  });
 });

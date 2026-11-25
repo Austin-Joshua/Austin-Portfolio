@@ -258,12 +258,11 @@
   /* Section eyebrow label — replaces numbered index */
   .eyebrow-label {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--accent-primary);
-    opacity: 0.75;
     margin-bottom: 0.75rem;
     display: block;
   }

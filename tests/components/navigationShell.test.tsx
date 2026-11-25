@@ -142,7 +142,7 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
 
     const resumeLink = screen.getByRole('link', { name: 'Résumé' });
     expect(resumeLink).toHaveAttribute('href', '/assets/resume/sample.pdf');
-    expect(resumeLink).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(resumeLink).toHaveAttribute('download', 'Austin_Joshua_Resume.pdf');
   });
 
   it('marks the active section link with aria-current="location" across desktop and mobile navigation', () => {

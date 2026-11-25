@@ -1,5 +1,5 @@
-import { ExternalLink, Mail } from 'lucide-react';
 import type { MouseEvent } from 'react';
+import { GitHubIcon, LinkedInIcon, MailIcon } from '@/components/icons/SocialIcons';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { contactData } from '@/data/contact';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -31,7 +31,7 @@ export function Footer() {
               Austin Joshua
             </p>
             <p className="type-meta text-[var(--text-muted)]">
-              Software Engineer &amp; AI Systems Developer
+              Computer Science Engineering Student · Software &amp; AI Developer
             </p>
             <p className="type-meta text-[var(--text-muted)]">
               © {currentYear} Austin Joshua · All rights reserved
@@ -40,7 +40,6 @@ export function Footer() {
 
           {/* Social + back to top */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            {/* Social links */}
             <div className="flex items-center gap-2">
               {github && (
                 <a
@@ -49,14 +48,14 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label="Austin Joshua on GitHub"
                   className={[
-                    'inline-flex min-h-[40px] items-center gap-2 px-3 py-2',
+                    'inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
                     'rounded-[var(--radius-control)] border border-[var(--border-subtle)]',
                     'text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]',
                     'font-mono text-xs font-medium transition-[color,border-color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
-                  <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
+                  <GitHubIcon className="size-4 shrink-0" />
                   <span>GitHub</span>
                 </a>
               )}
@@ -67,40 +66,40 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label="Austin Joshua on LinkedIn"
                   className={[
-                    'inline-flex min-h-[40px] min-w-[40px] items-center justify-center',
+                    'inline-flex min-h-[44px] items-center gap-2 px-3 py-2',
                     'rounded-[var(--radius-control)] border border-[var(--border-subtle)]',
                     'text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]',
-                    'transition-[color,border-color] duration-200',
+                    'font-mono text-xs font-medium transition-[color,border-color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
-                  <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+                  <LinkedInIcon className="size-4 shrink-0" />
+                  <span>LinkedIn</span>
                 </a>
               )}
               {email && (
                 <a
                   href={`mailto:${email}`}
-                  aria-label={`Email Austin at ${email}`}
+                  aria-label={`Email Austin Joshua at ${email}`}
                   className={[
-                    'inline-flex min-h-[40px] min-w-[40px] items-center justify-center',
+                    'inline-flex min-h-[44px] min-w-[44px] items-center justify-center',
                     'rounded-[var(--radius-control)] border border-[var(--border-subtle)]',
                     'text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]',
                     'transition-[color,border-color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
-                  <Mail className="size-4 shrink-0" aria-hidden="true" />
+                  <MailIcon className="size-4 shrink-0" />
                 </a>
               )}
             </div>
 
-            {/* Back to top */}
             <a
               href="#hero"
               aria-label="Back to Top"
               onClick={handleBackToTop}
               className={[
-                'glass-surface inline-flex min-h-[40px] items-center justify-center gap-2',
+                'glass-surface inline-flex min-h-[44px] items-center justify-center gap-2',
                 'px-5 py-2 text-xs font-mono font-medium text-[var(--text-secondary)]',
                 'rounded-[var(--radius-control)]',
                 'transition-[background-color,border-color,color] duration-200',
