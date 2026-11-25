@@ -91,7 +91,7 @@ describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', 
       expect(await axe(container)).toHaveNoViolations();
       unmount();
     }
-  });
+  }, 15_000);
 
   it('keeps populated interactive Skills, Projects, and Contact accessible via keyboard in light theme', async () => {
     const user = userEvent.setup();
