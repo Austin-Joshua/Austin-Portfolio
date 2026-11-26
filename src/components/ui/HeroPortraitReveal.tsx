@@ -1,5 +1,5 @@
 import { Eye, EyeOff } from 'lucide-react';
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import type { PortraitAsset } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
 
@@ -13,11 +13,30 @@ export function HeroPortraitReveal({
   prefersReducedMotion,
 }: HeroPortraitRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastInputModalityRef = useRef<'keyboard' | 'pointer'>('keyboard');
   const [isHovered, setIsHovered] = useState(false);
   const [isFocusedWithin, setIsFocusedWithin] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const [spotlight, setSpotlight] = useState<{ x: number; y: number }>({ x: 50, y: 38 });
+
+  useEffect(() => {
+    const handleKeyDown = () => {
+      lastInputModalityRef.current = 'keyboard';
+    };
+    const handlePointerDown = () => {
+      lastInputModalityRef.current = 'pointer';
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('mousedown', handlePointerDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('mousedown', handlePointerDown, true);
+    };
+  }, []);
 
   const hasValidPortrait =
     portrait !== null &&
@@ -32,14 +51,7 @@ export function HeroPortraitReveal({
   const isRevealed = isHovered || isFocusedWithin || isPinned;
 
   const handleTogglePin = () => {
-    setIsPinned((prev) => {
-      const next = !prev;
-      if (!next) {
-        setIsHovered(false);
-        setIsFocusedWithin(false);
-      }
-      return next;
-    });
+    setIsPinned((prev) => !prev);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -61,6 +73,9 @@ export function HeroPortraitReveal({
       data-testid="hero-portrait-figure"
       data-portrait-revealed={isRevealed ? 'true' : 'false'}
       data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+      onPointerDownCapture={() => {
+        lastInputModalityRef.current = 'pointer';
+      }}
       onPointerEnter={(event) => {
         if (event.pointerType !== 'touch') {
           setIsHovered(true);
@@ -72,12 +87,8 @@ export function HeroPortraitReveal({
         }
       }}
       onPointerMove={handlePointerMove}
-      onFocusCapture={(event) => {
-        try {
-          if (event.target instanceof Element && event.target.matches(':focus-visible')) {
-            setIsFocusedWithin(true);
-          }
-        } catch {
+      onFocusCapture={() => {
+        if (lastInputModalityRef.current === 'keyboard') {
           setIsFocusedWithin(true);
         }
       }}
@@ -143,17 +154,23 @@ export function HeroPortraitReveal({
           'hover:border-[var(--accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
         ].join(' ')}
       >
-        {isRevealed ? (
+        {isPinned ? (
           <>
             <Eye className="size-4 shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
-            <span>{isPinned ? 'Pinned · Colour' : 'Full Colour'}</span>
-            <span className="sr-only"> — portrait reveal control</span>
+            <span>Pinned · Colour</span>
+            <span className="sr-only"> — Unpin full-colour portrait preview</span>
+          </>
+        ) : isRevealed ? (
+          <>
+            <Eye className="size-4 shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
+            <span>Full Colour</span>
+            <span className="sr-only"> — Pin full-colour portrait preview</span>
           </>
         ) : (
           <>
             <EyeOff className="size-4 shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
             <span>Hover or Tap Portrait</span>
-            <span className="sr-only"> — activate to reveal full colour</span>
+            <span className="sr-only"> — Pin full-colour portrait preview</span>
           </>
         )}
       </button>

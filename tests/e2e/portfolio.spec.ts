@@ -263,21 +263,58 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     expect(stageBox!.height).toBeGreaterThan(300);
     expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
 
-    // Hero portrait cutout starts as shadow silhouette and reveals colour on hover & click/tap without shifting layout
+    // Hero portrait cutout: real PNG transparency via same-origin canvas + coherent hover, keyboard focus, & click states
+    const failedPortraitRequests: Array<{ url: string; status: number }> = [];
+    page.on('response', (res) => {
+      if (res.url().includes('austin-joshua-cutout.png') && res.status() >= 400) {
+        failedPortraitRequests.push({ url: res.url(), status: res.status() });
+      }
+    });
+
     const heroStage = page.getByTestId('hero-3d-stage');
     await expect(heroStage.locator('canvas')).toHaveCount(await page.locator('canvas').count());
     const heroPortrait = page.getByTestId('hero-portrait-figure');
+    const heroToggle = page.getByTestId('portrait-reveal-toggle');
     const heroImg = heroPortrait.locator('img');
     await expect(heroImg).toBeVisible();
-    const imgDims = await heroImg.evaluate((el) => {
+
+    const canvasAlphaCheck = await heroImg.evaluate((el) => {
       const img = el as HTMLImageElement;
-      return { complete: img.complete, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight };
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas unavailable');
+      ctx.drawImage(img, 0, 0);
+      const readAlpha = (x: number, y: number) => ctx.getImageData(x, y, 1, 1).data[3];
+      return {
+        complete: img.complete,
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        bgTopLeft: readAlpha(15, 15),
+        bgUpperRight: readAlpha(544, 80),
+        bgLeftMid: readAlpha(30, 400),
+        subjectForehead: readAlpha(290, 145),
+        subjectCheek: readAlpha(270, 210),
+        subjectShirt: readAlpha(300, 450),
+      };
     });
-    expect(imgDims).toEqual({ complete: true, naturalWidth: 604, naturalHeight: 806 });
+    expect(failedPortraitRequests).toEqual([]);
+    expect(canvasAlphaCheck.complete).toBe(true);
+    expect(canvasAlphaCheck.naturalWidth).toBe(604);
+    expect(canvasAlphaCheck.naturalHeight).toBe(806);
+    expect(canvasAlphaCheck.bgTopLeft).toBeLessThan(255);
+    expect(canvasAlphaCheck.bgUpperRight).toBeLessThan(255);
+    expect(canvasAlphaCheck.bgLeftMid).toBeLessThan(255);
+    expect(canvasAlphaCheck.subjectForehead).toBeGreaterThan(245);
+    expect(canvasAlphaCheck.subjectCheek).toBeGreaterThan(245);
+    expect(canvasAlphaCheck.subjectShirt).toBeGreaterThan(245);
+
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
+    // Pointer hover in & out without layout shift
     const beforeRevealBox = await heroImg.boundingBox();
-    await page.getByTestId('portrait-reveal-toggle').hover();
+    await heroToggle.hover();
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
     const afterRevealBox = await heroImg.boundingBox();
     expect(Math.abs(beforeRevealBox!.y - afterRevealBox!.y)).toBeLessThan(2);
@@ -285,10 +322,28 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
-    await page.getByTestId('portrait-reveal-toggle').click();
+    // Pointer click pins colour across mouse leave, unpin + mouse leave restores silhouette
+    await heroToggle.click();
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'true');
+    await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
-    await expect(page.getByTestId('portrait-reveal-toggle')).toHaveAttribute('aria-pressed', 'true');
-    await page.getByTestId('portrait-reveal-toggle').click();
+    await heroToggle.click();
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'false');
+    await page.mouse.move(10, 10);
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+
+    // Keyboard focus via Tab keeps portrait revealed through Enter/Space until Tab moves focus away
+    await page.locator('#hero a').last().focus();
+    await page.keyboard.press('Tab');
+    await expect(heroToggle).toBeFocused();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    await page.keyboard.press('Enter');
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Space');
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(heroToggle).toBeFocused();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    await page.keyboard.press('Tab');
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
     // Static assets HTTP 200 & accurate Content-Types

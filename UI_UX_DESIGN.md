@@ -35,8 +35,9 @@ The visual language fuses three disciplined pillars:
 | `--surface-elevated` | `#0E1428` | Section bands, solid fallback cards, modal inner panels. |
 | `--surface-card` | `#141D36` | Interactive recessed/selected card surface. |
 | `--surface-card-hover` | `#1B2745` | Elevated hover card state. |
-| `--surface-glass` | `rgba(14, 20, 40, 0.80)` | Glassmorphic nav & cards over 3D (`backdrop-filter: blur(12px)`). |
-| `--surface-scrim` | `rgba(7, 10, 24, 0.86)` | High-legibility backdrop behind Hero text & open dialogs. |
+| `--surface-glass` | `rgba(14, 20, 40, 0.84)` | Glassmorphic nav & cards over 3D (`backdrop-filter: blur(12px)`). |
+| `--surface-glass-strong` | `rgba(7, 10, 24, 0.94)` | High-opacity modals, active tabs, portrait reveal toggle control. |
+| `--surface-scrim` | `rgba(7, 10, 24, 0.9)` | High-legibility backdrop behind Hero text & open dialogs. |
 | `--text-primary` | `#F4F5FF` | Primary headings & body copy (`~18.2:1` on `#070A18`, `~14.3:1` on `#141D36`). |
 | `--text-secondary` | `#C1C9E4` | Lead paragraphs, descriptions (`~11.6:1` on `#070A18`, `~9.1:1` on `#141D36`). |
 | `--text-muted` | `#9AA6C7` | Metadata, timestamps, Swiss indices (`~7.9:1` on `#070A18`, `~6.2:1` on `#141D36`, `~5.2:1` on `#1B2745`). |
@@ -44,11 +45,14 @@ The visual language fuses three disciplined pillars:
 | `--accent-primary` | `#9788FF` | Luminous violet-amethyst interactive links, active indicators, solid CTA fill (`~6.83:1` on `#070A18`). |
 | `--accent-primary-deep` | `#6B70E8` | Deep indigo structural fill, subtle 3D aura & glow. |
 | `--accent-secondary` | `#6B70E8` | Secondary indigo highlight accent. |
+| `--accent-primary-glow` | `rgba(151, 136, 255, 0.24)` | Interactive spotlight glow behind Hero portrait reveal. |
 | `--accent-chrome` | `#DDE3F3` / `#AEB8D2` | **Liquid Chrome:** `#DDE3F3` high-contrast metallic labels; `#AEB8D2` hairline dividers. |
 | `--accent-gold` | `#E7BC70` | **Obsidian Gold:** Achievement badges, featured marker (`~10.9:1` on `#070A18`). |
+| `--accent-gold-line` | `rgba(231, 188, 112, 0.58)` | Subtle gold orbital / card divider hairline. |
 | `--accent-copper` | `#E18DAF` / `#A65578` | **Metallic Rose / Plum Rim:** `#E18DAF` secondary accent tags & warm 3D orbital highlight (`~7.8:1` on `#070A18`). |
-| `--border-subtle` | `rgba(174, 184, 210, 0.20)` | Swiss 1px grid rules & card hairlines. |
+| `--border-subtle` | `rgba(174, 184, 210, 0.16)` | Swiss 1px grid rules & card hairlines. |
 | `--border-glass` | `rgba(151, 136, 255, 0.34)` | Glass panel violet-chrome edge. |
+| `--border-glass-strong` | `rgba(151, 136, 255, 0.58)` | Emphasized glass panel & hovered border edge. |
 | `--focus-ring` | `#B7AAFF` | `2px` solid `:focus-visible` ring with `3px` `#070A18` offset (`NFR-008`). |
 | `--status-success` | `#9FB5FF` | Copy-email confirmation text/icon (indigo-steel, zero green/teal bias). |
 | `--status-warning` | `#E7BC70` | Non-blocking notices (e.g., invalid `?project=` slug, `FR-048`). |
@@ -62,7 +66,8 @@ The visual language fuses three disciplined pillars:
 | `--surface-card` | `#F0EDF5` | Recessed porcelain-plum panels, portrait slot backdrop, tag pills. |
 | `--surface-card-hover` | `#E8E2EF` | Interactive hover card surface. |
 | `--surface-glass` | `rgba(255, 255, 255, 0.84)` | Frosted architectural glass over light 3D atmosphere (`blur(12px)`). |
-| `--surface-scrim` | `rgba(248, 247, 251, 0.88)` | Scrim behind Hero display copy & dialog overlays. |
+| `--surface-glass-strong` | `rgba(255, 255, 255, 0.94)` | High-opacity modals, active tabs, portrait reveal toggle control. |
+| `--surface-scrim` | `rgba(248, 247, 251, 0.9)` | Scrim behind Hero display copy & dialog overlays. |
 | `--text-primary` | `#1B1421` | Deep ink (`~16.6:1` on `#F8F7FB`). |
 | `--text-secondary` | `#51465C` | Body & project summaries (`~8.5:1` on `#F8F7FB`). |
 | `--text-muted` | `#6C6176` | Timestamps, captions, Swiss indices (`~5.46:1` on `#F8F7FB`, `~5.03:1` on `#F0EDF5`, `~4.59:1` on `#E8E2EF`). |
@@ -70,11 +75,14 @@ The visual language fuses three disciplined pillars:
 | `--accent-primary` | `#D20D46` | Vibrant scarlet crimson primary CTA, active links, key borders (`~5.02:1` on `#F8F7FB`). |
 | `--accent-primary-deep` | `#A70F38` | Hover/pressed crimson state & high-emphasis badges (`~7.06:1` on `#F8F7FB`). |
 | `--accent-secondary` | `#7045C8` | Deep porcelain violet structural accent. |
+| `--accent-primary-glow` | `rgba(210, 13, 70, 0.15)` | Interactive spotlight glow behind Hero portrait reveal. |
 | `--accent-chrome` | `#5C6475` / `#C9CEDB` | **Liquid Chrome (Light):** `#5C6475` steel labels (`~5.5:1`); `#C9CEDB` structural borders. |
 | `--accent-gold` | `#946213` | **Antique Gold (Light):** Accessible gold text/badge (`~4.97:1` on `#F8F7FB`, `~5.30:1` on `#FFFFFF`). |
+| `--accent-gold-line` | `rgba(148, 98, 19, 0.45)` | Subtle gold orbital / card divider hairline. |
 | `--accent-copper` | `#A64F46` / `#853830` | **Warm Carmine Copper (Light):** Accessible secondary accent. |
-| `--border-subtle` | `rgba(27, 20, 33, 0.14)` | Swiss 1px editorial rules. |
-| `--border-glass` | `rgba(210, 13, 70, 0.24)` | Glass panel scarlet-tinted edge. |
+| `--border-subtle` | `rgba(27, 20, 33, 0.12)` | Swiss 1px editorial rules. |
+| `--border-glass` | `rgba(167, 15, 56, 0.24)` | Glass panel scarlet-tinted edge. |
+| `--border-glass-strong` | `rgba(210, 13, 70, 0.44)` | Emphasized glass panel & hovered border edge. |
 | `--focus-ring` | `#A70F38` | `2px` solid `:focus-visible` ring with `3px` `#F8F7FB` offset (`NFR-008`). |
 | `--status-success` | `#3D3591` | Deep indigo confirmation (`~9.1:1` on `#F8F7FB`, zero generic green). |
 | `--status-warning` | `#946213` | Dismissible notice text/border (`~4.97:1` on `#F8F7FB`). |
@@ -205,7 +213,7 @@ The following PRD `Could` / `[Proposed]` interactions are **optional enhancement
 
 Light-adapted **Scarlet Porcelain** is designed from light-surface physics rather than inverting dark mode:
 - **Ink & Paper Contrast:** Deep `#1B1421` ink on `#F8F7FB` porcelain-alabaster and `#FFFFFF` cards replaces cosmic violet luminance; primary scarlet `#D20D46` and deep crimson `#A70F38` ensure crisp readability on light surfaces.
-- **Glassmorphism Re-calibration:** Dark glass relies on dark translucent tint (`rgba(14, 20, 40, 0.80)`) + luminous violet specular border; light glass relies on high-opacity frosted white (`rgba(255, 255, 255, 0.84)`), subtle drop shadow (`0 8px 32px rgba(27, 20, 33, 0.08)`), and crisp `#C9CEDB` / scarlet-tinted `1px` borders to separate layers cleanly.
+- **Glassmorphism Re-calibration:** Dark glass relies on dark translucent tint (`rgba(14, 20, 40, 0.84)` / strong `rgba(7, 10, 24, 0.94)`) + violet border (`--border-glass`); light glass relies on high-opacity frosted white (`rgba(255, 255, 255, 0.84)` / strong `rgba(255, 255, 255, 0.94)`), subtle drop shadow (`0 6px 24px rgba(27, 20, 33, 0.08)`), and crisp scarlet-tinted `1px` borders (`--border-glass`) to separate layers cleanly.
 - **3D Adaptation:** Additive blending glows look washed out on light backgrounds; switch light-theme 3D particles/lines to normal alpha blending with crisp architectural vector linework (`#D20D46`, `#7045C8`, `#5C6475`).
 
 ---

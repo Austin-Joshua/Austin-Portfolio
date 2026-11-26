@@ -88,29 +88,63 @@ describe('Final Integration Audit — Navigation, Icons, 3D Hero, Data & Routing
     expect(buf[25]).toBe(6);
   });
 
-  it('renders Hero portrait in shadow silhouette by default and reveals color on hover, focus, or tap', async () => {
+  it('renders Hero portrait in shadow silhouette by default and keeps hover, keyboard focus, Enter/Space pinning, and blur states coherent', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<HeroSection />);
+    renderWithProviders(
+      <>
+        <HeroSection />
+        <button type="button">Outside Focus Target</button>
+      </>,
+    );
 
     const figure = screen.getByTestId('hero-portrait-figure');
     const toggleBtn = screen.getByTestId('portrait-reveal-toggle');
+    const outsideBtn = screen.getByRole('button', { name: 'Outside Focus Target' });
     const img = within(figure).getByRole('img', { name: /Austin Joshua/i });
 
     expect(img).toHaveAttribute('src', '/assets/portrait/austin-joshua-cutout.png');
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(toggleBtn).toHaveAccessibleName(/Pin full-colour portrait preview/i);
 
-    fireEvent.pointerEnter(figure);
+    // 1. Pointer hover & leave stay independent of pinning
+    fireEvent.pointerEnter(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
-    fireEvent.pointerLeave(figure);
+    fireEvent.pointerLeave(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
 
+    // 2. Keyboard Tab focuses toggle -> stays revealed even across Enter/Space pin+unpin until blur leaves portrait
+    const heroLinks = within(document.getElementById('hero')!).getAllByRole('link');
+    heroLinks[heroLinks.length - 1].focus();
+    await user.tab();
+    expect(toggleBtn).toHaveFocus();
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+
+    await user.keyboard('{Enter}');
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(toggleBtn).toHaveAccessibleName(/Unpin full-colour portrait preview/i);
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+
+    // Pressing Space unpins aria-pressed -> false, while keyboard focus STILL keeps portrait revealed
+    await user.keyboard(' ');
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(toggleBtn).toHaveFocus();
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+
+    // Moving focus outside the portrait figure blurs and returns to silhouette
+    await user.tab();
+    expect(outsideBtn).toHaveFocus();
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
+
+    // 3. Pointer click pins across hover leave, then second click + leave returns to silhouette
     await user.click(toggleBtn);
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.pointerLeave(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
 
     await user.click(toggleBtn);
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.pointerLeave(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
   });
 

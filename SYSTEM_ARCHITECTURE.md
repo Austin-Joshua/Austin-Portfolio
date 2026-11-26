@@ -325,7 +325,7 @@ No DOM node may have `transform` or `opacity` mutated concurrently by both GSAP 
 | Vitest + `vitest-axe` + Playwright + Lighthouse CI | **Recommended** | Provides automated WCAG 2.2 AA, fallback, and bundle-split enforcement. | `NFR-002`, `NFR-006`, `NFR-020` |
 
 ### 15.2 Technical Risks & Mitigations
-- **Rendered Glass/3D Contrast Failure (`NFR-007`):** Mitigated via minimum glass opacity (`72%` dark / `78%` light), `--surface-scrim` Hero gradients, and mandatory rendered-layer contrast audits in both themes.
+- **Rendered Glass/3D Contrast Failure (`NFR-007`):** Mitigated via minimum glass opacity (`84%` `--surface-glass` / `94%` `--surface-glass-strong` in both Midnight Amethyst & Scarlet Porcelain), `--surface-scrim` (`0.9` alpha) Hero/dialog backdrops, and rendered-layer contrast audits in both themes *(pending owner screenshot approval)*.
 - **Three.js Bundle Bloat / Mobile Thermal Throttle (`NFR-001`, `NFR-004`):** Mitigated via Vite `manualChunks`, procedural-only v1 geometry, DPR capping, `useQualityTier`, and offscreen `frameloop` pausing.
 - **GSAP StrictMode Double-Mount Bugs:** Mitigated by scoping every ScrollTrigger inside `gsap.context()` with deterministic `ctx.revert()` cleanup.
 
