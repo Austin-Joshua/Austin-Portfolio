@@ -170,7 +170,13 @@ export function UniverseCanvas({
     };
   }, []);
 
-  // Controlled desktop drag-orbit in Explore mode without ever blocking scroll or touch gestures
+  // Controlled desktop drag-orbit in Explore mode without stealing clicks (< 5px movement)
+  const dragOriginRef = useRef<{ x: number; y: number; moved: boolean }>({
+    x: 0,
+    y: 0,
+    moved: false,
+  });
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (
       prefersReducedMotion ||
@@ -179,6 +185,7 @@ export function UniverseCanvas({
     ) {
       return;
     }
+    dragOriginRef.current = { x: event.clientX, y: event.clientY, moved: false };
     dragStateRef.current = {
       active: true,
       lastX: event.clientX,
@@ -188,6 +195,14 @@ export function UniverseCanvas({
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!dragStateRef.current.active) return;
+    if (!dragOriginRef.current.moved) {
+      const dist = Math.hypot(
+        event.clientX - dragOriginRef.current.x,
+        event.clientY - dragOriginRef.current.y,
+      );
+      if (dist < 5) return;
+      dragOriginRef.current.moved = true;
+    }
     const dx = event.clientX - dragStateRef.current.lastX;
     const dy = event.clientY - dragStateRef.current.lastY;
     dragStateRef.current.lastX = event.clientX;
@@ -323,8 +338,7 @@ export function UniverseCanvas({
       onPointerUp={handlePointerUpOrCancel}
       onPointerLeave={handlePointerUpOrCancel}
       className={[
-        'fixed inset-0 z-0 h-full w-full overflow-hidden select-none',
-        navigationMode === 'explore' ? 'pointer-events-auto' : 'pointer-events-none',
+        'fixed inset-0 z-0 h-full w-full overflow-hidden select-none pointer-events-auto',
         prefersReducedMotion
           ? 'opacity-100 transition-none'
           : `transition-opacity duration-500 ${isReady ? 'opacity-100' : 'opacity-0'}`,

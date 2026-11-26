@@ -234,12 +234,7 @@ function OrbitingPlanet({
 
       {/* Orbiting Celestial Body */}
       <group ref={groupRef}>
-        <mesh
-          ref={sphereRef}
-          onPointerOver={handleOver}
-          onPointerOut={handleOut}
-          onClick={handleClick}
-        >
+        <mesh ref={sphereRef}>
           <sphereGeometry args={[r, sphereSegs, sphereSegs]} />
           <meshStandardMaterial
             ref={matRef}
@@ -251,6 +246,16 @@ function OrbitingPlanet({
             emissive={new Color(planet.color)}
             emissiveIntensity={0.03}
           />
+        </mesh>
+
+        {/* Generous invisible pointer collider so hovering/clicking a planet pauses and redirects reliably */}
+        <mesh
+          onPointerOver={handleOver}
+          onPointerOut={handleOut}
+          onClick={handleClick}
+        >
+          <sphereGeometry args={[r * 1.48, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
 
         {/* Soft seamless Fresnel atmospheric limb glow (zero hard outer edge) */}

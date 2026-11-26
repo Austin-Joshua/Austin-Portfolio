@@ -220,9 +220,6 @@ function ProjectDetailDialogInner({
         <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-5 py-4 md:px-7 md:py-5">
           <div className="space-y-1.5 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="type-meta text-[var(--text-muted)]">
-                {project.indexCode}
-              </span>
               {hasNonEmptyText(project.categoryLabel) && (
                 <TagChip variant="accent">{project.categoryLabel}</TagChip>
               )}

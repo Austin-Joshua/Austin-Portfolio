@@ -41,10 +41,14 @@ export function SolarSystemScene({
   onSelectPlanet,
 }: SolarSystemSceneProps) {
   const elapsedTimeRef = useRef<number>(0);
+  const orbitRateRef = useRef<number>(1);
 
   useFrame((_, delta) => {
     if (prefersReducedMotion) return;
-    elapsedTimeRef.current += Math.min(delta, 0.05);
+    const shouldPause = hoveredPlanet !== null || navigationMode === 'guided';
+    const targetRate = shouldPause ? 0 : 1;
+    orbitRateRef.current += (targetRate - orbitRateRef.current) * Math.min(1, delta * 9);
+    elapsedTimeRef.current += Math.min(delta, 0.05) * orbitRateRef.current;
   });
 
   const orbitScale =

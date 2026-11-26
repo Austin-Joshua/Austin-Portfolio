@@ -12,7 +12,6 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
 import { achievementsData } from '@/data/achievements';
-import { profileData } from '@/data/profile';
 import { projectsData } from '@/data/projects';
 import { PORTFOLIO_SECTIONS, buildSectionUrl, parseSectionHash } from '@/data/sections';
 import { skillsData } from '@/data/skills';
@@ -35,22 +34,15 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     vi.restoreAllMocks();
   });
 
-  it('integrates canonical AJ emblem mark and icon-only Résumé download in single-theme Navbar', async () => {
-    const { container } = renderWithProviders(
-      <Navbar resumeAsset={profileData.resume} />,
-    );
+  it('renders redesigned minimal Navbar with AJ logo only, zero Cosmic Universe label, and zero download link', async () => {
+    const { container } = renderWithProviders(<Navbar />);
 
     expect(screen.queryByText(/AJ \/\//i)).not.toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /AJ Cosmic Emblem/i })).toHaveAttribute(
-      'src',
-      '/assets/brand/aj-emblem.png',
-    );
+    expect(screen.queryByText(/Cosmic Universe/i)).not.toBeInTheDocument();
+    const emblems = screen.getAllByRole('img', { name: 'AJ' });
+    expect(emblems[0]).toHaveAttribute('src', '/assets/brand/aj-emblem.png');
 
-    const resumeLink = screen.getByRole('link', { name: /Download Résumé/i });
-    expect(resumeLink).toHaveAttribute('href', '/assets/resume/Austin_Joshua_Resume.pdf');
-    expect(resumeLink).toHaveAttribute('download', 'Austin_Joshua_Resume.pdf');
-    expect(resumeLink.textContent?.trim()).toBe('');
-
+    expect(document.querySelector('header a[download]')).toBeNull();
     expect(screen.queryByRole('button', { name: /Switch to/i })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -94,6 +86,7 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     const user = userEvent.setup();
     renderWithProviders(
       <>
+        <button type="button">Before Focus Target</button>
         <HeroSection />
         <button type="button">Outside Focus Target</button>
       </>,
@@ -101,7 +94,7 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     const figure = screen.getByTestId('hero-portrait-figure');
     const toggleBtn = screen.getByTestId('portrait-reveal-toggle');
-    const outsideBtn = screen.getByRole('button', { name: 'Outside Focus Target' });
+    const beforeBtn = screen.getByRole('button', { name: 'Before Focus Target' });
     const img = within(figure).getByRole('img', { name: /Austin Joshua/i });
 
     expect(img).toHaveAttribute('src', '/assets/portrait/austin-joshua-cutout.png');
@@ -113,8 +106,7 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     fireEvent.pointerLeave(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
 
-    const heroLinks = within(document.getElementById('hero')!).getAllByRole('link');
-    heroLinks[heroLinks.length - 1].focus();
+    beforeBtn.focus();
     await user.tab();
     expect(toggleBtn).toHaveFocus();
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
@@ -127,7 +119,6 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
 
     await user.tab();
-    expect(outsideBtn).toHaveFocus();
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
   });
 

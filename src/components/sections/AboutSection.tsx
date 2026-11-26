@@ -22,6 +22,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   const { prefersReducedMotion } = useOptionalMotionPreference();
   const contentScopeRef = useRef<HTMLDivElement>(null);
   const hairlineRef = useRef<HTMLDivElement>(null);
+  const leftColRef = useRef<HTMLDivElement>(null);
   const stationParallaxRef = useRef<HTMLDivElement>(null);
 
   const validParagraphs = profile.aboutParagraphs.filter((p) => hasNonEmptyText(p));
@@ -31,6 +32,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   useEffect(() => {
     const scope = contentScopeRef.current;
     const hairline = hairlineRef.current;
+    const leftCol = leftColRef.current;
     const stationCard = stationParallaxRef.current;
     if (!scope || !hairline || !stationCard) return;
 
@@ -53,12 +55,31 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
           },
         );
 
+        // Alternating Left & Right horizontal scroll reveal (handwritten scroll format)
+        if (leftCol) {
+          gsap.fromTo(
+            leftCol,
+            { x: -28 },
+            {
+              x: 0,
+              duration: 0.65,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: scope,
+                start: 'top 84%',
+                once: true,
+              },
+            },
+          );
+        }
+
         stationCard.style.transform = 'none';
         mm.add('(min-width: 1024px)', () => {
           gsap.fromTo(
             stationCard,
-            { y: 12 },
+            { x: 28, y: 12 },
             {
+              x: 0,
               y: -12,
               ease: 'none',
               scrollTrigger: {
@@ -73,6 +94,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       },
       () => {
         hairline.style.transform = 'scaleX(1)';
+        if (leftCol) leftCol.style.transform = 'none';
         stationCard.style.transform = 'none';
       },
     );
@@ -99,7 +121,10 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
 
         <div className="swiss-grid items-stretch gap-y-8">
           {/* Left column: Narrative & Core Engineering Focus (Zero duplicate portrait) */}
-          <div className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6">
+          <div
+            ref={leftColRef}
+            className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6"
+          >
             {validParagraphs.length > 0 ? (
               <GlassCard padding="lg" variant="default" className="space-y-5 h-full flex flex-col justify-between">
                 <div className="space-y-4">

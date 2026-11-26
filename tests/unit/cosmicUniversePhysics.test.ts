@@ -7,7 +7,6 @@ import {
 } from '@/three/starfieldPhysics';
 import {
   hasSeenCosmicIntro,
-  INTRO_SEEN_STORAGE_KEY,
   markCosmicIntroSeen,
   shouldPlayCosmicIntroOnMount,
 } from '@/utils/introStorage';
@@ -69,22 +68,20 @@ describe('Cosmic Intro Storage & Brand Emblem Asset', () => {
     document.documentElement.classList.remove('aj-intro-pending', 'aj-intro-seen');
   });
 
-  it('plays once per first visit, never traps restricted storage, and honors reduced motion', () => {
+  it('replays intro loader on every refresh, never traps restricted storage, and honors reduced motion', () => {
     expect(hasSeenCosmicIntro()).toBe(false);
     expect(shouldPlayCosmicIntroOnMount(false)).toBe(true);
     expect(shouldPlayCosmicIntroOnMount(true)).toBe(false);
 
     markCosmicIntroSeen();
-    expect(window.localStorage.getItem(INTRO_SEEN_STORAGE_KEY)).toBe('1');
-    expect(hasSeenCosmicIntro()).toBe(true);
-    expect(shouldPlayCosmicIntroOnMount(false)).toBe(false);
+    expect(shouldPlayCosmicIntroOnMount(false)).toBe(true);
 
     // Restricted localStorage must not crash or trap the visitor
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('SecurityError');
     });
-    expect(hasSeenCosmicIntro()).toBe(true);
-    expect(shouldPlayCosmicIntroOnMount(false)).toBe(false);
+    expect(shouldPlayCosmicIntroOnMount(false)).toBe(true);
+    expect(shouldPlayCosmicIntroOnMount(true)).toBe(false);
     vi.restoreAllMocks();
   });
 

@@ -6,7 +6,6 @@ import { axe } from 'vitest-axe';
 import { CosmicIntroLoader } from '@/components/layout/CosmicIntroLoader';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
 import { domMax } from '@/motion/motionFeatures';
-import { INTRO_SEEN_STORAGE_KEY } from '@/utils/introStorage';
 
 function renderLoader(ui: React.ReactElement) {
   return render(
@@ -36,13 +35,10 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
     vi.restoreAllMocks();
   });
 
-  it('plays once on first visit with static AJ emblem over separate cosmic aura, splits horizontally, and skips on refresh', async () => {
+  it('plays on every load/refresh with static AJ emblem over separate cosmic aura and splits horizontally', async () => {
     const { container, unmount: unmountAxe } = renderLoader(<CosmicIntroLoader />);
     expect(await axe(container)).toHaveNoViolations();
     unmountAxe();
-
-    window.localStorage.clear();
-    document.documentElement.classList.remove('aj-intro-pending', 'aj-intro-seen');
 
     vi.useFakeTimers();
 
@@ -67,12 +63,11 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
       vi.advanceTimersByTime(850);
     });
     expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
-    expect(window.localStorage.getItem(INTRO_SEEN_STORAGE_KEY)).toBe('1');
     unmount();
 
-    // Subsequent refresh/remount does NOT replay
+    // Subsequent refresh / remount ALSO replays the intro loader per user preference
     renderLoader(<CosmicIntroLoader />);
-    expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cosmic-intro-loader')).toHaveAttribute('data-phase', 'holding');
   });
 
   it('allows immediate skip via Skip button and Escape key', async () => {
@@ -81,11 +76,7 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
 
     await user.click(screen.getByTestId('intro-skip-button'));
     expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
-    expect(window.localStorage.getItem(INTRO_SEEN_STORAGE_KEY)).toBe('1');
 
-    // Reset flag and test Escape shortcut
-    window.localStorage.clear();
-    document.documentElement.classList.remove('aj-intro-seen');
     renderLoader(<CosmicIntroLoader />);
     expect(screen.getByTestId('cosmic-intro-loader')).toBeInTheDocument();
 
@@ -110,6 +101,5 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
 
     renderLoader(<CosmicIntroLoader />);
     expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
-    expect(window.localStorage.getItem(INTRO_SEEN_STORAGE_KEY)).toBe('1');
   });
 });

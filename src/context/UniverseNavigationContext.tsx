@@ -66,12 +66,17 @@ export function UniverseNavigationProvider({
 }: {
   children: ReactNode;
 }) {
-  const activeSection = toSectionId(useActiveSection());
+  const observedSection = toSectionId(useActiveSection());
   const { prefersReducedMotion } = useOptionalMotionPreference();
+  const [navSectionOverride, setNavSectionOverride] =
+    useState<SectionId | null>(null);
   const [navigationMode, setNavigationMode] =
     useState<UniverseNavigationMode>('explore');
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetId | null>(null);
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetId | null>('sun');
+  const lockTimerRef = useRef<number | null>(null);
+
+  const activeSection: SectionId = navSectionOverride ?? observedSection;
 
   const resolvedNavigationMode: UniverseNavigationMode =
     activeSection === 'hero' ? navigationMode : 'guided';
@@ -81,6 +86,14 @@ export function UniverseNavigationProvider({
         ? 'sun'
         : selectedPlanet
       : activeSection;
+
+  useEffect(() => {
+    return () => {
+      if (lockTimerRef.current !== null) {
+        window.clearTimeout(lockTimerRef.current);
+      }
+    };
+  }, []);
 
   const pointerRef = useRef<UniversePointerVector>({ x: 0, y: 0 });
   const scrollVelocityRef = useRef<number>(0);
@@ -145,19 +158,21 @@ export function UniverseNavigationProvider({
 
   const navigateToPlanet = useCallback(
     (planet: PlanetId) => {
+      const targetSection: SectionId = planet === 'sun' ? 'hero' : planet;
       setSelectedPlanet(planet);
-      if (planet === 'sun') {
-        setNavigationMode('explore');
-        scrollToSection('hero', {
-          prefersReducedMotion,
-          focusTarget: false,
-          updateHash: true,
-        });
-        return;
-      }
+      setHoveredPlanet(null);
+      setNavigationMode(planet === 'sun' ? 'explore' : 'guided');
+      setNavSectionOverride(targetSection);
 
-      setNavigationMode('guided');
-      scrollToSection(planet, {
+      if (lockTimerRef.current !== null) {
+        window.clearTimeout(lockTimerRef.current);
+      }
+      lockTimerRef.current = window.setTimeout(() => {
+        setNavSectionOverride(null);
+        lockTimerRef.current = null;
+      }, prefersReducedMotion ? 120 : 900);
+
+      scrollToSection(targetSection, {
         prefersReducedMotion,
         focusTarget: false,
         updateHash: true,
@@ -172,6 +187,17 @@ export function UniverseNavigationProvider({
     orbitControlRef.current.zoom = 1;
     setNavigationMode('explore');
     setSelectedPlanet('sun');
+    setHoveredPlanet(null);
+    setNavSectionOverride('hero');
+
+    if (lockTimerRef.current !== null) {
+      window.clearTimeout(lockTimerRef.current);
+    }
+    lockTimerRef.current = window.setTimeout(() => {
+      setNavSectionOverride(null);
+      lockTimerRef.current = null;
+    }, prefersReducedMotion ? 120 : 900);
+
     scrollToSection('hero', {
       prefersReducedMotion,
       focusTarget: false,

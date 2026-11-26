@@ -1,6 +1,8 @@
 import { ArrowUpRight, Star } from 'lucide-react';
+import { m } from 'motion/react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { achievementsData } from '@/data/achievements';
 import type { AchievementAccent, AchievementItem } from '@/types/portfolio';
 import { hasNonEmptyText, isValidHttpUrl } from '@/utils/dataGuards';
@@ -27,6 +29,7 @@ const VERIFIED_CERTIFICATIONS = [
 export function AchievementsSection({
   items = achievementsData,
 }: AchievementsSectionProps) {
+  const { prefersReducedMotion } = useOptionalMotionPreference();
   const validItems = items.filter(
     (item) =>
       hasNonEmptyText(item.id) &&
@@ -77,14 +80,20 @@ export function AchievementsSection({
 
             {/* Milestone Constellation Star Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {validItems.map((item) => {
+              {validItems.map((item, idx) => {
                 const accent: AchievementAccent = item.accent ?? 'gold';
                 const starColor = ACCENT_COLOR_MAP[accent];
                 const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
+                const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
                 return (
-                  <article
+                  <m.article
                     key={item.id}
+                    initial={canUseInView ? { x: idx % 2 === 0 ? -24 : 24 } : false}
+                    whileInView={canUseInView ? { x: 0 } : undefined}
+                    viewport={{ once: true, amount: 0.12 }}
+                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                     className="glass-surface relative flex flex-col justify-between gap-4 p-6 transition-colors duration-200 hover:border-[var(--planet-achievements)]/60"
                     style={{
                       borderTop: `2px solid ${starColor}`,
@@ -127,7 +136,7 @@ export function AchievementsSection({
                         <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                       </a>
                     )}
-                  </article>
+                  </m.article>
                 );
               })}
             </div>

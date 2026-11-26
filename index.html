@@ -27,17 +27,12 @@
       type="font/woff2"
       crossorigin
     />
-    <!-- First-visit pre-paint intro curtain gate; SHA-256 hash enforced in vercel.json CSP -->
+    <!-- Pre-paint intro curtain gate (replays every refresh unless prefers-reduced-motion); SHA-256 hash enforced in vercel.json CSP -->
     <script>
       (function () {
         try {
           var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          var seen = window.localStorage.getItem('aj-cosmic-intro-seen') === '1';
-          if (!reduced && !seen) {
-            document.documentElement.classList.add('aj-intro-pending');
-          } else {
-            document.documentElement.classList.add('aj-intro-seen');
-          }
+          document.documentElement.classList.add(reduced ? 'aj-intro-seen' : 'aj-intro-pending');
         } catch {
           document.documentElement.classList.add('aj-intro-seen');
         }

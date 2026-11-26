@@ -63,16 +63,19 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'About' })).toBeInTheDocument();
   });
 
-  it('renders circular AJ metallic emblem in Navbar without theme toggle', async () => {
+  it('renders circular AJ metallic emblem in Navbar without Cosmic Universe text, theme toggle, or download icon', async () => {
     const { container } = renderWithProviders(<Navbar />);
-    const emblem = screen.getByRole('img', { name: /AJ Cosmic Emblem/i });
-    expect(emblem).toHaveAttribute('src', '/assets/brand/aj-emblem.png');
+    const emblems = screen.getAllByRole('img', { name: 'AJ' });
+    expect(emblems.length).toBeGreaterThanOrEqual(1);
+    expect(emblems[0]).toHaveAttribute('src', '/assets/brand/aj-emblem.png');
+    expect(screen.queryByText(/Cosmic Universe/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Switch to/i })).not.toBeInTheDocument();
+    expect(document.querySelector('header a[download]')).toBeNull();
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('renders Navbar with desktop capsule links, mobile bottom bar links, active indicator, conditional resume, and passes axe', async () => {
-    const { container, rerender } = renderWithProviders(
+  it('renders minimal Navbar with section links, mobile bottom bar links, active indicator, and zero download link', async () => {
+    const { container } = renderWithProviders(
       <>
         <section id="hero" />
         <Navbar />
@@ -106,17 +109,6 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
 
     expect(screen.queryByRole('link', { name: /Résumé/i })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
-
-    rerender(
-      <MotionPreferenceProvider>
-        <section id="hero" />
-        <Navbar resumeAsset={{ url: '/assets/resume/sample.pdf', label: 'Résumé' }} />
-      </MotionPreferenceProvider>,
-    );
-
-    const resumeLink = screen.getByRole('link', { name: 'Résumé' });
-    expect(resumeLink).toHaveAttribute('href', '/assets/resume/sample.pdf');
-    expect(resumeLink).toHaveAttribute('download', 'Austin_Joshua_Resume.pdf');
   });
 
   it('marks the active section link with aria-current="location" across desktop and mobile navigation', () => {

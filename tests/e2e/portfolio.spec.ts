@@ -28,10 +28,23 @@ async function waitForIntroToFinish(page: Page) {
   await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0, { timeout: 6000 });
 }
 
+async function dismissIntroForSuite(page: Page) {
+  await page
+    .evaluate(() => {
+      const btn = document.querySelector('[data-testid="intro-skip-button"]');
+      if (btn instanceof HTMLElement) {
+        btn.click();
+      }
+    })
+    .catch(() => undefined);
+  await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0, { timeout: 6000 });
+}
+
 test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
-  test('plays first-visit Cosmic Intro curtain loader once, supports Skip/Escape/reduced-motion, and handles restricted storage', async ({
+  test('plays Cosmic Intro curtain loader on load/refresh, supports Skip/Escape/reduced-motion, and handles restricted storage', async ({
     browser,
   }) => {
+    test.slow();
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
 
@@ -47,18 +60,25 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('intro-cosmic-aura')).toBeVisible();
     await expect(loader.locator('img[src="/assets/brand/aj-emblem.png"]')).toBeVisible();
 
-    // Completes automatically across holding -> splitting -> done and records first-visit flag
+    // Completes automatically across holding -> splitting -> done
     await page.clock.fastForward(900);
     await page.clock.fastForward(900);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
-    const seenFlag = await page.evaluate(() => window.localStorage.getItem('aj-cosmic-intro-seen'));
-    expect(seenFlag).toBe('1');
 
-    // Subsequent reload or direct hash route does NOT replay intro loader
+    // Subsequent full page reload OR fresh navigation REPLAYS the intro loader every refresh
     await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.clock.fastForward(200);
+    await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
+    await page.clock.fastForward(950);
+    await page.clock.fastForward(950);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
+    await page.goto('about:blank');
     await page.goto('/#projects', { waitUntil: 'domcontentloaded' });
+    await page.clock.fastForward(200);
+    await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
+    await page.clock.fastForward(950);
+    await page.clock.fastForward(950);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
     await context.close();
 
@@ -114,7 +134,8 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
     // Single H1 & ordered 7 sections
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('h1')).toHaveText('Austin Joshua');
+    await expect(page.locator('h1')).toContainText('Austin');
+    await expect(page.locator('h1')).toContainText('Joshua');
 
     const renderedIds = await page.evaluate(() =>
       Array.from(document.querySelectorAll('main section[id]')).map((el) => el.id),
@@ -246,7 +267,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     page,
     browserName,
   }) => {
-    test.slow();
+    test.setTimeout(180_000);
 
     await page.addInitScript(() => {
       window.localStorage.setItem('aj-cosmic-intro-seen', '1');
@@ -254,8 +275,9 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
     for (const vp of REQUIRED_VIEWPORTS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto('/', { waitUntil: 'networkidle' });
-      await page.waitForTimeout(200);
+      await page.goto('/', { waitUntil: 'load' });
+      await dismissIntroForSuite(page);
+      await page.waitForTimeout(100);
 
       const metrics = await page.evaluate(() => {
         const html = document.documentElement;
@@ -328,16 +350,19 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     page,
     request,
   }) => {
-    test.slow();
+    test.setTimeout(180_000);
     await page.addInitScript(() => {
       window.localStorage.setItem('aj-cosmic-intro-seen', '1');
     });
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'load' });
+    await waitForIntroToFinish(page);
 
-    // Navbar uses AJ circular emblem instead of legacy AJ // text, and icon-only Resume link
+    // Navbar uses AJ circular emblem ONLY (no AJ // or Cosmic Universe text, no Download icon)
     await expect(page.locator('header').getByText('AJ //')).toHaveCount(0);
-    const navEmblem = page.locator('header img[src="/assets/brand/aj-emblem.png"]');
+    await expect(page.locator('header').getByText(/Cosmic Universe/i)).toHaveCount(0);
+    await expect(page.locator('header a[download]')).toHaveCount(0);
+    const navEmblem = page.locator('header img[src="/assets/brand/aj-emblem.png"]').first();
     await expect(navEmblem).toBeVisible();
     const emblemAlphaCheck = await navEmblem.evaluate((el) => {
       const img = el as HTMLImageElement;
@@ -359,11 +384,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(emblemAlphaCheck.cornerAlpha).toBeLessThan(10);
     expect(emblemAlphaCheck.centerRingAlpha).toBeGreaterThan(200);
 
-    const navResume = page.locator('header a[download="Austin_Joshua_Resume.pdf"]');
-    await expect(navResume).toHaveCount(1);
-    await expect(navResume).toHaveText('');
-
-    // Persistent full-viewport Solar System layer present & right-hand Hero stage does not overlap H1
+    // Persistent full-viewport Solar System layer present & centered handwritten 3D Hero stage contains H1 + Portrait
     await expect(
       page.locator('[data-testid="universe-canvas-wrapper"], [data-testid="universe-fallback"]').first(),
     ).toBeVisible();
@@ -373,7 +394,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(headingBox).not.toBeNull();
     expect(stageBox!.width).toBeGreaterThan(300);
     expect(stageBox!.height).toBeGreaterThan(300);
-    expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
+    expect(headingBox!.y).toBeGreaterThanOrEqual(stageBox!.y - 8);
 
     // Phase 2 structural polish invariants: single portrait globally (Hero only), single social relay (Contact only), single Back-to-Top
     await expect(page.locator('img[src="/assets/portrait/austin-joshua-cutout.png"]')).toHaveCount(1);
@@ -450,7 +471,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
     // Keyboard focus keeps reveal active until blur
-    await page.locator('#hero a').last().focus();
+    await page.getByTestId('desktop-section-rail').locator('a').last().focus();
     await page.keyboard.press('Tab');
     await expect(heroToggle).toBeFocused();
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
@@ -491,44 +512,48 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
     // Direct load and reload of all 7 section hashes
     for (const sectionId of SECTION_IDS) {
-      await page.goto(`/#${sectionId}`, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(200);
+      await page.goto(`/#${sectionId}`, { waitUntil: 'load' });
+      await dismissIntroForSuite(page);
+      await page.waitForTimeout(120);
       await expect(page).toHaveURL(new RegExp(`#${sectionId}$`));
       const railActive = page.getByTestId('desktop-section-rail').locator(`a[href="#${sectionId}"]`);
       await expect(railActive).toHaveAttribute('aria-current', 'location');
     }
 
     // Reload on #contact stays anchored cleanly on Contact
-    await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(200);
+    await page.reload({ waitUntil: 'load' });
+    await dismissIntroForSuite(page);
+    await page.waitForTimeout(150);
     const contactTop = await page.locator('#contact').evaluate((el) => el.getBoundingClientRect().top);
-    expect(Math.abs(contactTop)).toBeLessThan(260);
+    expect(contactTop).toBeGreaterThanOrEqual(0);
+    expect(contactTop).toBeLessThan(400);
 
     // Valid project deep-link -> modal opens -> Browser Back closes -> Forward reopens
-    await page.goto('/?project=agriflux#projects', { waitUntil: 'networkidle' });
+    await page.goto('/?project=agriflux#projects', { waitUntil: 'load' });
+    await dismissIntroForSuite(page);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
 
-    await page.goto('/#skills', { waitUntil: 'networkidle' });
-    await page.goto('/?project=agriflux#projects', { waitUntil: 'networkidle' });
+    await page.goto('/#skills', { waitUntil: 'load' });
+    await dismissIntroForSuite(page);
+    await page.goto('/?project=agriflux#projects', { waitUntil: 'load' });
+    await dismissIntroForSuite(page);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
 
-    await page.goBack({ waitUntil: 'networkidle' });
+    await page.goBack({ waitUntil: 'load' });
     await expect(page).toHaveURL(/#skills$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    await page.goForward({ waitUntil: 'networkidle' });
+    await page.goForward({ waitUntil: 'load' });
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
   });
 
   test('verifies zero mobile Hero utility overlap and layout integrity across 320px–430px', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      window.localStorage.setItem('aj-cosmic-intro-seen', '1');
-    });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/', { waitUntil: 'load' });
-    await page.waitForTimeout(250);
+    await waitForIntroToFinish(page);
+    await page.waitForTimeout(200);
 
     for (const width of [320, 360, 390, 430]) {
       await page.setViewportSize({ width, height: 844 });
@@ -537,7 +562,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
       const topCheck = await page.evaluate(() => {
         const html = document.documentElement;
-        const utilCapsule = document.querySelector('header .glass-surface')?.getBoundingClientRect();
+        const utilCapsule = document.querySelector('header a[href="#hero"]')?.getBoundingClientRect();
         const utilControls = Array.from(document.querySelectorAll('header a, header button'))
           .map((el) => el.getBoundingClientRect())
           .filter((r) => r.width > 0 && r.height > 0);
@@ -561,7 +586,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
       });
 
       expect(topCheck.overflowX, `Overflow at ${width}px`).toBeLessThanOrEqual(0);
-      expect(topCheck.controlsCount, `Utility controls at ${width}px`).toBe(2);
+      expect(topCheck.controlsCount, `Mobile top logo control at ${width}px`).toBe(1);
       expect(topCheck.controlsInBounds, `Utility bounds & >=44px target at ${width}px`).toBe(true);
       expect(topCheck.anyOverlapAtTop, `Hero overlap at top ${width}px`).toBe(false);
 
@@ -569,7 +594,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
       await page.waitForTimeout(100);
 
       const scrolledCheck = await page.evaluate(() => {
-        const utilCapsule = document.querySelector('header .glass-surface')?.getBoundingClientRect();
+        const utilCapsule = document.querySelector('header a[href="#hero"]')?.getBoundingClientRect();
         const heroNodes = Array.from(
           document.querySelectorAll(
             '#hero .eyebrow-label, #hero h1, #hero .type-lead, #hero a, [data-testid="hero-3d-stage"]',

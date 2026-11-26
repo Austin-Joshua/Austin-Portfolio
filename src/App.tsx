@@ -18,7 +18,6 @@ import {
   UniverseNavigationProvider,
   useUniverseNavigation,
 } from '@/context/UniverseNavigationContext';
-import { profileData } from '@/data/profile';
 import { parseSectionHash } from '@/data/sections';
 import { UniverseLayer } from '@/three/UniverseLayer';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -86,10 +85,7 @@ function CosmicPortfolioShell() {
       <CosmicIntroLoader />
       <UniverseLayer />
       <SkipLink />
-      <Navbar
-        resumeAsset={profileData.resume}
-        scrollProgressRef={scrollProgressRef}
-      />
+      <Navbar scrollProgressRef={scrollProgressRef} />
       <main
         id="main-content"
         tabIndex={-1}

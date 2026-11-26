@@ -6,6 +6,7 @@ import { SectionShell } from '@/components/layout/SectionShell';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
+import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { contactData } from '@/data/contact';
 import { profileData } from '@/data/profile';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -45,6 +46,7 @@ function selectTextNode(element: HTMLElement | null): void {
 
 export function ContactSection({ contact = contactData }: ContactSectionProps) {
   const { status, announcement, copy } = useClipboard();
+  const { prefersReducedMotion } = useOptionalMotionPreference();
   const emailRef = useRef<HTMLAnchorElement>(null);
 
   const hasEmail = isValidEmailAddress(contact.email);
@@ -68,6 +70,9 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
     if (!copied) selectTextNode(emailRef.current);
   };
 
+  const canUseInView =
+    !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
+
   return (
     <SectionShell
       id="contact"
@@ -90,12 +95,19 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
           <div className="swiss-grid items-center gap-y-6">
             {/* Compact Direct Email Signal Console */}
             {validEmail && (
-              <GlassCard
-                as="article"
-                padding="md"
-                variant="strong"
-                className="col-span-4 md:col-span-8 lg:col-span-6 relative overflow-hidden flex flex-col justify-between gap-3 border-[var(--planet-contact)]/35"
+              <m.div
+                initial={canUseInView ? { x: -24 } : false}
+                whileInView={canUseInView ? { x: 0 } : undefined}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+                className="col-span-4 md:col-span-8 lg:col-span-6"
               >
+                <GlassCard
+                  as="article"
+                  padding="md"
+                  variant="strong"
+                  className="relative overflow-hidden flex flex-col justify-between gap-3 border-[var(--planet-contact)]/35"
+                >
                 <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-contact)]">
                   DIRECT SIGNAL
                 </p>
@@ -150,11 +162,16 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     }
                   />
                 </m.div>
-              </GlassCard>
+                </GlassCard>
+              </m.div>
             )}
 
             {/* Minimal Celestial Icon Nodes (single authoritative social & résumé destination) */}
-            <nav
+            <m.nav
+              initial={canUseInView ? { x: 24 } : false}
+              whileInView={canUseInView ? { x: 0 } : undefined}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               aria-label="Verified Contact & Social Links"
               data-testid="contact-relay-dock"
               className="col-span-4 md:col-span-8 lg:col-span-6 relative flex flex-wrap items-center justify-start lg:justify-end gap-5 sm:gap-7 py-2"
@@ -195,7 +212,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                   </span>
                 </a>
               )}
-            </nav>
+            </m.nav>
           </div>
         ) : (
           <GlassCard padding="lg" variant="elevated">

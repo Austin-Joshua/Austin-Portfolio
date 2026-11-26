@@ -61,20 +61,19 @@ export function CosmicCameraRig({
     if (isExploreOverview) {
       const orbit = orbitControlRef.current ?? { yaw: 0, pitch: 0, zoom: 1 };
       const isDesktop = qualityTier.tier === 'desktop-high';
-      // Frame the solar system toward the outer right horizon on desktop so the Sun & orbits
-      // complement the portrait stage cleanly without crowding left typography or Austin's face
-      const heroLookX = isDesktop ? -3.1 : 0;
+      // Center the solar core symmetrically behind Austin's Hero silhouette so planets frame both left & right
+      const heroLookX = 0;
       const baseRadius =
-        (isDesktop ? 18.2 : 20.5) / Math.max(0.75, Math.min(1.4, orbit.zoom));
-      const yaw = -0.22 + orbit.yaw + ptr.x * 0.16;
-      const pitch = 0.36 + orbit.pitch - ptr.y * 0.08;
+        (isDesktop ? 17.6 : 20.5) / Math.max(0.75, Math.min(1.4, orbit.zoom));
+      const yaw = orbit.yaw + ptr.x * 0.16;
+      const pitch = 0.34 + orbit.pitch - ptr.y * 0.08;
 
       const camX = heroLookX + Math.sin(yaw) * baseRadius;
-      const camY = Math.sin(pitch) * baseRadius * 0.72 + 1.3;
+      const camY = Math.sin(pitch) * baseRadius * 0.72 + 1.1;
       const camZ = Math.cos(yaw) * Math.cos(pitch) * baseRadius;
 
       targetCamPosRef.current.set(camX, camY, camZ);
-      targetLookAtRef.current.set(heroLookX, isDesktop ? -0.35 : 0.45, 0);
+      targetLookAtRef.current.set(heroLookX, isDesktop ? -0.35 : -0.1, 0);
     } else {
       const focusSection =
         activeSection !== 'hero'

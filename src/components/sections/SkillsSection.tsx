@@ -218,11 +218,16 @@ export function SkillsSection({
           {visibleCategories.map((category, catIdx) => {
             const accent = CLUSTER_ACCENTS[catIdx % CLUSTER_ACCENTS.length];
             const itemCount = category.items.length;
+            const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
             return (
-              <div
+              <m.div
                 key={category.id}
-                className="relative glass-surface p-5 md:p-6 overflow-hidden"
+                initial={canUseInView ? { x: catIdx % 2 === 0 ? -24 : 24 } : false}
+                whileInView={canUseInView ? { x: 0 } : undefined}
+                viewport={{ once: true, amount: 0.12 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="relative glass-surface p-5 md:p-6 overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-[var(--border-glass-strong)]"
               >
                 {/* Molecular ring SVG bonding atom coordinates to central category nucleus */}
                 <svg
@@ -280,7 +285,7 @@ export function SkillsSection({
                         const linkedCount = getProjectsForSkill(skill, projects).length;
 
                         return (
-                          <button
+                          <m.button
                             key={skill.id}
                             type="button"
                             data-testid={`skill-atom-${skill.id}`}
@@ -288,9 +293,11 @@ export function SkillsSection({
                             onMouseEnter={() => setHoveredSkillId(skill.id)}
                             onMouseLeave={() => setHoveredSkillId(null)}
                             onClick={() => handleToggleSkill(skill)}
+                            whileHover={prefersReducedMotion ? undefined : { scale: 1.07, y: -2 }}
+                            whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
                             className={[
                               'group relative inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2',
-                              'rounded-full font-mono text-xs cursor-pointer border transition-all duration-200',
+                              'rounded-full font-mono text-xs cursor-pointer border transition-colors duration-200',
                               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                               isSkillSelected
                                 ? 'bg-white/15 text-[var(--text-primary)] font-semibold'
@@ -303,19 +310,22 @@ export function SkillsSection({
                                 isSkillSelected || isBondedToHovered
                                   ? accent
                                   : 'var(--border-subtle)',
-                              boxShadow: isSkillSelected ? `0 0 14px ${accent}55` : undefined,
+                              boxShadow: isSkillSelected ? `0 0 16px ${accent}66` : undefined,
                             }}
                           >
                             <span
                               aria-hidden="true"
-                              className="size-2 rounded-full transition-transform duration-200 group-hover:scale-125"
+                              className={[
+                                'size-2.5 rounded-full transition-transform duration-200 group-hover:scale-125',
+                                isSkillSelected ? 'ring-4 ring-white/20' : '',
+                              ].join(' ')}
                               style={{ backgroundColor: accent }}
                             />
                             <span>{skill.name}</span>
                             <span className="text-[10px] text-[var(--text-muted)]">
                               · {linkedCount}
                             </span>
-                          </button>
+                          </m.button>
                         );
                       })}
                     </div>
@@ -325,7 +335,7 @@ export function SkillsSection({
                     </p>
                   )}
                 </div>
-              </div>
+              </m.div>
             );
           })}
         </div>
@@ -359,14 +369,9 @@ export function SkillsSection({
                     <a
                       href="#projects"
                       onClick={handleJumpToProjects}
-                      className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--planet-skills)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--planet-skills)] transition-[border-color,transform] duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
-                      <span>
-                        <span className="type-meta text-[var(--text-muted)] mr-2">
-                          {project.indexCode}
-                        </span>
-                        <span className="font-medium">{project.title}</span>
-                      </span>
+                      <span className="font-medium">{project.title}</span>
                       <ArrowUpRight className="size-4 shrink-0 text-[var(--planet-skills)]" aria-hidden="true" />
                     </a>
                   </li>

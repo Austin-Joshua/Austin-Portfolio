@@ -271,7 +271,7 @@ export function ProjectsSection({
                         className="type-meta font-semibold"
                         style={{ color: getWorldTheme(selectedWorld.slug).primary }}
                       >
-                        WORLD {selectedWorld.indexCode} · {selectedWorld.categoryLabel}
+                        {selectedWorld.categoryLabel}
                       </span>
                       {selectedWorld.outcomes?.[0] && (
                         <span className="inline-flex items-center gap-1 rounded-full border border-[var(--planet-achievements)]/40 bg-[var(--planet-achievements)]/10 px-2.5 py-0.5 font-mono text-[11px] text-[var(--planet-achievements)]">
@@ -332,7 +332,7 @@ export function ProjectsSection({
 
             {/* Orbital Project Trajectory Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredProjects.map((project) => {
+              {filteredProjects.map((project, idx) => {
                 const world = getWorldTheme(project.slug);
                 const visibleStack = project.stack
                   .filter((item) => hasNonEmptyText(item))
@@ -344,11 +344,16 @@ export function ProjectsSection({
                 const isSelectedWorld = selectedWorld.slug === project.slug;
                 const hasGithub = isValidHttpUrl(project.links.github);
                 const hasLive = isValidHttpUrl(project.links.live);
+                const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
                 return (
                   <m.div
                     key={project.slug}
                     layout={!prefersReducedMotion}
+                    initial={canUseInView ? { x: idx % 2 === 0 ? -22 : 22 } : false}
+                    whileInView={canUseInView ? { x: 0 } : undefined}
+                    viewport={{ once: true, amount: 0.12 }}
+                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                     transition={layoutTransition}
                     className="flex"
                   >
@@ -365,16 +370,11 @@ export function ProjectsSection({
                     >
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span
-                              aria-hidden="true"
-                              className="size-2.5 rounded-full"
-                              style={{ backgroundColor: world.primary }}
-                            />
-                            <span className="type-meta text-[var(--text-muted)]">
-                              {project.indexCode}
-                            </span>
-                          </div>
+                          <span
+                            aria-hidden="true"
+                            className="size-2.5 rounded-full"
+                            style={{ backgroundColor: world.primary }}
+                          />
                           <span className="type-meta text-[11px]" style={{ color: world.primary }}>
                             {project.categoryLabel}
                           </span>

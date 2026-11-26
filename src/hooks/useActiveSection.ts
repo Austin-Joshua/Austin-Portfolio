@@ -118,6 +118,18 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
           });
         }
 
+        const doc = document.documentElement;
+        if (
+          doc.scrollHeight > window.innerHeight + 120 &&
+          window.scrollY + window.innerHeight >= doc.scrollHeight - 48
+        ) {
+          const lastId = stableSectionIds[stableSectionIds.length - 1];
+          if (lastId) {
+            setActiveSection((prev) => (prev === lastId ? prev : lastId));
+            return;
+          }
+        }
+
         const nextActive = pickMostActiveSection(stableSectionIds, observedStates);
         if (nextActive !== null) {
           setActiveSection((prev) => (prev === nextActive ? prev : nextActive));

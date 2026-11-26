@@ -4,7 +4,7 @@ import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 
 export interface SectionShellProps {
   id: SectionId | (string & {});
-  index: string;
+  index?: string;
   indexLabel?: string;
   title?: string;
   labelledbyId?: string;
@@ -18,7 +18,6 @@ export interface SectionShellProps {
 
 export function SectionShell({
   id,
-  index,
   indexLabel,
   title,
   labelledbyId,
@@ -46,13 +45,13 @@ export function SectionShell({
             }}
           />
           <p className="type-meta uppercase tracking-[0.14em]" style={{ color: planet.color }}>
-            {index} {'//'} {planet.cosmicTitle}
+            {planet.cosmicTitle}
           </p>
         </div>
       )}
       {!planet && indexLabel && (
         <p className="type-meta uppercase tracking-[0.14em] text-[var(--text-muted)] mb-2.5">
-          {index} {'//'} {indexLabel}
+          {indexLabel}
         </p>
       )}
       {title &&
@@ -84,7 +83,7 @@ export function SectionShell({
       id={id}
       aria-labelledby={resolvedLabelledBy}
       className={[
-        'scroll-mt-[var(--nav-offset)] section-rhythm',
+        'scroll-mt-[var(--nav-offset)] section-rhythm overflow-x-clip',
         withDivider ? 'border-t border-[var(--border-subtle)]' : '',
         className,
       ]
