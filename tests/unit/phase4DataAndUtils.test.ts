@@ -45,9 +45,13 @@ describe('Phase 4 data modules and utilities', () => {
     expect(skillsData.length).toBeGreaterThan(0);
     // Curated verified projects populated
     expect(projectsData.length).toBeGreaterThanOrEqual(5);
-    // Experience and Achievements remain neutral empty states until verified entries exist
+    // Experience remains neutral empty state while verified Achievements mirror resume & projects
     expect(experienceData).toEqual([]);
-    expect(achievementsData).toEqual([]);
+    expect(achievementsData.map((item) => item.id)).toEqual([
+      'techathon-2k26',
+      'code-of-thrones',
+      'innoclash-26',
+    ]);
     // Contact is now populated with real data
     expect(contactData.email).not.toBeNull();
     expect(contactData.socialLinks.length).toBeGreaterThan(0);

@@ -59,14 +59,14 @@ describe('Phase 5 ProjectsSection Modal + URL Integration', () => {
     );
 
     // Clicking external GitHub link must not open modal
-    const externalLink = screen.getByRole('link', { name: 'GitHub' });
+    const externalLink = screen.getAllByRole('link', { name: 'GitHub' })[0];
     await user.click(externalLink);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     // Category filter continues working
     await user.click(screen.getByRole('button', { name: 'AI / ML' }));
     expect(screen.queryByText('Lattice Sim')).not.toBeInTheDocument();
-    expect(screen.getByText('Signal Audit')).toBeInTheDocument();
+    expect(screen.getAllByText('Signal Audit').length).toBeGreaterThanOrEqual(1);
 
     const triggerBtn = screen.getByRole('button', {
       name: 'Inspect Details — Signal Audit',
@@ -101,7 +101,7 @@ describe('Phase 5 ProjectsSection Modal + URL Integration', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(window.location.search).toBe('');
     expect(window.location.hash).toBe('#projects');
-    expect(screen.getByText('No project entries added yet.')).toBeInTheDocument();
+    expect(screen.getByText('No projects added yet.')).toBeInTheDocument();
 
     const notice = screen.getByTestId('invalid-project-notice');
     expect(within(notice).getByRole('status')).toHaveTextContent(/not found/i);

@@ -14,7 +14,6 @@ import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
 import { ProjectDetailModal } from '@/components/ui/ProjectDetailModal';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import {
   resetGsapLoaderForTests,
   setupScopedScrollAnimation,
@@ -61,15 +60,13 @@ function mockMatchMedia(reducedMotion: boolean, minDesktop = true) {
 
 function renderWithMotionProviders(ui: React.ReactElement) {
   return render(
-    <ThemeProvider>
-      <MotionPreferenceProvider>
-        <MotionConfig reducedMotion="user">
-          <LazyMotion features={domMax} strict>
-            {ui}
-          </LazyMotion>
-        </MotionConfig>
-      </MotionPreferenceProvider>
-    </ThemeProvider>,
+    <MotionPreferenceProvider>
+      <MotionConfig reducedMotion="user">
+        <LazyMotion features={domMax} strict>
+          {ui}
+        </LazyMotion>
+      </MotionConfig>
+    </MotionPreferenceProvider>,
   );
 }
 
@@ -157,11 +154,9 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
 
     const { unmount } = render(
       <StrictMode>
-        <ThemeProvider>
-          <MotionPreferenceProvider>
-            <AboutSection profile={sampleProfile} />
-          </MotionPreferenceProvider>
-        </ThemeProvider>
+        <MotionPreferenceProvider>
+          <AboutSection profile={sampleProfile} />
+        </MotionPreferenceProvider>
       </StrictMode>,
     );
 
@@ -208,11 +203,9 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
     ];
 
     rerender(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <ExperienceSection entries={entries} />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <ExperienceSection entries={entries} />
+      </MotionPreferenceProvider>,
     );
 
     expect(screen.getByTestId('experience-spine-fill')).toBeInTheDocument();
@@ -244,7 +237,7 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
       <SkillsSection categories={categories} projects={[]} />,
     );
 
-    const allTab = screen.getByRole('tab', { name: 'All' });
+    const allTab = screen.getByRole('tab', { name: 'All Molecules' });
     expect(within(allTab).getByTestId('skills-active-indicator')).toBeInTheDocument();
 
     const aiTab = screen.getByRole('tab', { name: 'AI / ML' });
@@ -291,7 +284,9 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /Systems/i }));
-    expect(screen.getByRole('heading', { level: 3, name: 'System Core' })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('heading', { level: 3, name: 'System Core' }).length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('heading', { level: 3, name: 'UI Grid' })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -360,15 +355,13 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
 
     act(() => {
       rerender(
-        <ThemeProvider>
-          <MotionPreferenceProvider>
-            <MotionConfig reducedMotion="user">
-              <LazyMotion features={domMax} strict>
-                <ModalHarness open={true} />
-              </LazyMotion>
-            </MotionConfig>
-          </MotionPreferenceProvider>
-        </ThemeProvider>,
+        <MotionPreferenceProvider>
+          <MotionConfig reducedMotion="user">
+            <LazyMotion features={domMax} strict>
+              <ModalHarness open={true} />
+            </LazyMotion>
+          </MotionConfig>
+        </MotionPreferenceProvider>,
       );
     });
 
@@ -379,15 +372,13 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
 
     act(() => {
       rerender(
-        <ThemeProvider>
-          <MotionPreferenceProvider>
-            <MotionConfig reducedMotion="user">
-              <LazyMotion features={domMax} strict>
-                <ModalHarness open={false} />
-              </LazyMotion>
-            </MotionConfig>
-          </MotionPreferenceProvider>
-        </ThemeProvider>,
+        <MotionPreferenceProvider>
+          <MotionConfig reducedMotion="user">
+            <LazyMotion features={domMax} strict>
+              <ModalHarness open={false} />
+            </LazyMotion>
+          </MotionConfig>
+        </MotionPreferenceProvider>,
       );
     });
 
@@ -408,11 +399,9 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
     mockMatchMedia(false, true);
     const { container } = render(
       <StrictMode>
-        <ThemeProvider>
-          <MotionPreferenceProvider>
-            <App />
-          </MotionPreferenceProvider>
-        </ThemeProvider>
+        <MotionPreferenceProvider>
+          <App />
+        </MotionPreferenceProvider>
       </StrictMode>,
     );
 

@@ -8,15 +8,10 @@ import { DesktopSectionRail } from '@/components/layout/DesktopSectionRail';
 import { Navbar } from '@/components/layout/Navbar';
 import { ScrollProgressBar } from '@/components/layout/ScrollProgressBar';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import { PORTFOLIO_SECTIONS, type SectionId } from '@/data/sections';
 
 function renderWithProviders(ui: React.ReactElement) {
-  return render(
-    <ThemeProvider>
-      <MotionPreferenceProvider>{ui}</MotionPreferenceProvider>
-    </ThemeProvider>,
-  );
+  return render(<MotionPreferenceProvider>{ui}</MotionPreferenceProvider>);
 }
 
 describe('T3.3 Navigation Enhancements', () => {

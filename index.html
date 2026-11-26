@@ -1,13 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Austin Joshua — Portfolio</title>
+    <meta name="theme-color" content="#020307" />
+    <title>Austin Joshua — AJ Cosmic Universe</title>
     <meta
       name="description"
-      content="Engineering portfolio of Austin Joshua presenting software engineering work, AI systems, technical skills, and interactive 3D craft."
+      content="AJ Cosmic Universe: Interactive 3D solar-system engineering portfolio of Austin Joshua featuring software engineering, AI systems, and orbital exploration."
     />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link
       rel="preload"
       href="/fonts/syne-700-latin.woff2"
@@ -22,20 +25,20 @@
       type="font/woff2"
       crossorigin
     />
-    <!-- Pre-paint theme initialization (FR-033, FR-035); deterministic for T9.3 CSP SHA-256 hashing -->
+    <!-- First-visit pre-paint intro curtain gate; SHA-256 hash enforced in vercel.json CSP -->
     <script>
       (function () {
-        var theme = 'dark';
         try {
-          var stored = window.localStorage.getItem('aj-portfolio-theme');
-          if (stored === 'dark' || stored === 'light') {
-            theme = stored;
+          var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var seen = window.localStorage.getItem('aj-cosmic-intro-seen') === '1';
+          if (!reduced && !seen) {
+            document.documentElement.classList.add('aj-intro-pending');
+          } else {
+            document.documentElement.classList.add('aj-intro-seen');
           }
         } catch {
-          theme = 'dark';
+          document.documentElement.classList.add('aj-intro-seen');
         }
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.style.colorScheme = theme;
       })();
     </script>
   </head>

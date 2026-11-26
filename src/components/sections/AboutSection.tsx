@@ -78,21 +78,25 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       <div
         ref={contentScopeRef}
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
-        className="space-y-10"
+        className="pointer-events-auto space-y-10"
       >
-        {/* Animated accent hairline */}
+        {/* Cyan-accented orbital trajectory divider */}
         <div
           ref={hairlineRef}
           aria-hidden="true"
           data-testid="about-hairline"
-          className="accent-hairline w-full origin-left"
+          className="h-[2px] w-full origin-left rounded-full opacity-80"
+          style={{
+            background:
+              'linear-gradient(90deg, var(--planet-about) 0%, rgba(56,189,248,0.22) 55%, transparent 100%)',
+          }}
         />
 
         <div className="swiss-grid items-start gap-y-10">
-          {/* Text column */}
+          {/* Narrative & orbital station telemetry */}
           <div className="col-span-4 md:col-span-5 lg:col-span-7 space-y-6">
             {validParagraphs.length > 0 ? (
-              <div className="space-y-5">
+              <GlassCard padding="lg" variant="default" className="space-y-5">
                 {validParagraphs.map((paragraph, idx) => (
                   <p
                     key={`${idx}-${paragraph.slice(0, 24)}`}
@@ -106,7 +110,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                     {paragraph}
                   </p>
                 ))}
-              </div>
+              </GlassCard>
             ) : (
               <GlassCard padding="lg" variant="elevated">
                 <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
@@ -118,40 +122,56 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               </GlassCard>
             )}
 
-            {/* Résumé link */}
+            {/* Verified Academic & Campus Leadership Telemetry Bar */}
+            <div className="flex flex-wrap gap-3 pt-1">
+              <div className="glass-surface px-4 py-2.5 rounded-[var(--radius-control)] border-l-2 border-l-[var(--planet-about)]">
+                <p className="type-meta text-[11px] uppercase text-[var(--planet-about)]">
+                  Degree · 2024–2028
+                </p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  B.E. Computer Science &amp; Engineering · RIT Chennai
+                </p>
+              </div>
+              <div className="glass-surface px-4 py-2.5 rounded-[var(--radius-control)] border-l-2 border-l-[var(--planet-sun)]">
+                <p className="type-meta text-[11px] uppercase text-[var(--planet-sun)]">
+                  Leadership · 2026–2027
+                </p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  President, Infinitus Mathematics Club
+                </p>
+              </div>
+            </div>
+
             {hasResume && profile.resume && (
               <div className="pt-2">
                 <a
                   href={profile.resume.url}
                   download="Austin_Joshua_Resume.pdf"
                   className={[
-                    'glass-surface inline-flex min-h-[44px] items-center gap-2 px-5 py-2.5',
-                    'rounded-[var(--radius-control)] font-mono text-xs font-medium text-[var(--text-primary)]',
-                    'transition-[background-color,border-color,transform] duration-200',
-                    'hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)] hover:-translate-y-0.5',
+                    'glass-surface inline-flex min-h-[44px] items-center gap-2',
+                    'px-5 py-2.5 text-sm font-medium text-[var(--text-primary)]',
+                    'rounded-[var(--radius-control)] hover:border-[var(--planet-about)]',
+                    'transition-[border-color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
-                  <span>↓</span>
                   <span>{profile.resume.label}</span>
                   {hasNonEmptyText(profile.resume.sizeLabel) && (
-                    <span className="text-[var(--text-muted)]">
+                    <span className="type-meta text-[var(--text-muted)]">
                       ({profile.resume.sizeLabel})
                     </span>
                   )}
-                  <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                  <ArrowUpRight className="size-4 text-[var(--planet-about)] shrink-0" aria-hidden="true" />
                 </a>
               </div>
             )}
           </div>
 
-          {/* Portrait column */}
-          <div
-            ref={portraitParallaxRef}
-            data-testid="about-portrait-parallax"
-            className="col-span-4 md:col-span-3 lg:col-span-5"
-          >
-            <PortraitSlot portrait={profile.portrait} />
+          {/* Portrait slot column */}
+          <div className="col-span-4 md:col-span-3 lg:col-span-5">
+            <div ref={portraitParallaxRef} data-testid="about-portrait-parallax">
+              <PortraitSlot portrait={profile.portrait} />
+            </div>
           </div>
         </div>
       </div>

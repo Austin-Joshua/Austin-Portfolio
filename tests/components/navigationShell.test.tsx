@@ -6,24 +6,15 @@ import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { SkipLink } from '@/components/layout/SkipLink';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { THEME_STORAGE_KEY } from '@/utils/themeStorage';
 
 function renderWithProviders(ui: React.ReactElement) {
-  return render(
-    <ThemeProvider>
-      <MotionPreferenceProvider>{ui}</MotionPreferenceProvider>
-    </ThemeProvider>,
-  );
+  return render(<MotionPreferenceProvider>{ui}</MotionPreferenceProvider>);
 }
 
 describe('T3.2 Semantic Layout & Navigation Shell', () => {
   beforeEach(() => {
     window.localStorage.clear();
-    delete document.documentElement.dataset.theme;
-    document.documentElement.style.colorScheme = '';
   });
 
   it('renders SkipLink targeting #main-content and focuses target cleanly', async () => {
@@ -72,27 +63,12 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'About' })).toBeInTheDocument();
   });
 
-  it('toggles theme via ThemeToggle, updates context/DOM/storage, and passes axe', async () => {
-    const user = userEvent.setup();
-    const { container } = renderWithProviders(<ThemeToggle />);
-
-    const toggle = screen.getByRole('button', {
-      name: /Midnight Amethyst active — Switch to Scarlet Porcelain light theme/i,
-    });
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    expect(document.documentElement.dataset.theme).toBe('dark');
-
+  it('renders circular AJ metallic emblem in Navbar without theme toggle', async () => {
+    const { container } = renderWithProviders(<Navbar />);
+    const emblem = screen.getByRole('img', { name: /AJ Cosmic Emblem/i });
+    expect(emblem).toHaveAttribute('src', '/assets/brand/aj-emblem.png');
+    expect(screen.queryByRole('button', { name: /Switch to/i })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
-
-    await user.click(toggle);
-
-    expect(document.documentElement.dataset.theme).toBe('light');
-    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
-    expect(
-      screen.getByRole('button', {
-        name: /Scarlet Porcelain active — Switch to Midnight Amethyst dark theme/i,
-      }),
-    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('renders Navbar with desktop capsule links, mobile bottom bar links, active indicator, conditional resume, and passes axe', async () => {
@@ -132,12 +108,10 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     expect(await axe(container)).toHaveNoViolations();
 
     rerender(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <section id="hero" />
-          <Navbar resumeAsset={{ url: '/assets/resume/sample.pdf', label: 'Résumé' }} />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <section id="hero" />
+        <Navbar resumeAsset={{ url: '/assets/resume/sample.pdf', label: 'Résumé' }} />
+      </MotionPreferenceProvider>,
     );
 
     const resumeLink = screen.getByRole('link', { name: 'Résumé' });

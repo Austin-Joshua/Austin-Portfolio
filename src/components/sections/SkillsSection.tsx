@@ -4,7 +4,6 @@ import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from 're
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
-import { TagChip } from '@/components/ui/TagChip';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { projectsData } from '@/data/projects';
 import { skillsData } from '@/data/skills';
@@ -21,6 +20,13 @@ export interface SkillsSectionProps {
 
 const ALL_TAB_ID = 'all';
 
+const CLUSTER_ACCENTS = [
+  '#818CF8',
+  '#38BDF8',
+  '#C084FC',
+  '#2DD4BF',
+] as const;
+
 export function SkillsSection({
   categories = skillsData,
   projects = projectsData,
@@ -29,6 +35,7 @@ export function SkillsSection({
   const { prefersReducedMotion } = useOptionalMotionPreference();
   const [activeTabId, setActiveTabId] = useState<string>(ALL_TAB_ID);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [hoveredSkillId, setHoveredSkillId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState<string>('');
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -39,7 +46,7 @@ export function SkillsSection({
   if (validCategories.length === 0) {
     return (
       <SectionShell id="skills" index="03" indexLabel="SKILLS" title="Skills">
-        <GlassCard padding="lg" variant="elevated">
+        <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">
           <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
             CAPABILITIES // PENDING_VERIFICATION
           </p>
@@ -52,7 +59,7 @@ export function SkillsSection({
   }
 
   const tabs = [
-    { id: ALL_TAB_ID, label: 'All' },
+    { id: ALL_TAB_ID, label: 'All Molecules' },
     ...validCategories.map((category) => ({
       id: category.id,
       label: category.label,
@@ -71,10 +78,16 @@ export function SkillsSection({
   const allSkills: SkillItem[] = validCategories.flatMap(
     (category) => category.items,
   );
+  const activeInspectId = hoveredSkillId ?? selectedSkillId;
   const selectedSkill =
     allSkills.find((skill) => skill.id === selectedSkillId) ?? null;
+  const inspectedSkill =
+    allSkills.find((skill) => skill.id === activeInspectId) ?? null;
   const matchingProjects = selectedSkill
     ? getProjectsForSkill(selectedSkill, projects)
+    : [];
+  const inspectedProjects = inspectedSkill
+    ? getProjectsForSkill(inspectedSkill, projects)
     : [];
 
   const handleTabKeyDown = (
@@ -93,29 +106,30 @@ export function SkillsSection({
       nextIndex = tabs.length - 1;
     }
 
-    if (nextIndex === null) {
-      return;
-    }
+    if (nextIndex === null) return;
 
     event.preventDefault();
-    const nextTab = tabs[nextIndex];
-    if (nextTab) {
-      setActiveTabId(nextTab.id);
+    const targetTab = tabs[nextIndex];
+    if (targetTab) {
+      setActiveTabId(targetTab.id);
       tabRefs.current[nextIndex]?.focus();
     }
   };
 
   const handleToggleSkill = (skill: SkillItem) => {
-    if (selectedSkillId === skill.id) {
-      setSelectedSkillId(null);
-      setAnnouncement(`Cleared selection for ${skill.name}.`);
+    const nextId = selectedSkillId === skill.id ? null : skill.id;
+    setSelectedSkillId(nextId);
+
+    if (!nextId) {
+      setAnnouncement(`Cleared ${skill.name} atomic cross-reference filter.`);
       return;
     }
 
-    const related = getProjectsForSkill(skill, projects);
-    setSelectedSkillId(skill.id);
+    const matches = getProjectsForSkill(skill, projects);
     setAnnouncement(
-      `${skill.name}: ${related.length} related ${related.length === 1 ? 'project' : 'projects'}.`,
+      matches.length > 0
+        ? `${skill.name} atom bond linked to ${matches.length} ${matches.length === 1 ? 'project' : 'projects'}.`
+        : `${skill.name} selected; no linked projects yet.`,
     );
   };
 
@@ -135,8 +149,14 @@ export function SkillsSection({
     : FILTER_LAYOUT_TRANSITION;
 
   return (
-    <SectionShell id="skills" index="03" indexLabel="SKILLS" title="Skills">
-      <div className="space-y-6">
+    <SectionShell
+      id="skills"
+      index="03"
+      indexLabel="SKILLS"
+      title="Skills"
+      description="Explore verified technologies as orbiting molecular clusters. Select or hover any atomic node to reveal its project bonds."
+    >
+      <div className="pointer-events-auto space-y-8">
         <LayoutGroup id={`${baseId}-tabs`}>
           <div
             role="tablist"
@@ -162,12 +182,11 @@ export function SkillsSection({
                   onKeyDown={(event) => handleTabKeyDown(event, index)}
                   className={[
                     'relative isolate inline-flex min-h-[44px] items-center px-4 py-2 rounded-[var(--radius-control)]',
-                    'font-mono text-xs font-medium cursor-pointer border',
-                    'transition-colors duration-[var(--transition-theme)]',
+                    'font-mono text-xs font-medium cursor-pointer border transition-colors duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                     isSelected
-                      ? 'border-[var(--accent-primary)] text-[var(--text-on-accent)] font-semibold'
-                      : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]',
+                      ? 'border-[var(--planet-skills)] text-[#020307] font-semibold'
+                      : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--planet-skills)] hover:text-[var(--text-primary)]',
                   ].join(' ')}
                 >
                   {isSelected && (
@@ -176,7 +195,7 @@ export function SkillsSection({
                       data-testid="skills-active-indicator"
                       transition={indicatorTransition}
                       aria-hidden="true"
-                      className="absolute inset-0 -z-10 rounded-[var(--radius-control)] bg-[var(--accent-primary)]"
+                      className="absolute inset-0 -z-10 rounded-[var(--radius-control)] bg-[var(--planet-skills)]"
                     />
                   )}
                   <span className="relative z-10">{tab.label}</span>
@@ -188,65 +207,141 @@ export function SkillsSection({
 
         <LiveAnnouncer message={announcement} politeness="polite" />
 
+        {/* Atomic / Molecular Orbit Clusters */}
         <div
           id={tabPanelId}
           role="tabpanel"
           aria-labelledby={activeTabDomId}
-          className="swiss-grid"
+          data-testid="skills-molecular-clusters"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         >
-          {visibleCategories.map((category) => (
-            <GlassCard
-              key={category.id}
-              as="article"
-              padding="md"
-              className="col-span-4 md:col-span-4 lg:col-span-6 space-y-4"
-            >
-              <div className="border-b border-[var(--border-subtle)] pb-3">
-                <h3 className="type-h3 text-[var(--text-primary)]">
-                  {category.label}
-                </h3>
-                {hasNonEmptyText(category.description) && (
-                  <p className="type-body text-sm text-[var(--text-secondary)] mt-1">
-                    {category.description}
-                  </p>
-                )}
-              </div>
+          {visibleCategories.map((category, catIdx) => {
+            const accent = CLUSTER_ACCENTS[catIdx % CLUSTER_ACCENTS.length];
+            const itemCount = category.items.length;
 
-              {category.items.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {category.items.map((skill) => {
-                    const isSkillSelected = skill.id === selectedSkillId;
-
+            return (
+              <div
+                key={category.id}
+                className="relative glass-surface p-5 md:p-6 overflow-hidden"
+              >
+                {/* Molecular ring SVG bonding atom coordinates to central category nucleus */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 360 120"
+                  className="pointer-events-none absolute top-0 right-0 h-28 w-72 opacity-30"
+                  fill="none"
+                >
+                  <circle cx="290" cy="54" r="38" stroke={accent} strokeDasharray="3 6" />
+                  <circle cx="290" cy="54" r="14" fill={accent} fillOpacity="0.22" stroke={accent} />
+                  {Array.from({ length: Math.min(itemCount, 6) }).map((_, i) => {
+                    const angle = (i / Math.max(1, Math.min(itemCount, 6))) * Math.PI * 1.4 - 0.5;
+                    const x2 = 290 + Math.cos(angle) * 58;
+                    const y2 = 54 + Math.sin(angle) * 44;
                     return (
-                      <TagChip
-                        key={skill.id}
-                        selected={isSkillSelected}
-                        onClick={() => handleToggleSkill(skill)}
-                      >
-                        {skill.name}
-                      </TagChip>
+                      <g key={i}>
+                        <line x1="290" y1="54" x2={x2} y2={y2} stroke={accent} strokeOpacity="0.55" />
+                        <circle cx={x2} cy={y2} r="3" fill={accent} />
+                      </g>
                     );
                   })}
+                </svg>
+
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-2.5 pr-20">
+                    <span
+                      aria-hidden="true"
+                      className="size-3 rounded-full shrink-0"
+                      style={{
+                        backgroundColor: accent,
+                        boxShadow: `0 0 12px ${accent}`,
+                      }}
+                    />
+                    <div>
+                      <h3 className="type-h3 text-[var(--text-primary)]">
+                        {category.label}
+                      </h3>
+                      {hasNonEmptyText(category.description) && (
+                        <p className="type-body text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
+                          {category.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {category.items.length > 0 ? (
+                    <div className="flex flex-wrap gap-2.5 pt-2">
+                      {category.items.map((skill) => {
+                        const isSkillSelected = skill.id === selectedSkillId;
+                        const isBondedToHovered =
+                          inspectedProjects.length > 0 &&
+                          inspectedProjects.some((p) =>
+                            getProjectsForSkill(skill, [p]).length > 0,
+                          );
+                        const linkedCount = getProjectsForSkill(skill, projects).length;
+
+                        return (
+                          <button
+                            key={skill.id}
+                            type="button"
+                            data-testid={`skill-atom-${skill.id}`}
+                            aria-pressed={isSkillSelected}
+                            onMouseEnter={() => setHoveredSkillId(skill.id)}
+                            onMouseLeave={() => setHoveredSkillId(null)}
+                            onClick={() => handleToggleSkill(skill)}
+                            className={[
+                              'group relative inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2',
+                              'rounded-full font-mono text-xs cursor-pointer border transition-all duration-200',
+                              'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
+                              isSkillSelected
+                                ? 'bg-white/15 text-[var(--text-primary)] font-semibold'
+                                : isBondedToHovered
+                                  ? 'bg-white/10 text-[var(--text-primary)]'
+                                  : 'bg-[var(--surface-card)]/85 text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+                            ].join(' ')}
+                            style={{
+                              borderColor:
+                                isSkillSelected || isBondedToHovered
+                                  ? accent
+                                  : 'var(--border-subtle)',
+                              boxShadow: isSkillSelected ? `0 0 14px ${accent}55` : undefined,
+                            }}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="size-2 rounded-full transition-transform duration-200 group-hover:scale-125"
+                              style={{ backgroundColor: accent }}
+                            />
+                            <span>{skill.name}</span>
+                            <span className="text-[10px] text-[var(--text-muted)]">
+                              · {linkedCount}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="type-meta text-[var(--text-muted)]">
+                      No skills recorded in this category yet.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="type-meta text-[var(--text-muted)]">
-                  No skills recorded in this category yet.
-                </p>
-              )}
-            </GlassCard>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
+        {/* Molecular Bond Cross-Reference Readout */}
         {selectedSkill && (
           <GlassCard
             variant="strong"
             padding="md"
             data-testid="skill-cross-reference"
-            className="space-y-3"
+            className="space-y-3 border-[var(--planet-skills)]/50"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="type-meta uppercase text-[var(--accent-primary)]">
-                SKILL CROSS-REFERENCE // {selectedSkill.name}
+              <p className="type-meta uppercase text-[var(--planet-skills)]">
+                MOLECULAR BOND // {selectedSkill.name} ({matchingProjects.length}{' '}
+                {matchingProjects.length === 1 ? 'Project World' : 'Project Worlds'})
               </p>
               <button
                 type="button"
@@ -264,7 +359,7 @@ export function SkillsSection({
                     <a
                       href="#projects"
                       onClick={handleJumpToProjects}
-                      className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--planet-skills)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>
                         <span className="type-meta text-[var(--text-muted)] mr-2">
@@ -272,7 +367,7 @@ export function SkillsSection({
                         </span>
                         <span className="font-medium">{project.title}</span>
                       </span>
-                      <ArrowUpRight className="size-4 shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
+                      <ArrowUpRight className="size-4 shrink-0 text-[var(--planet-skills)]" aria-hidden="true" />
                     </a>
                   </li>
                 ))}

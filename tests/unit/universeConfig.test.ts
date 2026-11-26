@@ -1,37 +1,34 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { DARK_UNIVERSE_PALETTE, getUniversePalette } from '@/three/themePalettes';
+import { describe, expect, it } from 'vitest';
+import {
+  COSMIC_PALETTE,
+  getPlanetDefinition,
+  getPlanetWorldPosition,
+  SOLAR_SYSTEM_PLANETS,
+} from '@/three/universeConfig';
 import { resolveQualityTier } from '@/three/useQualityTier';
 
-describe('Three theme palettes & adaptive quality tiers', () => {
-  afterEach(() => {
-    document.documentElement.style.removeProperty('--surface-canvas');
-    document.documentElement.style.removeProperty('--accent-primary');
-    document.documentElement.style.removeProperty('--accent-primary-deep');
-    document.documentElement.style.removeProperty('--text-primary');
-  });
+describe('Cosmic Solar System palette, planets & adaptive quality tiers', () => {
+  it('defines a permanent pitch-black cosmic palette and six distinct orbiting planets', () => {
+    expect(COSMIC_PALETTE.canvas).toBe('#020307');
+    expect(COSMIC_PALETTE.sunCore).toBe('#FFD27D');
+    expect(SOLAR_SYSTEM_PLANETS).toHaveLength(6);
 
-  it('uses strictly approved dark core tokens and resolves light mode from active CSS variables', () => {
-    const dark = getUniversePalette('dark');
-    expect(dark).toEqual(DARK_UNIVERSE_PALETTE);
-    expect(dark.canvas).toBe('#070A18');
-    expect(dark.primary).toBe('#9788FF');
-    expect(dark.secondary).toBe('#6B70E8');
-    expect(dark.highlight).toBe('#DDE3F3');
-    expect(dark.gold).toBe('#E7BC70');
-    expect(dark.metallic).toBe('#E18DAF');
-    expect(dark.additiveBlending).toBe(true);
+    const ids = SOLAR_SYSTEM_PLANETS.map((p) => p.id);
+    expect(ids).toEqual([
+      'about',
+      'skills',
+      'projects',
+      'experience',
+      'achievements',
+      'contact',
+    ]);
 
-    document.documentElement.style.setProperty('--surface-canvas', '#F8F7FB');
-    document.documentElement.style.setProperty('--accent-primary', '#D20D46');
-    document.documentElement.style.setProperty('--accent-primary-deep', '#A70F38');
-    document.documentElement.style.setProperty('--text-primary', '#1B1421');
+    const colors = new Set(SOLAR_SYSTEM_PLANETS.map((p) => p.color));
+    expect(colors.size).toBe(6);
 
-    const light = getUniversePalette('light');
-    expect(light.additiveBlending).toBe(false);
-    expect(light.canvas).toBe('#F8F7FB');
-    expect(light.primary).toBe('#D20D46');
-    expect(light.secondary).toBe('#A70F38');
-    expect(light.highlight).toBe('#7045C8');
+    const pos0 = getPlanetWorldPosition(getPlanetDefinition('projects'), 0, 1);
+    const posLater = getPlanetWorldPosition(getPlanetDefinition('projects'), 4, 1);
+    expect(pos0).not.toEqual(posLater);
   });
 
   it('selects static demand mode under prefers-reduced-motion', () => {

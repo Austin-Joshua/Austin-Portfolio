@@ -1,5 +1,6 @@
 import { LazyMotion, MotionConfig } from 'motion/react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { CosmicIntroLoader } from '@/components/layout/CosmicIntroLoader';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { RootErrorBoundary } from '@/components/layout/RootErrorBoundary';
@@ -11,17 +12,23 @@ import { ExperienceSection } from '@/components/sections/ExperienceSection';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
+import {
+  UniverseNavigationProvider,
+  useUniverseNavigation,
+} from '@/context/UniverseNavigationContext';
 import { profileData } from '@/data/profile';
 import { parseSectionHash } from '@/data/sections';
+import { UniverseLayer } from '@/three/UniverseLayer';
 import { scrollToSection } from '@/utils/scrollNavigation';
 
 const loadMotionFeatures = () =>
   import('@/motion/motionFeatures').then((module) => module.domMax);
 
-export function App() {
-  const scrollProgressRef = useRef<number>(0);
+function CosmicPortfolioShell() {
   const { prefersReducedMotion } = useMotionPreference();
+  const { scrollProgressRef } = useUniverseNavigation();
 
   // Initial deep-link hash alignment after React mounts
   useEffect(() => {
@@ -75,29 +82,40 @@ export function App() {
   }, [prefersReducedMotion]);
 
   return (
+    <RootErrorBoundary>
+      <CosmicIntroLoader />
+      <UniverseLayer />
+      <SkipLink />
+      <Navbar
+        resumeAsset={profileData.resume}
+        scrollProgressRef={scrollProgressRef}
+      />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative z-10 pointer-events-none min-h-screen scroll-mt-[var(--nav-offset)]"
+      >
+        <HeroSection />
+        <AboutSection />
+        <SkillsSection />
+        <ProjectsSection />
+        <ExperienceSection />
+        <AchievementsSection />
+        <ContactSection />
+      </main>
+      <ScrollToTopButton />
+      <Footer />
+    </RootErrorBoundary>
+  );
+}
+
+export function App() {
+  return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={loadMotionFeatures} strict>
-        <RootErrorBoundary>
-          <SkipLink />
-          <Navbar
-            resumeAsset={profileData.resume}
-            scrollProgressRef={scrollProgressRef}
-          />
-          <main
-            id="main-content"
-            tabIndex={-1}
-            className="relative z-10 min-h-screen scroll-mt-[var(--nav-offset)]"
-          >
-            <HeroSection scrollProgressRef={scrollProgressRef} />
-            <AboutSection />
-            <SkillsSection />
-            <ProjectsSection />
-            <ExperienceSection />
-            <AchievementsSection />
-            <ContactSection />
-          </main>
-          <Footer />
-        </RootErrorBoundary>
+        <UniverseNavigationProvider>
+          <CosmicPortfolioShell />
+        </UniverseNavigationProvider>
       </LazyMotion>
     </MotionConfig>
   );

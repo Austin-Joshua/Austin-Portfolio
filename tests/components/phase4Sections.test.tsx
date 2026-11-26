@@ -12,7 +12,6 @@ import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
 import { PortraitSlot } from '@/components/ui/PortraitSlot';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import type {
   AchievementItem,
   ContactData,
@@ -23,11 +22,7 @@ import type {
 } from '@/types/portfolio';
 
 function renderWithProviders(ui: React.ReactElement) {
-  return render(
-    <ThemeProvider>
-      <MotionPreferenceProvider>{ui}</MotionPreferenceProvider>
-    </ThemeProvider>,
-  );
+  return render(<MotionPreferenceProvider>{ui}</MotionPreferenceProvider>);
 }
 
 describe('Phase 4 Sections & Components', () => {
@@ -81,12 +76,10 @@ describe('Phase 4 Sections & Components', () => {
     };
 
     rerender(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <HeroSection profile={populatedProfile} />
-          <AboutSection profile={populatedProfile} />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <HeroSection profile={populatedProfile} />
+        <AboutSection profile={populatedProfile} />
+      </MotionPreferenceProvider>,
     );
 
     expect(screen.getByText('Computer Science Engineering')).toBeInTheDocument();
@@ -147,11 +140,9 @@ describe('Phase 4 Sections & Components', () => {
     ];
 
     rerender(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <SkillsSection categories={categories} projects={projects} />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <SkillsSection categories={categories} projects={projects} />
+      </MotionPreferenceProvider>,
     );
 
     const languagesTab = screen.getByRole('tab', { name: 'Languages' });
@@ -161,10 +152,10 @@ describe('Phase 4 Sections & Components', () => {
     const aiTab = screen.getByRole('tab', { name: 'AI / ML' });
     expect(aiTab).toHaveFocus();
     expect(aiTab).toHaveAttribute('aria-selected', 'true');
-    expect(screen.queryByRole('button', { name: 'TypeScript' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('skill-atom-ts')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('tab', { name: 'All' }));
-    await user.click(screen.getByRole('button', { name: 'TypeScript' }));
+    await user.click(screen.getByRole('tab', { name: 'All Molecules' }));
+    await user.click(screen.getByTestId('skill-atom-ts'));
 
     const crossRef = screen.getByTestId('skill-cross-reference');
     expect(within(crossRef).getByRole('link', { name: /Spatial Console/i })).toBeInTheDocument();
@@ -177,7 +168,7 @@ describe('Phase 4 Sections & Components', () => {
       <ProjectsSection projects={[]} />,
     );
 
-    expect(screen.getByText('No project entries added yet.')).toBeInTheDocument();
+    expect(screen.getByText('No projects added yet.')).toBeInTheDocument();
 
     const sampleProjects: ProjectItem[] = [
       {
@@ -199,21 +190,19 @@ describe('Phase 4 Sections & Components', () => {
     ];
 
     rerender(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <ProjectsSection
-            projects={sampleProjects}
-            categories={[
-              { id: 'all', label: 'All' },
-              { id: 'software-engineering', label: 'Software' },
-              { id: 'ai-ml', label: 'AI / ML' },
-            ]}
-          />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <ProjectsSection
+          projects={sampleProjects}
+          categories={[
+            { id: 'all', label: 'All' },
+            { id: 'software-engineering', label: 'Software' },
+            { id: 'ai-ml', label: 'AI / ML' },
+          ]}
+        />
+      </MotionPreferenceProvider>,
     );
 
-    const ghLink = screen.getByRole('link', { name: 'GitHub' });
+    const ghLink = screen.getAllByRole('link', { name: 'GitHub' })[0];
     expect(ghLink).toHaveAttribute('rel', 'noopener noreferrer');
     expect(ghLink).toHaveAttribute('target', '_blank');
 
@@ -222,7 +211,7 @@ describe('Phase 4 Sections & Components', () => {
     expect(screen.getByRole('status')).toHaveTextContent('No projects match AI / ML.');
 
     await user.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(screen.getByRole('heading', { level: 3, name: 'Orbital UI' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 3, name: 'Orbital UI' }).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -267,7 +256,7 @@ describe('Phase 4 Sections & Components', () => {
 
     expect(screen.getByText('Software Engineering Intern')).toBeInTheDocument();
     expect(screen.getByText('Delivered modular UI components.')).toBeInTheDocument();
-    const verifyLink = screen.getByRole('link', { name: 'Verify Credential' });
+    const verifyLink = screen.getByRole('link', { name: /Verify Repository/i });
     expect(verifyLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
@@ -285,7 +274,7 @@ describe('Phase 4 Sections & Components', () => {
     );
 
     expect(
-      screen.getByText('Verified contact channels have not been published yet.'),
+      screen.getByText('Contact links will be published here prior to release.'),
     ).toBeInTheDocument();
     expect(container.querySelector('form')).toBeNull();
 

@@ -11,10 +11,11 @@ import {
 import type { MouseEvent, RefObject } from 'react';
 import { DesktopSectionRail } from '@/components/layout/DesktopSectionRail';
 import { ScrollProgressBar } from '@/components/layout/ScrollProgressBar';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { PRIMARY_NAV_SECTIONS, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 import { scrollToSection } from '@/utils/scrollNavigation';
 
 export interface ResumeAssetConfig {
@@ -36,11 +37,20 @@ const SECTION_ICONS: Record<Exclude<SectionId, 'hero'>, LucideIcon> = {
   contact: Mail,
 };
 
+function getPlanetAccentColor(sectionId: Exclude<SectionId, 'hero'>): string {
+  return (
+    SOLAR_SYSTEM_PLANETS.find((planet) => planet.sectionId === sectionId)?.color ??
+    'var(--accent-primary)'
+  );
+}
+
 export function Navbar({
   resumeAsset = null,
   scrollProgressRef,
 }: NavbarProps) {
-  const activeSection = useActiveSection();
+  const fallbackActiveSection = useActiveSection();
+  const universeNav = useOptionalUniverseNavigation();
+  const activeSection = universeNav?.activeSection ?? fallbackActiveSection;
   const { prefersReducedMotion } = useMotionPreference();
 
   const handleAnchorClick = (
@@ -48,6 +58,11 @@ export function Navbar({
     targetId: SectionId,
   ) => {
     event.preventDefault();
+    if (universeNav) {
+      universeNav.navigateToPlanet(targetId === 'hero' ? 'sun' : targetId);
+      return;
+    }
+
     scrollToSection(targetId, {
       prefersReducedMotion,
       focusTarget: false,
@@ -60,12 +75,34 @@ export function Navbar({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-3 z-40 pointer-events-none">
+      <header className="relative z-40 pointer-events-none pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 md:fixed md:inset-x-0 md:top-3 md:pt-0 md:pb-0">
         <div className="container-portfolio">
-          <div className="relative glass-surface pointer-events-auto flex flex-wrap md:flex-nowrap w-fit ml-auto md:w-full md:ml-0 min-h-[48px] md:min-h-[64px] items-center justify-between gap-x-3 gap-y-1.5 px-2 py-1 md:py-0 md:px-4 lg:px-6 max-w-full">
+          <div className="relative glass-surface pointer-events-auto flex flex-nowrap w-full min-h-[52px] md:min-h-[64px] items-center justify-between gap-x-3 px-3 py-1 md:py-0 md:px-4 lg:px-6 max-w-full">
+            {/* Canonical circular metallic AJ emblem brand link */}
+            <a
+              href="#hero"
+              onClick={(event) => handleAnchorClick(event, 'hero')}
+              className="inline-flex min-h-[44px] min-w-[44px] items-center gap-2.5 shrink-0 rounded-full p-1 transition-transform duration-200 hover:scale-105 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+            >
+              <img
+                src="/assets/brand/aj-emblem.png"
+                alt="AJ Cosmic Emblem"
+                width={36}
+                height={36}
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full object-contain"
+              />
+              <span className="sr-only">Austin Joshua — Return to Sun Overview</span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--text-secondary)] hidden sm:inline">
+                Cosmic Universe
+              </span>
+            </a>
+
             <nav aria-label="Primary" className="hidden md:flex flex-wrap items-center gap-1 lg:gap-2 min-w-0">
               {PRIMARY_NAV_SECTIONS.map((section) => {
                 const isActive = activeSection === section.id;
+                const planetColor = getPlanetAccentColor(
+                  section.id as Exclude<SectionId, 'hero'>,
+                );
 
                 return (
                   <a
@@ -76,7 +113,7 @@ export function Navbar({
                     className={[
                       'relative inline-flex min-h-[44px] items-center gap-1.5 px-2 lg:px-3 py-2',
                       'text-xs lg:text-sm whitespace-nowrap rounded-[var(--radius-control)]',
-                      'transition-colors duration-[var(--transition-theme)]',
+                      'transition-colors duration-200',
                       'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                       isActive
                         ? 'font-semibold text-[var(--text-primary)]'
@@ -85,18 +122,19 @@ export function Navbar({
                   >
                     <span
                       aria-hidden="true"
-                      className={[
-                        'size-1.5 rounded-full transition-opacity duration-[var(--transition-theme)]',
-                        isActive
-                          ? 'bg-[var(--accent-primary)] opacity-100'
-                          : 'bg-transparent opacity-0',
-                      ].join(' ')}
+                      className="size-2 rounded-full transition-transform duration-200"
+                      style={{
+                        backgroundColor: planetColor,
+                        opacity: isActive ? 1 : 0.55,
+                        boxShadow: isActive ? `0 0 8px ${planetColor}` : 'none',
+                      }}
                     />
                     <span>{section.label}</span>
                     {isActive && (
                       <span
                         aria-hidden="true"
-                        className="absolute inset-x-2 bottom-1.5 h-[2px] bg-[var(--accent-primary)]"
+                        className="absolute inset-x-2 bottom-1.5 h-[2px]"
+                        style={{ backgroundColor: planetColor }}
                       />
                     )}
                   </a>
@@ -104,7 +142,7 @@ export function Navbar({
               })}
             </nav>
 
-            <div className="flex items-center gap-1 shrink-0 ml-auto">
+            <div className="flex items-center gap-1 shrink-0 ml-auto md:ml-0">
               {hasValidResume && resumeAsset && (
                 <a
                   href={resumeAsset.url}
@@ -114,15 +152,14 @@ export function Navbar({
                   className={[
                     'inline-flex min-h-[44px] min-w-[44px] items-center justify-center',
                     'rounded-[var(--radius-control)]',
-                    'text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--surface-card)]',
-                    'transition-[background-color,color] duration-[var(--transition-theme)]',
+                    'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5',
+                    'transition-[background-color,color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                   ].join(' ')}
                 >
                   <Download className="size-5 shrink-0" aria-hidden="true" />
                 </a>
               )}
-              <ThemeToggle />
             </div>
             <ScrollProgressBar scrollProgressRef={scrollProgressRef} />
           </div>
@@ -137,7 +174,7 @@ export function Navbar({
       <nav
         aria-label="Mobile section navigation"
         className={[
-          'fixed inset-x-0 bottom-0 z-40 md:hidden',
+          'fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-auto',
           'glass-surface-strong rounded-none border-x-0 border-b-0 border-t border-[var(--border-glass)]',
         ].join(' ')}
         style={{
@@ -148,6 +185,9 @@ export function Navbar({
           {PRIMARY_NAV_SECTIONS.map((section) => {
             const isActive = activeSection === section.id;
             const Icon = SECTION_ICONS[section.id as Exclude<SectionId, 'hero'>];
+            const planetColor = getPlanetAccentColor(
+              section.id as Exclude<SectionId, 'hero'>,
+            );
 
             return (
               <a
@@ -158,23 +198,20 @@ export function Navbar({
                 className={[
                   'relative inline-flex min-h-[44px] min-w-0 w-full flex-col items-center justify-center gap-1',
                   'px-0.5 py-1.5 rounded-[var(--radius-control)]',
-                  'transition-colors duration-[var(--transition-theme)]',
+                  'font-mono text-[10px] leading-tight tracking-tight',
+                  'transition-colors duration-200',
                   'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                   isActive
-                    ? 'bg-[var(--surface-card)] text-[var(--accent-primary)] font-semibold'
+                    ? 'font-semibold bg-white/10 text-[var(--text-primary)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
                 ].join(' ')}
               >
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-x-1.5 top-0 h-[2px] bg-[var(--accent-primary)]"
-                  />
-                )}
-                <Icon className="size-4 shrink-0" aria-hidden="true" />
-                <span className="max-w-full truncate text-[0.625rem] leading-none">
-                  {section.label}
-                </span>
+                <Icon
+                  className="size-4 shrink-0"
+                  aria-hidden="true"
+                  style={isActive ? { color: planetColor } : undefined}
+                />
+                <span className="truncate max-w-full">{section.label}</span>
               </a>
             );
           })}

@@ -10,36 +10,30 @@ import { ContactSection } from '@/components/sections/ContactSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import type { ContactData, ProjectItem, SkillCategory } from '@/types/portfolio';
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
 
-function renderWithProviders(ui: React.ReactElement, initialTheme: 'dark' | 'light' = 'dark') {
-  window.localStorage.setItem('aj-portfolio-theme', initialTheme);
-  document.documentElement.dataset.theme = initialTheme;
-  return render(
-    <ThemeProvider>
-      <MotionPreferenceProvider>{ui}</MotionPreferenceProvider>
-    </ThemeProvider>,
-  );
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<MotionPreferenceProvider>{ui}</MotionPreferenceProvider>);
 }
 
-describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', () => {
+describe('Phase 8 — Cosmic Contrast, Accessibility, Responsiveness & SEO Hardening', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.localStorage.setItem('aj-cosmic-intro-seen', '1');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     window.localStorage.clear();
-    document.documentElement.dataset.theme = 'dark';
   });
 
-  it('includes baseline SEO metadata in index.html and valid robots.txt without placeholder URLs', () => {
+  it('includes Cosmic Universe SEO metadata & favicons in index.html and valid robots.txt', () => {
     const html = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
-    expect(html).toContain('<html lang="en">');
-    expect(html).toContain('<title>Austin Joshua — Portfolio</title>');
+    expect(html).toContain('<html lang="en" data-theme="dark">');
+    expect(html).toContain('<title>Austin Joshua — AJ Cosmic Universe</title>');
+    expect(html).toContain('href="/favicon.png"');
     expect(html).toMatch(/<meta\s+[^>]*name="description"[^>]*content="[^"]{30,}"/i);
 
     const robots = fs.readFileSync(path.join(ROOT_DIR, 'public/robots.txt'), 'utf8');
@@ -48,56 +42,48 @@ describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', 
     expect(robots).not.toMatch(/localhost|127\.0\.0\.1|TBD|example\.com/i);
   });
 
-  it('preserves locked Midnight Amethyst & Scarlet Porcelain tokens, mobile scroll-padding-bottom, and @supports glass fallback', () => {
-    const tokensCss = fs.readFileSync(
-      path.join(ROOT_DIR, 'src/styles/tokens.css'),
-      'utf8',
-    );
-    const glassCss = fs.readFileSync(
-      path.join(ROOT_DIR, 'src/styles/glass.css'),
-      'utf8',
-    );
-    const indexCss = fs.readFileSync(
-      path.join(ROOT_DIR, 'src/styles/index.css'),
-      'utf8',
-    );
+  it('enforces single permanent pitch-black cosmic tokens without light theme branches', () => {
+    const tokensCss = fs.readFileSync(path.join(ROOT_DIR, 'src/styles/tokens.css'), 'utf8');
+    const glassCss = fs.readFileSync(path.join(ROOT_DIR, 'src/styles/glass.css'), 'utf8');
+    const indexCss = fs.readFileSync(path.join(ROOT_DIR, 'src/styles/index.css'), 'utf8');
 
-    expect(tokensCss).toContain('--surface-canvas: #070a18;');
-    expect(tokensCss).toContain('--accent-primary: #9788ff;');
-    expect(tokensCss).toContain('--accent-primary-deep: #6b70e8;');
-    expect(tokensCss).toContain('--text-primary: #f4f5ff;');
-    expect(tokensCss).toContain('--surface-canvas: #f8f7fb;');
-    expect(tokensCss).toContain('--accent-primary: #d20d46;');
-    expect(tokensCss).not.toContain('#00d5c5');
-    expect(tokensCss).not.toContain('#061a1d');
+    expect(tokensCss).toContain('--surface-canvas: #020307;');
+    expect(tokensCss).toContain('--planet-sun: #ffb347;');
+    expect(tokensCss).toContain('--planet-about: #38bdf8;');
+    expect(tokensCss).toContain('--planet-skills: #818cf8;');
+    expect(tokensCss).toContain('--planet-projects: #fb923c;');
+    expect(tokensCss).toContain('--planet-experience: #2dd4bf;');
+    expect(tokensCss).toContain('--planet-achievements: #facc15;');
+    expect(tokensCss).toContain('--planet-contact: #f472b6;');
+    expect(tokensCss).not.toContain("[data-theme='light']");
+    expect(glassCss).not.toContain("[data-theme='light']");
+    expect(indexCss).not.toContain("[data-theme='light']");
+
     expect(tokensCss).toContain('--gutter-mobile: 20px;');
-
     expect(glassCss).toContain('@supports ((backdrop-filter: blur(1px))');
     expect(indexCss).toContain('scroll-padding-top: var(--nav-offset);');
     expect(indexCss).toContain('scroll-padding-bottom: 5.5rem;');
   });
 
-  it('renders mobile 6-column fixed bottom nav and desktop capsule with aria-hidden WebGL fallback and passes axe in both themes', async () => {
-    for (const theme of ['dark', 'light'] as const) {
-      const { container, unmount } = renderWithProviders(<App />, theme);
+  it('renders mobile 6-column fixed bottom nav and desktop capsule with aria-hidden cosmic fallback and passes axe', async () => {
+    const { container, unmount } = renderWithProviders(<App />);
 
-      const mobileNav = screen.getByRole('navigation', {
-        name: 'Mobile section navigation',
-      });
-      const mobileGrid = mobileNav.firstElementChild;
-      expect(mobileGrid?.className).toContain('grid-cols-6');
+    const mobileNav = screen.getByRole('navigation', {
+      name: 'Mobile section navigation',
+    });
+    const mobileGrid = mobileNav.firstElementChild;
+    expect(mobileGrid?.className).toContain('grid-cols-6');
 
-      const fallback = screen.queryByTestId('universe-fallback');
-      if (fallback) {
-        expect(fallback).toHaveAttribute('aria-hidden', 'true');
-      }
-
-      expect(await axe(container)).toHaveNoViolations();
-      unmount();
+    const fallback = screen.queryByTestId('universe-fallback');
+    if (fallback) {
+      expect(fallback).toHaveAttribute('aria-hidden', 'true');
     }
+
+    expect(await axe(container)).toHaveNoViolations();
+    unmount();
   }, 15_000);
 
-  it('keeps populated interactive Skills, Projects, and Contact accessible via keyboard in light theme', async () => {
+  it('keeps populated interactive Skills, Projects, and Contact accessible via keyboard', async () => {
     const user = userEvent.setup();
     const categories: SkillCategory[] = [
       { id: 'sys', label: 'Systems', items: [{ id: 'rust', name: 'Rust' }] },
@@ -141,7 +127,6 @@ describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', 
           <ContactSection contact={contact} />
         </main>
       </>,
-      'light',
     );
 
     const systemsTab = screen.getByRole('tab', { name: 'Systems' });

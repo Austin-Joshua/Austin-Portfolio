@@ -4,80 +4,109 @@ import {
   type ReconcilerRoot,
   type ThreeElement,
 } from '@react-three/fiber';
-import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from 'react';
+import {
+  AmbientLight,
   BufferAttribute,
   BufferGeometry,
+  Color,
+  DirectionalLight,
   Group,
-  IcosahedronGeometry,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
+  PointLight,
   Points,
   PointsMaterial,
+  RingGeometry,
+  ShaderMaterial,
+  SphereGeometry,
   TorusGeometry,
 } from 'three';
-import {
-  DigitalUniverseScene,
-  type PointerVector,
-} from '@/three/DigitalUniverseScene';
+import type {
+  OrbitControlVector,
+  UniverseNavigationMode,
+  UniversePointerVector,
+} from '@/context/UniverseNavigationContext';
+import type { SectionId } from '@/data/sections';
+import { SolarSystemScene } from '@/three/SolarSystemScene';
+import type { PlanetId } from '@/three/universeConfig';
 import { UniverseFallback } from '@/three/UniverseFallback';
 import type { QualityTierConfig } from '@/three/useQualityTier';
-import type { Theme } from '@/utils/themeStorage';
 
-// Register only the Three.js primitives used by DigitalUniverseScene so Rollup can tree-shake unused modules
+// Register only the Three.js primitives required by the AJ Cosmic Universe solar system
 extend({
+  AmbientLight: AmbientLight as unknown as new () => ThreeElement<typeof AmbientLight>,
+  BufferAttribute: BufferAttribute as unknown as new () => ThreeElement<typeof BufferAttribute>,
+  BufferGeometry: BufferGeometry as unknown as new () => ThreeElement<typeof BufferGeometry>,
+  Color: Color as unknown as new () => ThreeElement<typeof Color>,
+  DirectionalLight: DirectionalLight as unknown as new () => ThreeElement<typeof DirectionalLight>,
   Group: Group as unknown as new () => ThreeElement<typeof Group>,
-  Points: Points as unknown as new () => ThreeElement<typeof Points>,
-  PointsMaterial: PointsMaterial as unknown as new () => ThreeElement<
-    typeof PointsMaterial
-  >,
   Mesh: Mesh as unknown as new () => ThreeElement<typeof Mesh>,
-  TorusGeometry: TorusGeometry as unknown as new () => ThreeElement<
-    typeof TorusGeometry
-  >,
-  IcosahedronGeometry: IcosahedronGeometry as unknown as new () => ThreeElement<
-    typeof IcosahedronGeometry
-  >,
-  MeshBasicMaterial: MeshBasicMaterial as unknown as new () => ThreeElement<
-    typeof MeshBasicMaterial
-  >,
-  BufferGeometry: BufferGeometry as unknown as new () => ThreeElement<
-    typeof BufferGeometry
-  >,
-  BufferAttribute: BufferAttribute as unknown as new () => ThreeElement<
-    typeof BufferAttribute
-  >,
+  MeshBasicMaterial: MeshBasicMaterial as unknown as new () => ThreeElement<typeof MeshBasicMaterial>,
+  MeshStandardMaterial: MeshStandardMaterial as unknown as new () => ThreeElement<typeof MeshStandardMaterial>,
+  PointLight: PointLight as unknown as new () => ThreeElement<typeof PointLight>,
+  Points: Points as unknown as new () => ThreeElement<typeof Points>,
+  PointsMaterial: PointsMaterial as unknown as new () => ThreeElement<typeof PointsMaterial>,
+  RingGeometry: RingGeometry as unknown as new () => ThreeElement<typeof RingGeometry>,
+  ShaderMaterial: ShaderMaterial as unknown as new () => ThreeElement<typeof ShaderMaterial>,
+  SphereGeometry: SphereGeometry as unknown as new () => ThreeElement<typeof SphereGeometry>,
+  TorusGeometry: TorusGeometry as unknown as new () => ThreeElement<typeof TorusGeometry>,
 });
 
 export interface UniverseCanvasProps {
-  theme: Theme;
   qualityTier: QualityTierConfig;
   prefersReducedMotion: boolean;
-  scrollProgressRef?: RefObject<number>;
+  activeSection: SectionId;
+  navigationMode: UniverseNavigationMode;
+  hoveredPlanet: PlanetId | null;
+  selectedPlanet: PlanetId | null;
+  pointerRef: RefObject<UniversePointerVector>;
+  scrollVelocityRef: RefObject<number>;
+  orbitControlRef: RefObject<OrbitControlVector>;
+  onHoverPlanet: (id: PlanetId | null) => void;
+  onSelectPlanet: (id: PlanetId) => void;
 }
 
 export function UniverseCanvas({
-  theme,
   qualityTier,
   prefersReducedMotion,
-  scrollProgressRef,
+  activeSection,
+  navigationMode,
+  hoveredPlanet,
+  selectedPlanet,
+  pointerRef,
+  scrollVelocityRef,
+  orbitControlRef,
+  onHoverPlanet,
+  onSelectPlanet,
 }: UniverseCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rootRef = useRef<ReconcilerRoot<HTMLCanvasElement> | null>(null);
-  const pointerRef = useRef<PointerVector>({ x: 0, y: 0 });
+  const dragStateRef = useRef<{ active: boolean; lastX: number; lastY: number }>({
+    active: false,
+    lastX: 0,
+    lastY: 0,
+  });
 
-  const [size, setSize] = useState<{ width: number; height: number }>(() => ({
-    width: 560,
-    height: 540,
-  }));
+  const [size, setSize] = useState<{ width: number; height: number }>(() =>
+    typeof window !== 'undefined'
+      ? { width: window.innerWidth || 1280, height: window.innerHeight || 720 }
+      : { width: 1280, height: 720 },
+  );
   const [isReady, setIsReady] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const [initError, setInitError] = useState<Error | null>(null);
   const [isDocumentVisible, setIsDocumentVisible] = useState(() =>
     typeof document === 'undefined' ? true : document.visibilityState !== 'hidden',
   );
-  const [isHeroVisible, setIsHeroVisible] = useState(true);
 
   if (initError) {
     throw initError;
@@ -85,9 +114,7 @@ export function UniverseCanvas({
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
-    if (!wrapper) {
-      return;
-    }
+    if (!wrapper) return;
 
     const measureNow = () => {
       const rect = wrapper.getBoundingClientRect();
@@ -110,66 +137,29 @@ export function UniverseCanvas({
     });
 
     observer.observe(wrapper);
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
+    if (typeof document === 'undefined') return;
 
     const handleVisibilityChange = () => {
       setIsDocumentVisible(document.visibilityState !== 'hidden');
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const target = document.getElementById('hero') ?? wrapperRef.current;
-    if (!target) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry) {
-          setIsHeroVisible(entry.isIntersecting);
-        }
-      },
-      { threshold: 0.05 },
-    );
-
-    observer.observe(target);
-    return () => {
-      observer.disconnect();
-    };
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
 
     const handleContextLost = (event: Event) => {
       event.preventDefault();
       setContextLost(true);
     };
-
-    const handleContextRestored = () => {
-      setContextLost(false);
-    };
+    const handleContextRestored = () => setContextLost(false);
 
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
@@ -180,38 +170,44 @@ export function UniverseCanvas({
     };
   }, []);
 
-  useEffect(() => {
+  // Controlled desktop drag-orbit in Explore mode without ever blocking scroll or touch gestures
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (
-      typeof window === 'undefined' ||
       prefersReducedMotion ||
-      !qualityTier.enablePointerParallax
+      event.pointerType === 'touch' ||
+      navigationMode !== 'explore'
     ) {
-      pointerRef.current = { x: 0, y: 0 };
       return;
     }
-
-    const handlePointerMove = (event: PointerEvent) => {
-      if (window.innerWidth === 0 || window.innerHeight === 0) {
-        return;
-      }
-
-      pointerRef.current = {
-        x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: (event.clientY / window.innerHeight) * 2 - 1,
-      };
+    dragStateRef.current = {
+      active: true,
+      lastX: event.clientX,
+      lastY: event.clientY,
     };
+  };
 
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-    };
-  }, [prefersReducedMotion, qualityTier.enablePointerParallax]);
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragStateRef.current.active) return;
+    const dx = event.clientX - dragStateRef.current.lastX;
+    const dy = event.clientY - dragStateRef.current.lastY;
+    dragStateRef.current.lastX = event.clientX;
+    dragStateRef.current.lastY = event.clientY;
+
+    const currentOrbit = orbitControlRef.current;
+    if (currentOrbit) {
+      currentOrbit.yaw = Math.max(-1.2, Math.min(1.2, currentOrbit.yaw - dx * 0.004));
+      currentOrbit.pitch = Math.max(-0.45, Math.min(0.65, currentOrbit.pitch + dy * 0.0035));
+    }
+  };
+
+  const handlePointerUpOrCancel = () => {
+    dragStateRef.current.active = false;
+  };
 
   const effectiveFrameloop: 'always' | 'demand' =
     !prefersReducedMotion &&
     qualityTier.frameloop === 'always' &&
     isDocumentVisible &&
-    isHeroVisible &&
     !contextLost
       ? 'always'
       : 'demand';
@@ -234,10 +230,10 @@ export function UniverseCanvas({
       .configure({
         gl: {
           antialias: qualityTier.tier !== 'mobile-conserving',
-          alpha: true,
+          alpha: false,
           powerPreference: 'high-performance',
         },
-        camera: { position: [0, 0, 5.4], fov: 46, near: 0.1, far: 50 },
+        camera: { position: [-2.0, 4.6, 15.6], fov: 46, near: 0.1, far: 120 },
         dpr: [qualityTier.dpr[0], qualityTier.dpr[1]],
         frameloop: effectiveFrameloop,
         size: {
@@ -255,16 +251,21 @@ export function UniverseCanvas({
         },
       })
       .then(() => {
-        if (cancelled || rootRef.current !== root) {
-          return;
-        }
+        if (cancelled || rootRef.current !== root) return;
+
         root.render(
-          <DigitalUniverseScene
-            theme={theme}
+          <SolarSystemScene
             qualityTier={qualityTier}
             prefersReducedMotion={prefersReducedMotion}
+            activeSection={activeSection}
+            navigationMode={navigationMode}
+            hoveredPlanet={hoveredPlanet}
+            selectedPlanet={selectedPlanet}
             pointerRef={pointerRef}
-            scrollProgressRef={scrollProgressRef}
+            scrollVelocityRef={scrollVelocityRef}
+            orbitControlRef={orbitControlRef}
+            onHoverPlanet={onHoverPlanet}
+            onSelectPlanet={onSelectPlanet}
           />,
         );
       })
@@ -284,10 +285,17 @@ export function UniverseCanvas({
   }, [
     size.width,
     size.height,
-    theme,
     qualityTier,
     prefersReducedMotion,
-    scrollProgressRef,
+    activeSection,
+    navigationMode,
+    hoveredPlanet,
+    selectedPlanet,
+    pointerRef,
+    scrollVelocityRef,
+    orbitControlRef,
+    onHoverPlanet,
+    onSelectPlanet,
     effectiveFrameloop,
     contextLost,
   ]);
@@ -300,7 +308,7 @@ export function UniverseCanvas({
   }, []);
 
   if (contextLost) {
-    return <UniverseFallback theme={theme} />;
+    return <UniverseFallback />;
   }
 
   return (
@@ -310,8 +318,13 @@ export function UniverseCanvas({
       data-testid="universe-canvas-wrapper"
       data-quality-tier={qualityTier.tier}
       data-frameloop={effectiveFrameloop}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUpOrCancel}
+      onPointerLeave={handlePointerUpOrCancel}
       className={[
-        'pointer-events-none select-none absolute inset-0 h-full w-full overflow-hidden',
+        'fixed inset-0 z-0 h-full w-full overflow-hidden select-none',
+        navigationMode === 'explore' ? 'pointer-events-auto' : 'pointer-events-none',
         prefersReducedMotion
           ? 'opacity-100 transition-none'
           : `transition-opacity duration-500 ${isReady ? 'opacity-100' : 'opacity-0'}`,

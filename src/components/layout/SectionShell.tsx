@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { SectionId } from '@/data/sections';
+import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 
 export interface SectionShellProps {
   id: SectionId | (string & {});
@@ -17,10 +18,8 @@ export interface SectionShellProps {
 
 export function SectionShell({
   id,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  index: _index,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  indexLabel: _indexLabel,
+  index,
+  indexLabel,
   title,
   labelledbyId,
   description,
@@ -32,21 +31,48 @@ export function SectionShell({
 }: SectionShellProps) {
   const headingId = `${id}-heading`;
   const resolvedLabelledBy = title ? headingId : labelledbyId;
+  const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
 
   const headerContent = title ? (
-    <div className="mb-10 md:mb-14">
+    <div className="pointer-events-auto mb-10 md:mb-14 max-w-[68ch]">
+      {planet && (
+        <div className="inline-flex items-center gap-2 mb-3">
+          <span
+            aria-hidden="true"
+            className="size-2 rounded-full"
+            style={{
+              backgroundColor: planet.color,
+              boxShadow: `0 0 10px ${planet.color}`,
+            }}
+          />
+          <p className="type-meta uppercase tracking-[0.14em]" style={{ color: planet.color }}>
+            {index} {'//'} {planet.cosmicTitle}
+          </p>
+        </div>
+      )}
+      {!planet && indexLabel && (
+        <p className="type-meta uppercase tracking-[0.14em] text-[var(--text-muted)] mb-3">
+          {index} {'//'} {indexLabel}
+        </p>
+      )}
       {title &&
         (headingLevel === 1 ? (
-          <h1 id={headingId} className="type-hero text-[var(--text-primary)]">
+          <h1
+            id={headingId}
+            className="type-hero text-[var(--text-primary)] [text-shadow:0_4px_24px_rgba(2,3,7,0.92)]"
+          >
             {title}
           </h1>
         ) : (
-          <h2 id={headingId} className="type-h2 text-[var(--text-primary)]">
+          <h2
+            id={headingId}
+            className="type-h2 text-[var(--text-primary)] [text-shadow:0_4px_24px_rgba(2,3,7,0.92)]"
+          >
             {title}
           </h2>
         ))}
       {description && (
-        <p className="type-lead text-[var(--text-secondary)] max-w-[68ch] mt-4">
+        <p className="type-lead text-[var(--text-secondary)] max-w-[68ch] mt-4 rounded-[var(--radius-card)] bg-[#020307]/72 px-4 py-2.5 backdrop-blur-sm border border-white/[0.06]">
           {description}
         </p>
       )}

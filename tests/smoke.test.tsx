@@ -2,17 +2,14 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from '@/App';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { ThemeProvider } from '@/context/ThemeContext';
 import { PORTFOLIO_SECTIONS } from '@/data/sections';
 
 describe('App smoke test', () => {
   it('renders semantic landmarks, single h1, and all seven sections in canonical order', () => {
     render(
-      <ThemeProvider>
-        <MotionPreferenceProvider>
-          <App />
-        </MotionPreferenceProvider>
-      </ThemeProvider>,
+      <MotionPreferenceProvider>
+        <App />
+      </MotionPreferenceProvider>,
     );
 
     expect(screen.getByRole('banner')).toBeInTheDocument();

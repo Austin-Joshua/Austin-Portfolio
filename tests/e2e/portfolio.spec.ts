@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const REQUIRED_VIEWPORTS = [
   { name: '320x700', width: 320, height: 700 },
@@ -24,9 +24,72 @@ const SECTION_IDS = [
   'contact',
 ] as const;
 
-test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
-  test('renders semantic landmarks, neutral empty states, zero fabricated copy, and toggles theme cleanly', async ({
+async function waitForIntroToFinish(page: Page) {
+  await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0, { timeout: 6000 });
+}
+
+test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
+  test('plays first-visit Cosmic Intro curtain loader once, supports Skip/Escape/reduced-motion, and handles restricted storage', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
+
+    // First visit shows AJ emblem, cosmic aura behind it, and left/right curtains (clock-stabilized against CPU variance)
+    await page.clock.install({ time: 1000 });
+    await page.clock.pauseAt(1000);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.clock.runFor(200);
+    const loader = page.getByTestId('cosmic-intro-loader');
+    await expect(loader).toBeVisible();
+    await expect(page.getByTestId('intro-curtain-left')).toBeVisible();
+    await expect(page.getByTestId('intro-curtain-right')).toBeVisible();
+    await expect(page.getByTestId('intro-cosmic-aura')).toBeVisible();
+    await expect(loader.locator('img[src="/assets/brand/aj-emblem.png"]')).toBeVisible();
+
+    // Completes automatically and records first-visit flag
+    await page.clock.runFor(1700);
+    await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
+    const seenFlag = await page.evaluate(() => window.localStorage.getItem('aj-cosmic-intro-seen'));
+    expect(seenFlag).toBe('1');
+
+    // Subsequent reload or direct hash route does NOT replay intro loader
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
+
+    await page.goto('/#projects', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
+    await context.close();
+
+    // Escape key dismisses immediately on a clean first visit
+    const escContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const escPage = await escContext.newPage();
+    await escPage.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(escPage.getByTestId('cosmic-intro-loader')).toBeVisible();
+    await escPage.keyboard.press('Escape');
+    await expect(escPage.getByTestId('cosmic-intro-loader')).toHaveCount(0);
+    await escContext.close();
+
+    // Restricted / throwing localStorage never traps user on intro
+    const restrictedContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    await restrictedContext.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('Blocked storage', 'SecurityError');
+        },
+      });
+    });
+    const restrictedPage = await restrictedContext.newPage();
+    await restrictedPage.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForIntroToFinish(restrictedPage);
+    await expect(restrictedPage.locator('h1')).toHaveText('Austin Joshua');
+    await restrictedContext.close();
+  });
+
+  test('enforces single dark Cosmic Universe theme, verified content, Solar System HUD, interactive sections, and zero errors', async ({
     page,
+    browserName,
   }) => {
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
@@ -39,7 +102,14 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
       pageErrors.push(err.message);
     });
 
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/', { waitUntil: 'networkidle' });
+    await waitForIntroToFinish(page);
+
+    // Permanent dark theme only; zero light-mode toggles anywhere
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('button[aria-label*="Switch to Scarlet Porcelain" i]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="theme-toggle"]')).toHaveCount(0);
 
     // Single H1 & ordered 7 sections
     await expect(page.locator('h1')).toHaveCount(1);
@@ -50,40 +120,28 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     );
     expect(renderedIds).toEqual([...SECTION_IDS]);
 
-    // Approved neutral empty states & zero placeholder copy or contact forms
+    // Honest neutral Experience state, verified Achievements awards, zero contact forms/TBD
     await expect(page.getByText('No experience entries added yet.')).toBeVisible();
-    await expect(page.getByText('No achievements added yet.')).toBeVisible();
+    const achievementsSection = page.locator('#achievements');
+    await expect(
+      achievementsSection.getByRole('heading', { name: 'Best Performance Award — Techathon 2K26' }),
+    ).toBeVisible();
+    await expect(
+      achievementsSection.getByRole('heading', { name: 'Best Prototype Award — Code of Thrones' }),
+    ).toBeVisible();
+    await expect(
+      achievementsSection.getByRole('heading', { name: "Impact Ignite Award — INNOCLASH '26" }),
+    ).toBeVisible();
     await expect(page.locator('form')).toHaveCount(0);
 
     const bodyText = await page.locator('body').innerText();
     expect(bodyText).not.toMatch(/\bTBD\b|Lorem ipsum/i);
 
-    // Default dark theme -> toggle light -> reload preserves light without FOUC
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    const toggleBtn = page.locator('button[aria-label*="Switch to Scarlet Porcelain" i]:visible').first();
-    await toggleBtn.click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await page.waitForTimeout(300);
+    // Automated axe WCAG scan passes with zero violations
+    const axeResult = await new AxeBuilder({ page }).analyze();
+    expect(axeResult.violations).toEqual([]);
 
-    await page.reload({ waitUntil: 'networkidle' });
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-
-    expect(consoleErrors).toEqual([]);
-    expect(pageErrors).toEqual([]);
-  });
-
-  test('passes automated axe scans in dark and settled light themes and validates SkipLink/keyboard access', async ({
-    page,
-    browserName,
-  }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/', { waitUntil: 'networkidle' });
-    await page.waitForTimeout(350);
-
-    const darkAxe = await new AxeBuilder({ page }).analyze();
-    expect(darkAxe.violations).toEqual([]);
-
-    // Keyboard SkipLink -> main content (WebKit headless omits links from plain Tab by default)
+    // Keyboard SkipLink -> main content
     const skipLink = page.locator('a[href="#main-content"]');
     if (browserName === 'webkit') {
       await skipLink.focus();
@@ -94,22 +152,37 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await skipLink.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
 
-    // Toggle to settled light theme and re-run axe
-    const toggleBtn = page.locator('button[aria-label*="Switch to Scarlet Porcelain" i]:visible').first();
-    await toggleBtn.click();
-    await page.waitForTimeout(350);
+    // Solar System HUD navigation + reset + Atomic Skills cross-ref + 5 Project Worlds
+    const hud = page.getByTestId('solar-system-hud');
+    await expect(hud).toBeVisible();
+    await page.getByTestId('planet-nav-skills').hover();
+    await expect(hud).toContainText('Aether Violet · Molecular Core');
+    await page.getByTestId('planet-nav-skills').click();
+    await expect(page).toHaveURL(/#skills$/);
 
-    const lightAxe = await new AxeBuilder({ page }).analyze();
-    expect(lightAxe.violations).toEqual([]);
+    await page.getByTestId('skill-atom-typescript').click();
+    await expect(page.getByTestId('skill-cross-reference')).toBeVisible();
+    await expect(page.getByTestId('skill-cross-reference')).toContainText('AgriFlux');
+
+    // Scroll to bottom shows Scroll-to-Top button which returns smoothly to #hero
+    await page.getByTestId('planet-nav-contact').evaluate((el) => el.scrollIntoView());
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
+    const scrollTopBtn = page.getByTestId('scroll-to-top-button');
+    await expect(scrollTopBtn).toBeVisible();
+    await scrollTopBtn.click();
+    await page.waitForTimeout(450);
+    await expect(page).toHaveURL(/#hero$/);
+
+    expect(consoleErrors).toEqual([]);
+    expect(pageErrors).toEqual([]);
   });
 
-  test('recovers cleanly on invalid ?project= deep links without crashing', async ({
-    page,
-  }) => {
+  test('recovers cleanly on invalid ?project= deep links without crashing', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/?project=invalid-project-slug', { waitUntil: 'networkidle' });
+    await waitForIntroToFinish(page);
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByTestId('invalid-project-notice')).toBeVisible();
@@ -146,6 +219,8 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/', { waitUntil: 'networkidle' });
+    // Reduced motion should bypass intro immediately
+    await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     const fallback = page.getByTestId('universe-fallback');
     await expect(fallback).toBeVisible();
@@ -171,6 +246,10 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     browserName,
   }) => {
     test.slow();
+
+    await page.addInitScript(() => {
+      window.localStorage.setItem('aj-cosmic-intro-seen', '1');
+    });
 
     for (const vp of REQUIRED_VIEWPORTS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -204,7 +283,7 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
       expect(metrics.undersizedCount, `Undersized target at ${vp.name}`).toBe(0);
     }
 
-    // Check 200% text-size scaling across all engines + 200% layout zoom on Chromium
+    // 200% text-size scaling across all engines + 200% browser zoom on Chromium
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '200%';
@@ -227,8 +306,11 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
   });
 
   test('serves SEO metadata and baseline robots.txt cleanly', async ({ page, request }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('aj-cosmic-intro-seen', '1');
+    });
     await page.goto('/', { waitUntil: 'networkidle' });
-    await expect(page).toHaveTitle('Austin Joshua — Portfolio');
+    await expect(page).toHaveTitle('Austin Joshua — AJ Cosmic Universe');
 
     const desc = await page.locator('meta[name="description"]').getAttribute('content');
     expect(desc).toBeTruthy();
@@ -241,20 +323,49 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     expect(robotsText).toContain('Allow: /');
   });
 
-  test('verifies navbar icon controls, real Hero 3D stage geometry, static assets & MIME types, hash deep links, and Browser Back/Forward', async ({
+  test('verifies AJ emblem, icon controls, Hero 3D composition & transparent cutout, asset MIME types, hash routing, and Back/Forward history', async ({
     page,
     request,
   }) => {
+    test.slow();
+    await page.addInitScript(() => {
+      window.localStorage.setItem('aj-cosmic-intro-seen', '1');
+    });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/', { waitUntil: 'networkidle' });
 
-    // Navbar: no AJ // mark; ThemeToggle & Résumé download are icon-only controls
+    // Navbar uses AJ circular emblem instead of legacy AJ // text, and icon-only Resume link
     await expect(page.locator('header').getByText('AJ //')).toHaveCount(0);
+    const navEmblem = page.locator('header img[src="/assets/brand/aj-emblem.png"]');
+    await expect(navEmblem).toBeVisible();
+    const emblemAlphaCheck = await navEmblem.evaluate((el) => {
+      const img = el as HTMLImageElement;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas unavailable');
+      ctx.drawImage(img, 0, 0);
+      return {
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        cornerAlpha: ctx.getImageData(4, 4, 1, 1).data[3],
+        centerRingAlpha: ctx.getImageData(256, 46, 1, 1).data[3],
+      };
+    });
+    expect(emblemAlphaCheck.naturalWidth).toBe(512);
+    expect(emblemAlphaCheck.naturalHeight).toBe(512);
+    expect(emblemAlphaCheck.cornerAlpha).toBeLessThan(10);
+    expect(emblemAlphaCheck.centerRingAlpha).toBeGreaterThan(200);
+
     const navResume = page.locator('header a[download="Austin_Joshua_Resume.pdf"]');
     await expect(navResume).toHaveCount(1);
     await expect(navResume).toHaveText('');
 
-    // Real 3D Hero stage is present inside #hero and does not overlap left-column h1
+    // Persistent full-viewport Solar System layer present & right-hand Hero stage does not overlap H1
+    await expect(
+      page.locator('[data-testid="universe-canvas-wrapper"], [data-testid="universe-fallback"]').first(),
+    ).toBeVisible();
     const stageBox = await page.getByTestId('hero-3d-stage').boundingBox();
     const headingBox = await page.locator('#hero h1').boundingBox();
     expect(stageBox).not.toBeNull();
@@ -263,7 +374,7 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     expect(stageBox!.height).toBeGreaterThan(300);
     expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
 
-    // Hero portrait cutout: real PNG transparency via same-origin canvas + coherent hover, keyboard focus, & click states
+    // Hero portrait cutout: real PNG transparency + silhouette->colour hover/click/focus states
     const failedPortraitRequests: Array<{ url: string; status: number }> = [];
     page.on('response', (res) => {
       if (res.url().includes('austin-joshua-cutout.png') && res.status() >= 400) {
@@ -271,8 +382,6 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
       }
     });
 
-    const heroStage = page.getByTestId('hero-3d-stage');
-    await expect(heroStage.locator('canvas')).toHaveCount(await page.locator('canvas').count());
     const heroPortrait = page.getByTestId('hero-portrait-figure');
     const heroToggle = page.getByTestId('portrait-reveal-toggle');
     const heroImg = heroPortrait.locator('img');
@@ -312,7 +421,6 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
 
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
-    // Pointer hover in & out without layout shift
     const beforeRevealBox = await heroImg.boundingBox();
     await heroToggle.hover();
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
@@ -322,7 +430,6 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
-    // Pointer click pins colour across mouse leave, unpin + mouse leave restores silhouette
     await heroToggle.click();
     await expect(heroToggle).toHaveAttribute('aria-pressed', 'true');
     await page.mouse.move(10, 10);
@@ -332,7 +439,7 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
-    // Keyboard focus via Tab keeps portrait revealed through Enter/Space until Tab moves focus away
+    // Keyboard focus keeps reveal active until blur
     await page.locator('#hero a').last().focus();
     await page.keyboard.press('Tab');
     await expect(heroToggle).toBeFocused();
@@ -347,6 +454,10 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
     // Static assets HTTP 200 & accurate Content-Types
+    const emblemRes = await request.get('/assets/brand/aj-emblem.png');
+    expect(emblemRes.status()).toBe(200);
+    expect(emblemRes.headers()['content-type']).toContain('image/png');
+
     const portraitRes = await request.get('/assets/portrait/austin-joshua-cutout.png');
     expect(portraitRes.status()).toBe(200);
     expect(portraitRes.headers()['content-type']).toContain('image/png');
@@ -390,5 +501,85 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
 
     await page.goForward({ waitUntil: 'networkidle' });
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+  });
+
+  test('verifies zero mobile Hero utility overlap and layout integrity across 320px–430px', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('aj-cosmic-intro-seen', '1');
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'load' });
+    await page.waitForTimeout(250);
+
+    for (const width of [320, 360, 390, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.waitForTimeout(120);
+
+      const topCheck = await page.evaluate(() => {
+        const html = document.documentElement;
+        const utilCapsule = document.querySelector('header .glass-surface')?.getBoundingClientRect();
+        const utilControls = Array.from(document.querySelectorAll('header a, header button'))
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.height > 0);
+        const heroNodes = Array.from(
+          document.querySelectorAll(
+            '#hero .eyebrow-label, #hero h1, #hero .type-lead, #hero a, [data-testid="hero-3d-stage"]',
+          ),
+        ).map((el) => el.getBoundingClientRect());
+
+        const intersects = (a: DOMRect, b: DOMRect) =>
+          a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+        return {
+          overflowX: html.scrollWidth - html.clientWidth,
+          controlsCount: utilControls.length,
+          controlsInBounds: utilControls.every(
+            (r) => r.left >= 0 && r.right <= html.clientWidth && r.width >= 43.5 && r.height >= 43.5,
+          ),
+          anyOverlapAtTop: utilCapsule ? heroNodes.some((n) => intersects(utilCapsule, n)) : true,
+        };
+      });
+
+      expect(topCheck.overflowX, `Overflow at ${width}px`).toBeLessThanOrEqual(0);
+      expect(topCheck.controlsCount, `Utility controls at ${width}px`).toBe(2);
+      expect(topCheck.controlsInBounds, `Utility bounds & >=44px target at ${width}px`).toBe(true);
+      expect(topCheck.anyOverlapAtTop, `Hero overlap at top ${width}px`).toBe(false);
+
+      await page.evaluate(() => window.scrollTo({ top: 140, behavior: 'instant' }));
+      await page.waitForTimeout(100);
+
+      const scrolledCheck = await page.evaluate(() => {
+        const utilCapsule = document.querySelector('header .glass-surface')?.getBoundingClientRect();
+        const heroNodes = Array.from(
+          document.querySelectorAll(
+            '#hero .eyebrow-label, #hero h1, #hero .type-lead, #hero a, [data-testid="hero-3d-stage"]',
+          ),
+        ).map((el) => el.getBoundingClientRect());
+        const intersects = (a: DOMRect, b: DOMRect) =>
+          a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        return {
+          anyOverlapScrolled: utilCapsule ? heroNodes.some((n) => intersects(utilCapsule, n)) : true,
+        };
+      });
+      expect(scrolledCheck.anyOverlapScrolled, `Hero overlap scrolled at ${width}px`).toBe(false);
+    }
+
+    // Mobile portrait reveal pinning still works at 390px
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(120);
+
+    const heroPortrait = page.getByTestId('hero-portrait-figure');
+    const heroToggle = page.getByTestId('portrait-reveal-toggle');
+    await heroToggle.click();
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    await heroToggle.click();
+    await expect(heroToggle).toHaveAttribute('aria-pressed', 'false');
+    await page.mouse.move(10, 10);
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
   });
 });

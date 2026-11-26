@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Star } from 'lucide-react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { achievementsData } from '@/data/achievements';
@@ -9,17 +9,20 @@ export interface AchievementsSectionProps {
   items?: readonly AchievementItem[];
 }
 
-const ACCENT_BORDER_MAP: Record<AchievementAccent, string> = {
-  gold: 'border-t-2 border-t-[var(--accent-gold)]',
-  copper: 'border-t-2 border-t-[var(--accent-copper)]',
-  primary: 'border-t-2 border-t-[var(--accent-primary)]',
+const ACCENT_COLOR_MAP: Record<AchievementAccent, string> = {
+  gold: '#FACC15',
+  copper: '#FB923C',
+  primary: '#38BDF8',
 };
 
-const ACCENT_TEXT_MAP: Record<AchievementAccent, string> = {
-  gold: 'text-[var(--accent-gold)]',
-  copper: 'text-[var(--accent-copper)]',
-  primary: 'text-[var(--accent-primary)]',
-};
+const VERIFIED_CERTIFICATIONS = [
+  { title: 'Python', issuer: 'Simplilearn' },
+  { title: 'MongoDB & DBMS', issuer: 'Scaler' },
+  { title: 'Docker Essentials', issuer: 'IBM' },
+  { title: 'Introduction to AI', issuer: 'Infosys Springboard' },
+  { title: 'ISRO Outreach Image Analysis Workshop', issuer: 'Participant' },
+  { title: 'Overall Non-Technical Coordinator', issuer: 'TECHritz International Tech Fest' },
+] as const;
 
 export function AchievementsSection({
   items = achievementsData,
@@ -38,67 +41,121 @@ export function AchievementsSection({
       index="06"
       indexLabel="ACHIEVEMENTS"
       title="Achievements"
+      description="Verified hackathon award constellation and technical credentials from official project records and résumé."
     >
-      {validItems.length === 0 ? (
-        <GlassCard padding="lg" variant="elevated">
-          <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
-            RECOGNITION // STATUS
-          </p>
-          <p className="type-body text-[var(--text-secondary)] max-w-[68ch]">
-            No achievements added yet.
-          </p>
-        </GlassCard>
-      ) : (
-        <div className="swiss-grid">
-          {validItems.map((item) => {
-            const accent: AchievementAccent = item.accent ?? 'gold';
-            const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
+      <div className="pointer-events-auto space-y-8">
+        {validItems.length === 0 ? (
+          <GlassCard padding="lg" variant="elevated">
+            <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
+              RECOGNITION // STATUS
+            </p>
+            <p className="type-body text-[var(--text-secondary)] max-w-[68ch]">
+              No achievements added yet.
+            </p>
+          </GlassCard>
+        ) : (
+          <div className="relative space-y-6">
+            {/* Constellation connecting beam */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 900 56"
+              preserveAspectRatio="none"
+              className="hidden lg:block w-full h-12 opacity-65"
+              fill="none"
+            >
+              <polyline
+                points="140,28 450,12 760,36"
+                stroke="#FACC15"
+                strokeOpacity="0.45"
+                strokeWidth="1.5"
+                strokeDasharray="4 5"
+              />
+              <circle cx="140" cy="28" r="5" fill="#FACC15" />
+              <circle cx="450" cy="12" r="5" fill="#FB923C" />
+              <circle cx="760" cy="36" r="5" fill="#38BDF8" />
+            </svg>
 
-            return (
-              <GlassCard
-                key={item.id}
-                as="article"
-                padding="md"
-                className={`col-span-4 md:col-span-4 lg:col-span-4 flex flex-col justify-between gap-4 ${ACCENT_BORDER_MAP[accent]}`}
-              >
-                <div className="space-y-2">
-                  <p className={`type-meta ${ACCENT_TEXT_MAP[accent]}`}>
-                    {item.date}
-                  </p>
-                  <h3 className="type-h3 text-[var(--text-primary)]">
-                    {item.title}
-                  </h3>
-                  <p className="type-meta text-[var(--text-muted)]">
-                    {item.issuer}
-                  </p>
-                  {hasNonEmptyText(item.context) && (
-                    <p className="type-body text-sm text-[var(--text-secondary)] pt-1">
-                      {item.context}
-                    </p>
-                  )}
-                </div>
+            {/* Milestone Constellation Star Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {validItems.map((item) => {
+                const accent: AchievementAccent = item.accent ?? 'gold';
+                const starColor = ACCENT_COLOR_MAP[accent];
+                const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
 
-                {hasVerificationLink && item.verificationUrl && (
-                  <a
-                    href={item.verificationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={[
-                      'inline-flex min-h-[44px] items-center gap-1.5 self-start',
-                      'font-mono text-xs font-medium text-[var(--text-primary)]',
-                      'hover:text-[var(--accent-primary)]',
-                      'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
-                    ].join(' ')}
+                return (
+                  <article
+                    key={item.id}
+                    className="glass-surface relative flex flex-col justify-between gap-4 p-6 transition-colors duration-200 hover:border-[var(--planet-achievements)]/60"
+                    style={{
+                      borderTop: `2px solid ${starColor}`,
+                    }}
                   >
-                    <span>Verify Credential</span>
-                    <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
-                  </a>
-                )}
-              </GlassCard>
-            );
-          })}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className="inline-flex items-center gap-1.5 type-meta font-semibold"
+                          style={{ color: starColor }}
+                        >
+                          <Star className="size-3.5 fill-current" aria-hidden="true" />
+                          <span>{item.date}</span>
+                        </span>
+                      </div>
+
+                      <h3 className="type-h3 text-[var(--text-primary)]">
+                        {item.title}
+                      </h3>
+
+                      <p className="type-meta text-[var(--text-muted)]">
+                        {item.issuer}
+                      </p>
+
+                      {hasNonEmptyText(item.context) && (
+                        <p className="type-body text-sm text-[var(--text-secondary)]">
+                          {item.context}
+                        </p>
+                      )}
+                    </div>
+
+                    {hasVerificationLink && item.verificationUrl && (
+                      <a
+                        href={item.verificationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      >
+                        <span>Verify Repository</span>
+                        <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+                      </a>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Verified Credentials & Campus Leadership Orbit Strip */}
+        <div className="glass-surface p-5 md:p-6 space-y-4">
+          <p className="type-meta uppercase tracking-[0.12em] text-[var(--planet-achievements)]">
+            CERTIFICATIONS &amp; CAMPUS MILESTONES
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {VERIFIED_CERTIFICATIONS.map((cert) => (
+              <div
+                key={cert.title}
+                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/70 px-3.5 py-2.5"
+              >
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  {cert.title}
+                </p>
+                <p className="type-meta text-[11px] text-[var(--text-muted)]">
+                  {cert.issuer}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </SectionShell>
   );
 }
