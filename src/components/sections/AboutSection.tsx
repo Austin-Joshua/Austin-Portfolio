@@ -1,8 +1,7 @@
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Compass, Cpu, GraduationCap } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { PortraitSlot } from '@/components/ui/PortraitSlot';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { profileData } from '@/data/profile';
 import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
@@ -13,11 +12,17 @@ export interface AboutSectionProps {
   profile?: ProfileData;
 }
 
+const VERIFIED_FOCUS_AREAS = [
+  { label: 'Full-Stack Web', detail: 'React · Next.js · TypeScript · Node.js' },
+  { label: 'Backend & APIs', detail: 'Python · Go (Gin) · Spring Boot' },
+  { label: 'Applied AI / ML', detail: 'scikit-learn · Predictive Modeling' },
+] as const;
+
 export function AboutSection({ profile = profileData }: AboutSectionProps) {
   const { prefersReducedMotion } = useOptionalMotionPreference();
   const contentScopeRef = useRef<HTMLDivElement>(null);
   const hairlineRef = useRef<HTMLDivElement>(null);
-  const portraitParallaxRef = useRef<HTMLDivElement>(null);
+  const stationParallaxRef = useRef<HTMLDivElement>(null);
 
   const validParagraphs = profile.aboutParagraphs.filter((p) => hasNonEmptyText(p));
   const hasResume =
@@ -26,8 +31,8 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   useEffect(() => {
     const scope = contentScopeRef.current;
     const hairline = hairlineRef.current;
-    const portraitFrame = portraitParallaxRef.current;
-    if (!scope || !hairline || !portraitFrame) return;
+    const stationCard = stationParallaxRef.current;
+    if (!scope || !hairline || !stationCard) return;
 
     return setupScopedScrollAnimation(
       contentScopeRef,
@@ -48,13 +53,13 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
           },
         );
 
-        portraitFrame.style.transform = 'none';
+        stationCard.style.transform = 'none';
         mm.add('(min-width: 1024px)', () => {
           gsap.fromTo(
-            portraitFrame,
-            { y: 16 },
+            stationCard,
+            { y: 12 },
             {
-              y: -16,
+              y: -12,
               ease: 'none',
               scrollTrigger: {
                 trigger: scope,
@@ -68,7 +73,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       },
       () => {
         hairline.style.transform = 'scaleX(1)';
-        portraitFrame.style.transform = 'none';
+        stationCard.style.transform = 'none';
       },
     );
   }, [prefersReducedMotion]);
@@ -78,7 +83,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       <div
         ref={contentScopeRef}
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
-        className="pointer-events-auto space-y-10"
+        className="pointer-events-auto space-y-8"
       >
         {/* Cyan-accented orbital trajectory divider */}
         <div
@@ -92,85 +97,154 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
           }}
         />
 
-        <div className="swiss-grid items-start gap-y-10">
-          {/* Narrative & orbital station telemetry */}
-          <div className="col-span-4 md:col-span-5 lg:col-span-7 space-y-6">
+        <div className="swiss-grid items-stretch gap-y-8">
+          {/* Left column: Narrative & Core Engineering Focus (Zero duplicate portrait) */}
+          <div className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6">
             {validParagraphs.length > 0 ? (
-              <GlassCard padding="lg" variant="default" className="space-y-5">
-                {validParagraphs.map((paragraph, idx) => (
-                  <p
-                    key={`${idx}-${paragraph.slice(0, 24)}`}
-                    className={[
-                      idx === 0
-                        ? 'type-lead text-[var(--text-primary)]'
-                        : 'type-body text-[var(--text-secondary)]',
-                      'max-w-[62ch]',
-                    ].join(' ')}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+              <GlassCard padding="lg" variant="default" className="space-y-5 h-full flex flex-col justify-between">
+                <div className="space-y-4">
+                  {validParagraphs.map((paragraph, idx) => (
+                    <p
+                      key={`about-paragraph-${idx}`}
+                      className="type-body text-[var(--text-secondary)] max-w-[65ch]"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+
+                {/* Verified Engineering Focus Telemetry Strip */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-[var(--border-subtle)] pt-5">
+                  {VERIFIED_FOCUS_AREAS.map((area) => (
+                    <div
+                      key={area.label}
+                      className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/65 px-3.5 py-3"
+                    >
+                      <p className="type-meta text-[11px] uppercase tracking-[0.08em] text-[var(--planet-about)] mb-1">
+                        {area.label}
+                      </p>
+                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                        {area.detail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </GlassCard>
             ) : (
               <GlassCard padding="lg" variant="elevated">
                 <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
-                  PROFILE // PENDING_VERIFICATION
+                  ABOUT // PENDING_VERIFICATION
                 </p>
-                <p className="type-body text-[var(--text-secondary)] max-w-[68ch]">
+                <p className="type-body text-[var(--text-secondary)] max-w-[65ch]">
                   {profile.aboutPendingNotice}
                 </p>
               </GlassCard>
             )}
-
-            {/* Verified Academic & Campus Leadership Telemetry Bar */}
-            <div className="flex flex-wrap gap-3 pt-1">
-              <div className="glass-surface px-4 py-2.5 rounded-[var(--radius-control)] border-l-2 border-l-[var(--planet-about)]">
-                <p className="type-meta text-[11px] uppercase text-[var(--planet-about)]">
-                  Degree · 2024–2028
-                </p>
-                <p className="text-sm font-medium text-[var(--text-primary)]">
-                  B.E. Computer Science &amp; Engineering · RIT Chennai
-                </p>
-              </div>
-              <div className="glass-surface px-4 py-2.5 rounded-[var(--radius-control)] border-l-2 border-l-[var(--planet-sun)]">
-                <p className="type-meta text-[11px] uppercase text-[var(--planet-sun)]">
-                  Leadership · 2026–2027
-                </p>
-                <p className="text-sm font-medium text-[var(--text-primary)]">
-                  President, Infinitus Mathematics Club
-                </p>
-              </div>
-            </div>
-
-            {hasResume && profile.resume && (
-              <div className="pt-2">
-                <a
-                  href={profile.resume.url}
-                  download="Austin_Joshua_Resume.pdf"
-                  className={[
-                    'glass-surface inline-flex min-h-[44px] items-center gap-2',
-                    'px-5 py-2.5 text-sm font-medium text-[var(--text-primary)]',
-                    'rounded-[var(--radius-control)] hover:border-[var(--planet-about)]',
-                    'transition-[border-color] duration-200',
-                    'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
-                  ].join(' ')}
-                >
-                  <span>{profile.resume.label}</span>
-                  {hasNonEmptyText(profile.resume.sizeLabel) && (
-                    <span className="type-meta text-[var(--text-muted)]">
-                      ({profile.resume.sizeLabel})
-                    </span>
-                  )}
-                  <ArrowUpRight className="size-4 text-[var(--planet-about)] shrink-0" aria-hidden="true" />
-                </a>
-              </div>
-            )}
           </div>
 
-          {/* Portrait slot column */}
-          <div className="col-span-4 md:col-span-3 lg:col-span-5">
-            <div ref={portraitParallaxRef} data-testid="about-portrait-parallax">
-              <PortraitSlot portrait={profile.portrait} />
+          {/* Right column: Balanced Editorial Telemetry & Academic Orbit Dossier (no duplicate portrait) */}
+          <div className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col">
+            <div
+              ref={stationParallaxRef}
+              data-testid="about-station-parallax"
+              className="h-full"
+            >
+              <GlassCard
+                padding="lg"
+                variant="strong"
+                className="relative overflow-hidden h-full flex flex-col justify-between gap-5 border-[var(--planet-about)]/30"
+              >
+                {/* Restrained orbital trajectory motif */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 240 240"
+                  className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 opacity-20"
+                  fill="none"
+                >
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="86"
+                    stroke="#38BDF8"
+                    strokeWidth="1"
+                    strokeDasharray="4 6"
+                  />
+                  <circle cx="120" cy="120" r="54" stroke="#DCE4F0" strokeOpacity="0.45" strokeWidth="1" />
+                  <circle cx="206" cy="120" r="4" fill="#38BDF8" />
+                </svg>
+
+                <div className="relative z-10 space-y-4">
+                  <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-about)]">
+                    TERRA CYAN // ORBITAL DOSSIER
+                  </p>
+
+                  <div className="space-y-3.5">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <GraduationCap className="size-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                          Degree Program
+                        </p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                          B.E. Computer Science &amp; Engineering (2024–2028)
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          Rajalakshmi Institute of Technology, Chennai
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 border-t border-[var(--border-subtle)]/70 pt-3.5">
+                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <Compass className="size-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                          Leadership &amp; Coordination
+                        </p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                          President, Infinitus Mathematics Club (2026–2027)
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          Overall Non-Technical Coordinator · TECHritz
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 border-t border-[var(--border-subtle)]/70 pt-3.5">
+                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <Cpu className="size-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                          Competition Record
+                        </p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                          3 Hackathon Awards (National &amp; International)
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          AgriFlux · CIVIQ · ResQ Meal
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {hasResume && profile.resume && (
+                  <div className="relative z-10 border-t border-[var(--border-subtle)]/80 pt-4">
+                    <a
+                      href={profile.resume.url}
+                      download="Austin_Joshua_Resume.pdf"
+                      className="inline-flex min-h-[44px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/15 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                    >
+                      <span>{profile.resume.label} (PDF)</span>
+                      <ArrowUpRight className="size-4 text-[var(--planet-about)] shrink-0" aria-hidden="true" />
+                    </a>
+                  </div>
+                )}
+              </GlassCard>
             </div>
           </div>
         </div>

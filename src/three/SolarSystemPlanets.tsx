@@ -1,10 +1,19 @@
 import '@react-three/fiber';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
-import { AdditiveBlending, Color, DoubleSide, type Group, type Mesh } from 'three';
+import { useEffect, useMemo, useRef, type RefObject } from 'react';
+import {
+  AdditiveBlending,
+  BackSide,
+  Color,
+  DoubleSide,
+  ShaderMaterial,
+  type Group,
+  type Mesh,
+  type MeshStandardMaterial,
+} from 'three';
 import {
   createPlanetaryRingTexture,
-  createPlanetSurfaceTexture,
+  createPlanetTextures,
   createSolarTexture,
 } from '@/three/planetTextures';
 import {
@@ -24,19 +33,58 @@ export interface SolarSystemPlanetsProps {
   orbitScale: number;
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
-  elapsedTimeRef: React.RefObject<number>;
+  elapsedTimeRef: RefObject<number>;
 }
 
-interface OrbitingPlanetMeshProps {
-  planet: PlanetDefinition;
-  orbitScale: number;
-  qualityTier: QualityTierConfig;
-  prefersReducedMotion: boolean;
-  isHovered: boolean;
-  isSelected: boolean;
-  elapsedTimeRef: React.RefObject<number>;
-  onHoverPlanet: (id: PlanetId | null) => void;
-  onSelectPlanet: (id: PlanetId) => void;
+/**
+ * Custom soft Fresnel BackSide atmospheric halo shader.
+ * Evaluates to zero opacity right at the outer silhouette limb so no hard circular
+ * outline ever appears around planets or the Sun.
+ */
+function createAtmosphericHaloMaterial(
+  hexColor: string,
+  shellRatio: number,
+  initialIntensity: number,
+): ShaderMaterial {
+  const cosAtInnerLimb = Math.sqrt(
+    Math.max(0.05, 1 - 1 / (shellRatio * shellRatio)),
+  );
+  return new ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: AdditiveBlending,
+    side: BackSide,
+    uniforms: {
+      uColor: { value: new Color(hexColor) },
+      uIntensity: { value: initialIntensity },
+      uMaxCos: { value: cosAtInnerLimb },
+    },
+    vertexShader: `
+      varying vec3 vViewNormal;
+      varying vec3 vViewDir;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vViewNormal = normalize(normalMatrix * normal);
+        vViewDir = normalize(-mvPosition.xyz);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uIntensity;
+      uniform float uMaxCos;
+      varying vec3 vViewNormal;
+      varying vec3 vViewDir;
+      void main() {
+        // On a BackSide shell, normal points away from camera; -dot(N, V) is 0 at outer edge
+        // and increases smoothly toward the inner planet limb where it peaks without hard cutoffs.
+        float rimCos = clamp(-dot(normalize(vViewNormal), normalize(vViewDir)), 0.0, 1.0);
+        float normRim = clamp(rimCos / max(uMaxCos, 0.001), 0.0, 1.0);
+        float alpha = pow(normRim, 2.8) * smoothstep(0.0, 0.25, normRim) * uIntensity;
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `,
+  });
 }
 
 function OrbitingPlanet({
@@ -46,164 +94,213 @@ function OrbitingPlanet({
   prefersReducedMotion,
   isHovered,
   isSelected,
-  elapsedTimeRef,
   onHoverPlanet,
   onSelectPlanet,
-}: OrbitingPlanetMeshProps) {
+  elapsedTimeRef,
+}: {
+  planet: PlanetDefinition;
+  orbitScale: number;
+  qualityTier: QualityTierConfig;
+  prefersReducedMotion: boolean;
+  isHovered: boolean;
+  isSelected: boolean;
+  onHoverPlanet: (id: PlanetId | null) => void;
+  onSelectPlanet: (id: PlanetId) => void;
+  elapsedTimeRef: RefObject<number>;
+}) {
   const groupRef = useRef<Group>(null);
   const sphereRef = useRef<Mesh>(null);
-  const moonsGroupRef = useRef<Group>(null);
-  const scaleRef = useRef<number>(1);
+  const haloMeshRef = useRef<Mesh>(null);
+  const matRef = useRef<MeshStandardMaterial>(null);
+  const ringRef = useRef<Mesh>(null);
+  const moonGroupRef = useRef<Group>(null);
 
-  const surfaceTexture = useMemo(() => createPlanetSurfaceTexture(planet), [planet]);
+  const planetTextures = useMemo(
+    () => createPlanetTextures(planet),
+    [planet],
+  );
   const ringTexture = useMemo(
-    () => (planet.hasRing ? createPlanetaryRingTexture(planet.color) : null),
-    [planet.color, planet.hasRing],
+    () =>
+      planet.hasRing
+        ? createPlanetaryRingTexture(planet.color, planet.rimColor)
+        : null,
+    [planet.hasRing, planet.color, planet.rimColor],
+  );
+  const atmosphereMaterial = useMemo(
+    () => createAtmosphericHaloMaterial(planet.rimColor, 1.16, 0.24),
+    [planet.rimColor],
   );
 
   useEffect(() => {
     return () => {
-      surfaceTexture.dispose();
+      planetTextures.map.dispose();
+      planetTextures.bumpMap.dispose();
       ringTexture?.dispose();
+      atmosphereMaterial.dispose();
     };
-  }, [surfaceTexture, ringTexture]);
+  }, [planetTextures, ringTexture, atmosphereMaterial]);
 
   useFrame((_, delta) => {
     const dt = prefersReducedMotion ? 0 : Math.min(delta, 0.05);
     const t = elapsedTimeRef.current ?? 0;
 
     if (groupRef.current) {
-      const [px, py, pz] = getPlanetWorldPosition(planet, t, orbitScale);
-      groupRef.current.position.set(px, py, pz);
+      const [x, y, z] = getPlanetWorldPosition(planet, t, orbitScale);
+      groupRef.current.position.set(x, y, z);
 
-      const targetScale = isHovered ? 1.24 : isSelected ? 1.14 : 1.0;
-      scaleRef.current += (targetScale - scaleRef.current) * Math.min(1, dt * 8 || 1);
-      groupRef.current.scale.setScalar(scaleRef.current);
+      const targetScale = isHovered ? 1.09 : isSelected ? 1.04 : 1.0;
+      const curScale = groupRef.current.scale.x;
+      const nextScale = curScale + (targetScale - curScale) * (prefersReducedMotion ? 1 : 0.14);
+      groupRef.current.scale.setScalar(nextScale);
     }
 
     if (sphereRef.current && !prefersReducedMotion) {
-      sphereRef.current.rotation.y += dt * 0.24;
+      sphereRef.current.rotation.y += dt * (isHovered ? 0.34 : 0.16);
     }
 
-    if (moonsGroupRef.current && !prefersReducedMotion) {
-      moonsGroupRef.current.rotation.y += dt * 0.65;
+    if (moonGroupRef.current && !prefersReducedMotion) {
+      moonGroupRef.current.rotation.y += dt * 0.45;
+    }
+
+    if (ringRef.current && !prefersReducedMotion) {
+      ringRef.current.rotation.z += dt * 0.06;
+    }
+
+    const haloMat = haloMeshRef.current?.material as ShaderMaterial | undefined;
+    const haloUniform = haloMat?.uniforms?.uIntensity;
+    if (haloUniform) {
+      const targetHalo = isHovered ? 0.44 : isSelected ? 0.32 : 0.2;
+      haloUniform.value += (targetHalo - haloUniform.value) * (prefersReducedMotion ? 1 : 0.16);
+    }
+
+    if (matRef.current) {
+      const targetEmissive = isHovered ? 0.16 : isSelected ? 0.09 : 0.03;
+      matRef.current.emissiveIntensity +=
+        (targetEmissive - matRef.current.emissiveIntensity) * (prefersReducedMotion ? 1 : 0.16);
     }
   });
 
-  const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
-    event.stopPropagation();
+  const isGasGiant =
+    planet.bandStyle === 'jovian' ||
+    planet.bandStyle === 'sovereign' ||
+    planet.bandStyle === 'molecular';
+  const r = planet.radius;
+  const orbitR = planet.orbitRadius * orbitScale;
+  const isHighlighted = isHovered || isSelected;
+  const sphereSegs = qualityTier.tier === 'desktop-high' ? 40 : 28;
+  const bumpScale = isGasGiant ? 0.014 : 0.042;
+  const roughness = isGasGiant ? 0.64 : 0.88;
+
+  const showMoons = qualityTier.tier !== 'mobile-conserving';
+  const moons = useMemo(() => {
+    const count = showMoons ? planet.moonCount : 0;
+    return Array.from({ length: count }, (_, idx) => ({
+      id: `${planet.id}-moon-${idx}`,
+      orbit: r * (1.72 + idx * 0.48),
+      size: Math.max(0.055, r * (0.14 - idx * 0.03)),
+      angle: idx * 2.2 + planet.initialAngle,
+      tilt: idx === 0 ? 0.2 : -0.26,
+    }));
+  }, [showMoons, planet.id, planet.moonCount, planet.initialAngle, r]);
+
+  const handleOver = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
     onHoverPlanet(planet.id);
-    if (typeof document !== 'undefined') {
-      document.body.style.cursor = 'pointer';
-    }
+    if (typeof document !== 'undefined') document.body.style.cursor = 'pointer';
   };
 
-  const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
-    event.stopPropagation();
+  const handleOut = () => {
     onHoverPlanet(null);
-    if (typeof document !== 'undefined') {
-      document.body.style.cursor = '';
-    }
+    if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
   };
 
-  const handleClick = (event: ThreeEvent<MouseEvent>) => {
-    event.stopPropagation();
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
     onSelectPlanet(planet.id);
   };
 
-  const segments = qualityTier.tier === 'mobile-conserving' ? 24 : 36;
-  const r = planet.radius;
-
   return (
-    <group>
-      {/* Clean hairline orbital path track */}
-      <mesh rotation={[Math.PI / 2 - planet.inclination * 0.4, 0, 0]}>
-        <torusGeometry
-          args={[
-            planet.orbitRadius * orbitScale,
-            isHovered || isSelected ? 0.018 : 0.009,
-            8,
-            Math.max(64, qualityTier.ringSegments),
-          ]}
-        />
+    <>
+      {/* Delicate celestial orbit path track */}
+      <mesh rotation={[Math.PI / 2 - planet.inclination, 0, 0]}>
+        <torusGeometry args={[orbitR, isHighlighted ? 0.01 : 0.006, 8, 128]} />
         <meshBasicMaterial
-          color={isHovered || isSelected ? planet.color : COSMIC_PALETTE.orbitTrack}
+          color={isHighlighted ? planet.color : COSMIC_PALETTE.orbitTrack}
           transparent
-          opacity={isHovered || isSelected ? 0.78 : 0.34}
+          opacity={isHighlighted ? 0.44 : 0.16}
+          depthWrite={false}
         />
       </mesh>
 
-      {/* Planet body + atmosphere rim + ring + moons */}
-      <group
-        ref={groupRef}
-        position={getPlanetWorldPosition(planet, 0, orbitScale)}
-      >
-        {/* Main textured planet sphere lit by central Sun */}
+      {/* Orbiting Celestial Body */}
+      <group ref={groupRef}>
         <mesh
           ref={sphereRef}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
+          onPointerOver={handleOver}
+          onPointerOut={handleOut}
           onClick={handleClick}
         >
-          <sphereGeometry args={[r, segments, segments]} />
+          <sphereGeometry args={[r, sphereSegs, sphereSegs]} />
           <meshStandardMaterial
-            map={surfaceTexture}
-            roughness={0.58}
-            metalness={0.14}
+            ref={matRef}
+            map={planetTextures.map}
+            bumpMap={planetTextures.bumpMap}
+            bumpScale={bumpScale}
+            roughness={roughness}
+            metalness={0.04}
             emissive={new Color(planet.color)}
-            emissiveIntensity={isHovered ? 0.42 : isSelected ? 0.28 : 0.16}
+            emissiveIntensity={0.03}
           />
         </mesh>
 
-        {/* Subtle luminous atmospheric scattering shell */}
-        <mesh scale={1.12}>
-          <sphereGeometry args={[r, 20, 20]} />
-          <meshBasicMaterial
-            color={planet.rimColor}
-            transparent
-            opacity={isHovered || isSelected ? 0.24 : 0.09}
-            blending={AdditiveBlending}
-            depthWrite={false}
-          />
+        {/* Soft seamless Fresnel atmospheric limb glow (zero hard outer edge) */}
+        <mesh ref={haloMeshRef} scale={1.16} material={atmosphereMaterial}>
+          <sphereGeometry args={[r, 32, 32]} />
         </mesh>
 
-        {/* Optional Saturnian planetary ring */}
+        {/* Saturnian multi-band planetary rings */}
         {ringTexture && (
-          <mesh rotation={[Math.PI / 2.4, 0.25, 0]}>
-            <ringGeometry args={[r * 1.38, r * 2.15, 48]} />
-            <meshBasicMaterial
+          <mesh
+            ref={ringRef}
+            rotation={[Math.PI / 2.35, 0.26, 0]}
+          >
+            <ringGeometry args={[r * 1.38, r * 2.18, 72]} />
+            <meshStandardMaterial
               map={ringTexture}
               transparent
-              opacity={isHovered || isSelected ? 0.88 : 0.62}
               side={DoubleSide}
+              roughness={0.85}
+              metalness={0.04}
+              opacity={isHighlighted ? 0.85 : 0.62}
               depthWrite={false}
             />
           </mesh>
         )}
 
-        {/* Orbiting satellites / moons */}
-        <group ref={moonsGroupRef}>
-          {Array.from({ length: planet.moonCount }).map((_, idx) => {
-            const angle = idx * Math.PI * 1.15;
-            const dist = r * (1.7 + idx * 0.45);
-            return (
+        {/* Orbiting rocky satellites */}
+        {moons.length > 0 && (
+          <group ref={moonGroupRef}>
+            {moons.map((moon) => (
               <mesh
-                key={idx}
-                position={[Math.cos(angle) * dist, idx === 0 ? 0.14 : -0.1, Math.sin(angle) * dist]}
+                key={moon.id}
+                position={[
+                  Math.cos(moon.angle) * moon.orbit,
+                  Math.sin(moon.angle) * moon.orbit * moon.tilt,
+                  Math.sin(moon.angle) * moon.orbit,
+                ]}
               >
-                <sphereGeometry args={[r * 0.16, 12, 12]} />
+                <sphereGeometry args={[moon.size, 14, 14]} />
                 <meshStandardMaterial
-                  color={planet.rimColor}
-                  roughness={0.5}
-                  emissive={new Color(planet.color)}
-                  emissiveIntensity={0.25}
+                  color="#9AA6B8"
+                  roughness={0.9}
+                  metalness={0.04}
                 />
               </mesh>
-            );
-          })}
-        </group>
+            ))}
+          </group>
+        )}
       </group>
-    </group>
+    </>
   );
 }
 
@@ -217,78 +314,89 @@ export function SolarSystemPlanets({
   onSelectPlanet,
   elapsedTimeRef,
 }: SolarSystemPlanetsProps) {
-  const sunMeshRef = useRef<Mesh>(null);
-  const coronaRef = useRef<Mesh>(null);
-
-  const solarTexture = useMemo(() => createSolarTexture(), []);
+  const sunRef = useRef<Mesh>(null);
+  const sunHaloRef = useRef<Mesh>(null);
+  const sunTexture = useMemo(() => createSolarTexture(), []);
+  const sunCoronaMaterial = useMemo(
+    () => createAtmosphericHaloMaterial(COSMIC_PALETTE.sunCorona, 1.38, 0.56),
+    [],
+  );
 
   useEffect(() => {
     return () => {
-      solarTexture.dispose();
+      sunTexture.dispose();
+      sunCoronaMaterial.dispose();
     };
-  }, [solarTexture]);
-
-  useFrame((_, delta) => {
-    if (prefersReducedMotion) return;
-    const dt = Math.min(delta, 0.05);
-    if (sunMeshRef.current) {
-      sunMeshRef.current.rotation.y += dt * 0.09;
-    }
-    if (coronaRef.current) {
-      const pulse = 1.2 + Math.sin((elapsedTimeRef.current ?? 0) * 1.4) * 0.04;
-      coronaRef.current.scale.setScalar(pulse);
-    }
-  });
+  }, [sunTexture, sunCoronaMaterial]);
 
   const isSunActive = hoveredPlanet === 'sun' || selectedPlanet === 'sun';
 
+  useFrame((_, delta) => {
+    const dt = prefersReducedMotion ? 0 : Math.min(delta, 0.05);
+    if (sunRef.current && !prefersReducedMotion) {
+      sunRef.current.rotation.y += dt * 0.08;
+    }
+    const haloMat = sunHaloRef.current?.material as ShaderMaterial | undefined;
+    const haloUniform = haloMat?.uniforms?.uIntensity;
+    if (haloUniform) {
+      const targetIntensity = isSunActive ? 0.68 : 0.48;
+      haloUniform.value += (targetIntensity - haloUniform.value) * (prefersReducedMotion ? 1 : 0.12);
+    }
+  });
+
+  const handleSunOver = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    onHoverPlanet('sun');
+    if (typeof document !== 'undefined') document.body.style.cursor = 'pointer';
+  };
+
+  const handleSunOut = () => {
+    onHoverPlanet(null);
+    if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
+  };
+
+  const handleSunClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    onSelectPlanet('sun');
+  };
+
   return (
     <group>
-      {/* Central Sun — Austin Joshua */}
+      {/* Central Sun Star Core */}
       <group>
         <mesh
-          ref={sunMeshRef}
-          onPointerOver={(e) => {
-            e.stopPropagation();
-            onHoverPlanet('sun');
-            if (typeof document !== 'undefined') document.body.style.cursor = 'pointer';
-          }}
-          onPointerOut={(e) => {
-            e.stopPropagation();
-            onHoverPlanet(null);
-            if (typeof document !== 'undefined') document.body.style.cursor = '';
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectPlanet('sun');
-          }}
+          ref={sunRef}
+          onPointerOver={handleSunOver}
+          onPointerOut={handleSunOut}
+          onClick={handleSunClick}
         >
-          <sphereGeometry args={[1.15, 36, 36]} />
-          <meshBasicMaterial map={solarTexture} />
-        </mesh>
-
-        {/* Outer solar corona halo */}
-        <mesh ref={coronaRef} scale={1.2}>
-          <sphereGeometry args={[1.18, 28, 28]} />
-          <meshBasicMaterial
-            color={COSMIC_PALETTE.sunCorona}
-            transparent
-            opacity={isSunActive ? 0.32 : 0.2}
-            blending={AdditiveBlending}
-            depthWrite={false}
+          <sphereGeometry args={[1.1, 44, 44]} />
+          <meshStandardMaterial
+            map={sunTexture}
+            roughness={0.85}
+            metalness={0.0}
+            emissive={new Color('#FFA844')}
+            emissiveMap={sunTexture}
+            emissiveIntensity={isSunActive ? 1.55 : 1.32}
           />
         </mesh>
 
-        {/* Central point light casting planetary highlights */}
+        {/* Smooth Fresnel radial solar corona fading continuously to zero at outer boundary */}
+        <mesh ref={sunHaloRef} scale={1.38} material={sunCoronaMaterial}>
+          <sphereGeometry args={[1.1, 36, 36]} />
+        </mesh>
+
+        {/* Physical inverse-square-like solar light illuminating planet terminators */}
         <pointLight
-          color="#FFE3A8"
-          intensity={isSunActive ? 75 : 62}
-          distance={38}
-          decay={1.4}
+          position={[0, 0, 0]}
+          intensity={32}
+          distance={54}
+          decay={1.2}
+          color="#FFE3B3"
         />
       </group>
 
-      {/* Six portfolio destination planets */}
+      {/* Six Portfolio Planet Worlds */}
       {SOLAR_SYSTEM_PLANETS.map((planet) => (
         <OrbitingPlanet
           key={planet.id}
@@ -298,9 +406,9 @@ export function SolarSystemPlanets({
           prefersReducedMotion={prefersReducedMotion}
           isHovered={hoveredPlanet === planet.id}
           isSelected={selectedPlanet === planet.id}
-          elapsedTimeRef={elapsedTimeRef}
           onHoverPlanet={onHoverPlanet}
           onSelectPlanet={onSelectPlanet}
+          elapsedTimeRef={elapsedTimeRef}
         />
       ))}
     </group>

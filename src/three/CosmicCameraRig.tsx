@@ -61,18 +61,20 @@ export function CosmicCameraRig({
     if (isExploreOverview) {
       const orbit = orbitControlRef.current ?? { yaw: 0, pitch: 0, zoom: 1 };
       const isDesktop = qualityTier.tier === 'desktop-high';
-      // Offset lookAt slightly left on desktop so the Sun & orbits blossom behind/around right-hand portrait
-      const heroLookX = isDesktop ? -2.2 : 0;
-      const baseRadius = (isDesktop ? 15.4 : 18.2) / Math.max(0.75, Math.min(1.4, orbit.zoom));
-      const yaw = -0.14 + orbit.yaw + ptr.x * 0.18;
-      const pitch = 0.28 + orbit.pitch - ptr.y * 0.1;
+      // Frame the solar system toward the outer right horizon on desktop so the Sun & orbits
+      // complement the portrait stage cleanly without crowding left typography or Austin's face
+      const heroLookX = isDesktop ? -3.1 : 0;
+      const baseRadius =
+        (isDesktop ? 18.2 : 20.5) / Math.max(0.75, Math.min(1.4, orbit.zoom));
+      const yaw = -0.22 + orbit.yaw + ptr.x * 0.16;
+      const pitch = 0.36 + orbit.pitch - ptr.y * 0.08;
 
       const camX = heroLookX + Math.sin(yaw) * baseRadius;
-      const camY = Math.sin(pitch) * baseRadius * 0.72 + 1.1;
+      const camY = Math.sin(pitch) * baseRadius * 0.72 + 1.3;
       const camZ = Math.cos(yaw) * Math.cos(pitch) * baseRadius;
 
       targetCamPosRef.current.set(camX, camY, camZ);
-      targetLookAtRef.current.set(heroLookX, isDesktop ? -0.1 : 0.4, 0);
+      targetLookAtRef.current.set(heroLookX, isDesktop ? -0.35 : 0.45, 0);
     } else {
       const focusSection =
         activeSection !== 'hero'
@@ -84,16 +86,44 @@ export function CosmicCameraRig({
       const planet = getPlanetDefinition(focusSection);
       const [px, py, pz] = getPlanetWorldPosition(planet, t, orbitScale);
 
-      // Frame the active planet richly toward the outer flank so section copy stays crystal clear
-      const offsetX = planet.radius * 2.4 + 1.45;
-      const camOffsetZ = Math.max(3.6, planet.radius * 5.6);
+      // Approach each planet tangentially from slightly sunward so the central Sun stays
+      // behind/aside the camera rather than flaring behind UI headings, illuminating a rich crescent
+      const radialLen = Math.hypot(px, pz) || 1;
+      const rx = px / radialLen;
+      const rz = pz / radialLen;
+      const tx = -rz;
+      const tz = rx;
 
-      targetCamPosRef.current.set(
-        px + ptr.x * 0.35 + offsetX * 0.35,
-        py + 0.9 - ptr.y * 0.22,
-        pz + camOffsetZ,
+      const isDesktop = qualityTier.tier === 'desktop-high';
+      const maxSunClearDist = Math.max(2.9, planet.orbitRadius * orbitScale * 0.88);
+      const preferredDist = planet.hasRing
+        ? Math.max(5.2, planet.radius * 8.4)
+        : Math.max(4.4, planet.radius * 7.0);
+      const camDist = Math.min(maxSunClearDist, isDesktop ? preferredDist : preferredDist * 1.08);
+      const sideBias = isDesktop ? 1.65 : 0.95;
+
+      // Nearly sunward + slight tangent keeps the central Sun behind the camera shoulder
+      // so guided sections never show a giant bright star behind left-aligned white headings
+      const offsetVecX = tx * 0.28 - rx * 0.96;
+      const offsetVecZ = tz * 0.28 - rz * 0.96;
+
+      const camX = px + offsetVecX * camDist + ptr.x * 0.35;
+      const camY = py + (isDesktop ? 1.05 : 1.35) - ptr.y * 0.22;
+      const camZ = pz + offsetVecZ * camDist;
+
+      // Project planet toward the right flank of viewport so left headings and center cards stay clear
+      const dirX = px - camX;
+      const dirZ = pz - camZ;
+      const dirLen = Math.hypot(dirX, dirZ) || 1;
+      const screenLeftX = dirZ / dirLen;
+      const screenLeftZ = -dirX / dirLen;
+
+      targetCamPosRef.current.set(camX, camY, camZ);
+      targetLookAtRef.current.set(
+        px + screenLeftX * sideBias,
+        py - (isDesktop ? 0.12 : 0.55),
+        pz + screenLeftZ * sideBias,
       );
-      targetLookAtRef.current.set(px - 0.55, py, pz);
     }
 
     const alpha = prefersReducedMotion ? 1 : 1 - Math.exp(-dt * 4.2);

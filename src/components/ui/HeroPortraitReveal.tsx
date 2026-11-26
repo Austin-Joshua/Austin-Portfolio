@@ -97,9 +97,9 @@ export function HeroPortraitReveal({
           setIsFocusedWithin(false);
         }
       }}
-      className="relative z-10 m-0 flex h-full w-full items-end justify-center overflow-hidden select-none"
+      className="relative z-10 m-0 flex h-full w-full items-end justify-center lg:justify-end select-none"
     >
-      {/* Restrained pointer spotlight kept strictly inside the portrait bounds */}
+      {/* Seamless soft atmospheric halo around silhouette (never clipped inside a box frame) */}
       <div
         aria-hidden="true"
         className={[
@@ -108,11 +108,11 @@ export function HeroPortraitReveal({
           isRevealed ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
         style={{
-          background: `radial-gradient(240px circle at ${spotlight.x}% ${spotlight.y}%, var(--accent-primary-glow) 0%, transparent 72%)`,
+          background: `radial-gradient(closest-side at ${spotlight.x}% ${spotlight.y}%, rgba(255, 210, 125, 0.1) 0%, rgba(56, 189, 248, 0.04) 48%, transparent 100%)`,
         }}
       />
 
-      {/* Transparent cutout subject — shared element transitioning smoothly from shadow to full colour */}
+      {/* Transparent cutout subject — shared element transitioning smoothly from shadow to full colour with seamless bottom feather */}
       <img
         src={portrait.src}
         alt={portrait.alt}
@@ -122,22 +122,15 @@ export function HeroPortraitReveal({
         decoding="async"
         onError={() => setFailedSrc(portrait.src)}
         className={[
-          'relative z-10 max-h-[94%] w-auto max-w-full object-contain object-bottom',
+          'relative z-10 h-auto max-h-[96%] w-auto max-w-full object-contain object-bottom',
+          '[mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]',
+          '[-webkit-mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]',
           'portrait-cutout-img',
           prefersReducedMotion ? 'portrait-cutout-reduced' : '',
           isRevealed ? 'portrait-cutout-revealed' : 'portrait-cutout-shadow',
         ]
           .filter(Boolean)
           .join(' ')}
-      />
-
-      {/* Subtle bottom ground mask blending torso edge cleanly into the canvas */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16"
-        style={{
-          background: 'linear-gradient(to top, var(--surface-canvas) 0%, transparent 100%)',
-        }}
       />
 
       {/* Accessible keyboard & touch toggle control */}
@@ -150,7 +143,7 @@ export function HeroPortraitReveal({
           'glass-surface-strong absolute bottom-3 right-3 z-30',
           'inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2',
           'rounded-[var(--radius-control)] font-mono text-xs font-medium text-[var(--text-primary)]',
-          'cursor-pointer transition-[border-color,background-color] duration-[var(--transition-theme)]',
+          'cursor-pointer transition-[border-color,background-color] duration-200',
           'hover:border-[var(--accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
         ].join(' ')}
       >

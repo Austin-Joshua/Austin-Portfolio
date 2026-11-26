@@ -175,7 +175,7 @@ describe('Phase 7 — GSAP & Motion Choreography', () => {
 
     renderWithMotionProviders(<AboutSection profile={sampleProfile} />);
     expect(screen.getByTestId('about-hairline').style.transform).toBe('scaleX(1)');
-    expect(screen.getByTestId('about-portrait-parallax').style.transform).toBe('none');
+    expect(screen.getByTestId('about-station-parallax').style.transform).toBe('none');
     expect(reducedFromToSpy).not.toHaveBeenCalled();
   });
 

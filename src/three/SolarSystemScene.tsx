@@ -54,12 +54,12 @@ export function SolarSystemScene({
     <>
       <color attach="background" args={[COSMIC_PALETTE.canvas]} />
 
-      {/* Subtle cosmic fill + sunlit terminator contrast */}
-      <ambientLight intensity={0.28} color="#8DA4C8" />
+      {/* Restrained deep-space ambient + soft cool bounce for crisp day/night terminators */}
+      <ambientLight intensity={0.14} color="#768CB0" />
       <directionalLight
-        position={[-10, 8, 6]}
-        intensity={0.55}
-        color="#DCE4F0"
+        position={[-12, 9, -8]}
+        intensity={0.26}
+        color="#8CAAD8"
       />
 
       <HyperspaceStarfield

@@ -34,21 +34,26 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
     navigateToPlanet(id);
   };
 
+  const isExploreHero = navigationMode === 'explore' && activeSection === 'hero';
+
   return (
     <div
       data-testid="solar-system-hud"
       className={[
-        'pointer-events-auto flex flex-col gap-2.5',
+        'flex flex-col gap-2 transition-opacity duration-200',
+        isExploreHero
+          ? 'pointer-events-auto opacity-100'
+          : 'pointer-events-none opacity-0 focus-within:pointer-events-auto focus-within:opacity-100',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {/* Interactive Planet Navigation Strip */}
+      {/* Compact Orbital Waypoint Strip integrated directly into Hero Explore state */}
       <div
         role="group"
         aria-label="Solar System Planet Destinations"
-        className="glass-surface inline-flex flex-wrap items-center gap-1.5 px-2.5 py-2 rounded-[var(--radius-card)]"
+        className="inline-flex flex-wrap items-center gap-1 border-t border-[var(--border-subtle)]/80 pt-3"
       >
         <button
           type="button"

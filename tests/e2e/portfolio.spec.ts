@@ -375,6 +375,15 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(stageBox!.height).toBeGreaterThan(300);
     expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
 
+    // Phase 2 structural polish invariants: single portrait globally (Hero only), single social relay (Contact only), single Back-to-Top
+    await expect(page.locator('img[src="/assets/portrait/austin-joshua-cutout.png"]')).toHaveCount(1);
+    await expect(page.locator('#about img')).toHaveCount(0);
+    await expect(page.locator('#hero a[href*="github.com"], #hero a[href*="linkedin.com"]')).toHaveCount(0);
+    await expect(page.locator('footer a[href*="github.com"], footer a[href*="linkedin.com"]')).toHaveCount(0);
+    await expect(page.locator('footer a[href="#hero"]')).toHaveCount(0);
+    await expect(page.getByTestId('contact-relay-dock').locator('a[href*="github.com"]')).toHaveCount(1);
+    await expect(page.getByTestId('contact-relay-dock').locator('a[href*="linkedin.com"]')).toHaveCount(1);
+
     // Hero portrait cutout: real PNG transparency + silhouette->colour hover/click/focus states
     const failedPortraitRequests: Array<{ url: string; status: number }> = [];
     page.on('response', (res) => {

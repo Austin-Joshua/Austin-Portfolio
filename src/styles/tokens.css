@@ -59,8 +59,8 @@
   --grid-gap-mobile: 16px;
   --grid-gap-tablet: 20px;
   --grid-gap-desktop: 24px;
-  --section-py-mobile: 5rem;
-  --section-py-desktop: 8rem;
+  --section-py-mobile: 2.75rem;
+  --section-py-desktop: 4.25rem;
   --nav-offset: 5.5rem;
 
   /* Radii — sleek cosmic geometry */

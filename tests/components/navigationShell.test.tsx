@@ -186,23 +186,15 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     }
   });
 
-  it('renders Footer with Austin Joshua identity, dynamic year, Back to Top link, and passes axe', async () => {
-    const user = userEvent.setup();
-    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
-
+  it('renders Footer with Austin Joshua identity, dynamic year, zero duplicate Back-to-Top or social links, and passes axe', async () => {
     const { container } = renderWithProviders(<Footer />);
     const year = String(new Date().getFullYear());
 
     expect(screen.getByText('Austin Joshua')).toBeInTheDocument();
     expect(screen.getByText(new RegExp(year))).toBeInTheDocument();
-
-    const backToTop = screen.getByRole('link', { name: 'Back to Top' });
-    expect(backToTop).toHaveAttribute('href', '#hero');
-
-    await user.click(backToTop);
-    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    expect(screen.queryByRole('link', { name: /Back to Top/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /GitHub/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /LinkedIn/i })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
-
-    scrollToSpy.mockRestore();
   });
 });

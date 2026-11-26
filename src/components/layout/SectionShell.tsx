@@ -34,9 +34,9 @@ export function SectionShell({
   const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
 
   const headerContent = title ? (
-    <div className="pointer-events-auto mb-10 md:mb-14 max-w-[68ch]">
+    <div className="pointer-events-auto mb-6 md:mb-8 max-w-[68ch]">
       {planet && (
-        <div className="inline-flex items-center gap-2 mb-3">
+        <div className="inline-flex items-center gap-2 mb-2.5">
           <span
             aria-hidden="true"
             className="size-2 rounded-full"
@@ -51,7 +51,7 @@ export function SectionShell({
         </div>
       )}
       {!planet && indexLabel && (
-        <p className="type-meta uppercase tracking-[0.14em] text-[var(--text-muted)] mb-3">
+        <p className="type-meta uppercase tracking-[0.14em] text-[var(--text-muted)] mb-2.5">
           {index} {'//'} {indexLabel}
         </p>
       )}
@@ -72,7 +72,7 @@ export function SectionShell({
           </h2>
         ))}
       {description && (
-        <p className="type-lead text-[var(--text-secondary)] max-w-[68ch] mt-4 rounded-[var(--radius-card)] bg-[#020307]/72 px-4 py-2.5 backdrop-blur-sm border border-white/[0.06]">
+        <p className="type-lead text-[var(--text-secondary)] max-w-[65ch] mt-3 [text-shadow:0_2px_18px_rgba(2,3,7,0.92)]">
           {description}
         </p>
       )}

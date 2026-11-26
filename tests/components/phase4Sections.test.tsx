@@ -62,7 +62,8 @@ describe('Phase 4 Sections & Components', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Austin Joshua' })).toBeInTheDocument();
     expect(screen.getByText('Verified narrative pending.')).toBeInTheDocument();
-    expect(screen.getByText('PORTRAIT // ASSET_PENDING')).toBeInTheDocument();
+    expect(screen.getByText('ABOUT // PENDING_VERIFICATION')).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /Austin Joshua portrait/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Résumé/i })).not.toBeInTheDocument();
 
     const populatedProfile: ProfileData = {
@@ -86,7 +87,8 @@ describe('Phase 4 Sections & Components', () => {
     expect(screen.getByText('Building software and AI systems.')).toBeInTheDocument();
     expect(screen.getByText('Paragraph one narrative.')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /Résumé/i })).toHaveLength(2);
-    expect(screen.getAllByRole('img', { name: 'Austin Joshua portrait' })).toHaveLength(2);
+    expect(screen.getAllByRole('img', { name: 'Austin Joshua portrait' })).toHaveLength(1);
+    expect(document.querySelector('#about img')).toBeNull();
   });
 
   it('PortraitSlot switches cleanly to Swiss AJ monogram fallback when image errors', () => {

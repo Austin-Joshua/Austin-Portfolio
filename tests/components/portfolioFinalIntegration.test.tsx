@@ -144,8 +144,11 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     const githubLinks = screen.getAllByRole('link', { name: /Austin Joshua on GitHub/i });
     const linkedinLinks = screen.getAllByRole('link', { name: /Austin Joshua on LinkedIn/i });
-    expect(githubLinks).toHaveLength(3); // Hero + Contact + Footer
-    expect(linkedinLinks).toHaveLength(3); // Hero + Contact + Footer
+    expect(githubLinks).toHaveLength(1); // Authoritative single Contact channel dock only
+    expect(linkedinLinks).toHaveLength(1);
+    expect(document.querySelector('#hero a[href*="github.com"]')).toBeNull();
+    expect(document.querySelector('footer a[href*="github.com"]')).toBeNull();
+    expect(document.querySelector('footer a[href="#hero"]')).toBeNull();
   });
 
   it('verifies curated project worlds cross-reference verified skills and open deep links', async () => {

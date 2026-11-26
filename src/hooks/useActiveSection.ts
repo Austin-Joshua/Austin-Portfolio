@@ -111,9 +111,10 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
             continue;
           }
 
+          const visibleHeight = entry.intersectionRect?.height ?? 0;
           observedStates.set(targetId, {
             isIntersecting: entry.isIntersecting,
-            ratio: entry.intersectionRatio,
+            ratio: visibleHeight > 0 ? visibleHeight : entry.intersectionRatio,
           });
         }
 
@@ -129,10 +130,27 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
       observer.observe(element);
     }
 
+    const handleEdgeScroll = () => {
+      const doc = document.documentElement;
+      const scrollHeight = doc.scrollHeight;
+      const innerHeight = window.innerHeight;
+      if (scrollHeight > innerHeight + 120) {
+        if (window.scrollY <= 36) {
+          setActiveSection(defaultSection);
+        } else if (window.scrollY + innerHeight >= scrollHeight - 40) {
+          const lastId = stableSectionIds[stableSectionIds.length - 1];
+          if (lastId) setActiveSection(lastId);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleEdgeScroll, { passive: true });
+
     return () => {
       observer.disconnect();
+      window.removeEventListener('scroll', handleEdgeScroll);
     };
-  }, [stableSectionIds, rootMargin, threshold]);
+  }, [stableSectionIds, rootMargin, threshold, defaultSection]);
 
   return activeSection;
 }
