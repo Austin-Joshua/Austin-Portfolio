@@ -10,8 +10,8 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps) {
   const isDark = theme === 'dark';
 
   const accessibleName = isDark
-    ? 'Abyssal active — Switch to Crimson Void light theme'
-    : 'Crimson active — Switch to Abyssal Teal dark theme';
+    ? 'Midnight Amethyst active — Switch to Scarlet Porcelain light theme'
+    : 'Scarlet Porcelain active — Switch to Midnight Amethyst dark theme';
 
   return (
     <button

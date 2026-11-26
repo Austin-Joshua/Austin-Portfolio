@@ -1,4 +1,6 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
@@ -49,7 +51,7 @@ describe('Final Integration Audit — Navigation, Icons, 3D Hero, Data & Routing
     expect(resumeLink.textContent?.trim()).toBe('');
 
     const themeBtn = screen.getByRole('button', {
-      name: /Abyssal active — Switch to Crimson Void light theme/i,
+      name: /Midnight Amethyst active — Switch to Scarlet Porcelain light theme/i,
     });
     expect(themeBtn.textContent?.trim()).toBe('');
     expect(await axe(container)).toHaveNoViolations();
@@ -67,6 +69,49 @@ describe('Final Integration Audit — Navigation, Icons, 3D Hero, Data & Routing
     const fallbacks = screen.getAllByTestId('universe-fallback');
     expect(fallbacks).toHaveLength(1);
     expect(stage).toContainElement(fallbacks[0]);
+
+    const heroPortrait = screen.getByTestId('hero-portrait-figure');
+    expect(stage).toContainElement(heroPortrait);
+  });
+
+  it('serves a genuine transparent RGBA cutout PNG and preserves source photo outside public/', () => {
+    const cutoutPath = resolve(process.cwd(), 'public/assets/portrait/austin-joshua-cutout.png');
+    expect(existsSync(cutoutPath)).toBe(true);
+    expect(existsSync(resolve(process.cwd(), 'public/assets/portrait/austin-joshua.jpg'))).toBe(false);
+    expect(existsSync(resolve(process.cwd(), 'src/assets/source/austin-joshua.jpg'))).toBe(true);
+
+    const buf = readFileSync(cutoutPath);
+    // PNG magic header + IHDR RGBA color type (6)
+    expect(buf.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(buf.readUInt32BE(16)).toBe(604);
+    expect(buf.readUInt32BE(20)).toBe(806);
+    expect(buf[25]).toBe(6);
+  });
+
+  it('renders Hero portrait in shadow silhouette by default and reveals color on hover, focus, or tap', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<HeroSection />);
+
+    const figure = screen.getByTestId('hero-portrait-figure');
+    const toggleBtn = screen.getByTestId('portrait-reveal-toggle');
+    const img = within(figure).getByRole('img', { name: /Austin Joshua/i });
+
+    expect(img).toHaveAttribute('src', '/assets/portrait/austin-joshua-cutout.png');
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.pointerEnter(figure);
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+    fireEvent.pointerLeave(figure);
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
+
+    await user.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+
+    await user.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
   });
 
   it('renders consistent brand SVG icons for GitHub, LinkedIn, and Email in Hero, Contact, and Footer without ExternalLink placeholders', () => {

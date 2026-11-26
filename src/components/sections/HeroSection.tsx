@@ -2,6 +2,7 @@ import { ArrowDownRight, Download } from 'lucide-react';
 import type { MouseEvent, RefObject } from 'react';
 import { GitHubIcon, LinkedInIcon, MailIcon } from '@/components/icons/SocialIcons';
 import { SectionShell } from '@/components/layout/SectionShell';
+import { HeroPortraitReveal } from '@/components/ui/HeroPortraitReveal';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { contactData } from '@/data/contact';
 import { profileData } from '@/data/profile';
@@ -48,7 +49,7 @@ export function HeroSection({
       labelledbyId="hero-heading"
       headingLevel={1}
       withDivider={false}
-      className="relative min-h-[calc(100dvh-0rem)] flex flex-col justify-center overflow-hidden pt-28 pb-24 md:pt-32 md:pb-28"
+      className="relative min-h-[calc(100dvh-0rem)] flex flex-col justify-center overflow-hidden pt-24 pb-24 md:pt-28 md:pb-24"
     >
       {/* Atmospheric background layer */}
       <div
@@ -59,10 +60,10 @@ export function HeroSection({
         }}
       />
 
-      {/* Content + Real 3D Hero Stage */}
-      <div className="relative z-10 swiss-grid items-center gap-y-10">
+      {/* Content + Real 3D Hero Stage + Foreground Portrait */}
+      <div className="relative z-10 swiss-grid items-center gap-y-8">
         {/* Left column — identity & CTAs */}
-        <div className="col-span-4 md:col-span-8 lg:col-span-6 space-y-7">
+        <div className="col-span-4 md:col-span-4 lg:col-span-6 space-y-6 md:space-y-7">
           {hasRole && profile.roleLabel && (
             <p className="eyebrow-label">{profile.roleLabel}</p>
           )}
@@ -79,7 +80,7 @@ export function HeroSection({
             </p>
           )}
 
-          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-1">
             <a
               href="#projects"
               onClick={(event) => handleJump(event, 'projects')}
@@ -192,20 +193,23 @@ export function HeroSection({
           )}
         </div>
 
-        {/* Right / below visual stage — genuine single WebGL/fallback UniverseLayer */}
+        {/* Right / below Hero visual stage: single 3D Universe backdrop + foreground shadow-to-reveal portrait */}
         <div
-          aria-hidden="true"
           data-testid="hero-3d-stage"
-          className="relative col-span-4 md:col-span-8 lg:col-span-6 h-[320px] sm:h-[380px] lg:h-[540px] w-full overflow-hidden rounded-[var(--radius-portrait)] pointer-events-none select-none"
+          className="relative col-span-4 md:col-span-4 lg:col-span-6 h-[340px] sm:h-[420px] md:h-[460px] lg:h-[560px] w-full overflow-hidden rounded-[var(--radius-portrait)]"
         >
           <UniverseLayer scrollProgressRef={scrollProgressRef} />
+          <HeroPortraitReveal
+            portrait={profile.portrait}
+            prefersReducedMotion={prefersReducedMotion}
+          />
         </div>
       </div>
 
       {/* Scroll cue */}
       <div
         aria-hidden="true"
-        className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-1 opacity-40"
+        className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1 opacity-45"
       >
         <span className="type-meta text-[var(--text-muted)]">scroll</span>
         <div className="w-px h-7 bg-[var(--accent-primary)]" />

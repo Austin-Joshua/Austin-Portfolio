@@ -23,7 +23,7 @@ In accordance with baseline governance, the following cross-document tensions ar
 
 | Topic | Conflicting / Divergent Sources | Architectural Handling & Status |
 | :--- | :--- | :--- |
-| **Initial Theme vs. `prefers-color-scheme`** | `PROJECT_BRIEF.md` (Sec. 8) expects `prefers-color-scheme` support. `PRD.md` (`FR-033` Must), `TRD.md` (Sec. 6.2), and `UI_UX_DESIGN.md` confirm **Abyssal Teal (dark)** as the mandatory default when no stored preference exists (`FR-037` Could covers an optional reset back to Abyssal Teal). | **Resolved (Confirmed Default per `FR-033`):** Pre-paint script honors `localStorage` first and defaults to `dark` (Abyssal Teal); `prefers-color-scheme` is not used to override the initial dark default. |
+| **Initial Theme vs. `prefers-color-scheme`** | `PROJECT_BRIEF.md` (Sec. 8) expects `prefers-color-scheme` support. `PRD.md` (`FR-033` Must), `TRD.md` (Sec. 6.2), and `UI_UX_DESIGN.md` confirm **Midnight Amethyst (dark)** as the mandatory default when no stored preference exists (`FR-037` Could covers an optional reset back to dark default). | **Resolved (Confirmed Default per `FR-033`):** Pre-paint script honors `localStorage` first and defaults to `dark` (Midnight Amethyst); `prefers-color-scheme` is not used to override the initial dark default. |
 | **WCAG 2.1 AA vs. WCAG 2.2 AA** | `PROJECT_BRIEF.md` (Sec. 8/11) suggested WCAG 2.1 AA (`TBD`). `PRD.md` (`NFR-006`, `NFR-015`), `TRD.md`, and `UI_UX_DESIGN.md` mandate **WCAG 2.2 AA**. | **Mandatory per PRD `NFR-006`:** Architecture enforces WCAG 2.2 AA controls (`>= 24x24px` targets, `scroll-padding-top` Focus Not Obscured). |
 | **Typography & Container Width `TBD`s** | `TRD.md` (Sec. 10 & 17.2) left font choices and `1280px–1440px` container cap as `TBD`. `UI_UX_DESIGN.md` (Sec. 3.1 & 4) finalized **`Syne` / `Inter` / `JetBrains Mono`** and **`1360px`** max container width. | **Resolved by `UI_UX_DESIGN.md`:** System tokens and font preloads adopt `Syne`, `Inter`, `JetBrains Mono` (`woff2`) and `1360px` max width. |
 | **Modal Geometry (`max-w-[920px]` / Drawer vs. `max-w-[880px]`)** | `PRD.md` & `TRD.md` allow modal or slide-over drawer. `UI_UX_DESIGN.md` (Sec. 7) specifies a centered glass modal (`max-w-[880px]`) on desktop and full-height bottom sheet on mobile. | **Aligned to `UI_UX_DESIGN.md`:** Implement `ProjectDetailModal` as centered desktop modal (`880px`) + mobile sheet while preserving portal/focus-trap/URL contracts (`FR-016`, `FR-017`, `FR-019`). |
@@ -44,7 +44,7 @@ In accordance with baseline governance, the following cross-document tensions ar
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ React Root Shell (App.tsx + RootErrorBoundary)                          │
-│  ├─ Contexts: ThemeContext (Abyssal Teal / Crimson Void)                │
+│  ├─ Contexts: ThemeContext (Midnight Amethyst / Scarlet Porcelain)     │
 │  │            MotionPreferenceContext (OS prefers-reduced-motion)       │
 │  │            ProjectDialogContext / useProjectUrlState (?project=...)  │
 │  │                                                                      │
@@ -54,10 +54,10 @@ In accordance with baseline governance, the following cross-document tensions ar
 │  │       └─ [Fallback / Loading] -> UniverseFallback (CSS/SVG Backdrop) │
 │  │                                                                      │
 │  ├─ Semantic Layer 1 (z-10, Primary Interactive DOM)                    │
-│  │   ├─ SkipLink + Sticky Navbar (FR-001..005, ThemeToggle)             │
+│  │   ├─ SkipLink + Sticky Navbar (FR-001..005, ThemeToggle, Résumé)     │
 │  │   └─ <main id="main-content">                                        │
-│  │       ├─ #hero         (HeroSection)                                 │
-│  │       ├─ #about        (AboutSection + PortraitSlot)                 │
+│  │       ├─ #hero         (HeroSection: 3D Stage + HeroPortraitReveal)  │
+│  │       ├─ #about        (AboutSection + PortraitSlot Cutout Frame)    │
 │  │       ├─ #skills       (SkillsSection + Domain Tabs)                 │
 │  │       ├─ #projects     (ProjectsSection + Category Filter)           │
 │  │       ├─ #experience   (ExperienceSection + GSAP Rail)               │
@@ -194,16 +194,16 @@ ContactData
 ## 6. Theme Tokens and Theme-Switching Architecture
 
 ### 6.1 Token Layers (`src/styles/tokens.css` & `tailwind.config.ts`)
-- **Theme Attributes:** `[data-theme="dark"]` (**Abyssal Teal**, default, `FR-033`) and `[data-theme="light"]` (**Crimson Void**, light-adapted, `FR-034`).
+- **Theme Attributes:** `[data-theme="dark"]` (**Midnight Amethyst**, default, `FR-033`) and `[data-theme="light"]` (**Scarlet Porcelain**, light-adapted, `FR-034`).
 - **Dual-Purpose Variables:**
-  - *DOM Tokens:* Surfaces (`--surface-canvas`, `--surface-elevated`, `--surface-card`, `--surface-glass`, `--surface-scrim`), typography (`--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-accent`), accents (`--accent-primary`, `--accent-primary-deep`, `--accent-chrome`, `--accent-gold`, `--accent-copper`), borders, focus ring (`--focus-ring`), and status tokens (`UI_UX_DESIGN.md` Sec. 2).
+  - *DOM Tokens:* Surfaces (`--surface-canvas`, `--surface-elevated`, `--surface-card`, `--surface-glass`, `--surface-scrim`), typography (`--text-primary`, `--text-secondary`, `--text-muted`, `--text-on-accent`), accents (`--accent-primary`, `--accent-primary-deep`, `--accent-secondary`, `--accent-chrome`, `--accent-gold`, `--accent-copper`), borders, focus ring (`--focus-ring`), and status tokens (`UI_UX_DESIGN.md` Sec. 2).
   - *3D Scene Palette Map:* A typed JS/TS palette map (`src/three/themePalettes.ts`) mirrors the exact hex tokens defined in `UI_UX_DESIGN.md` (Sec. 2 & Sec. 8) so Three.js materials/shaders update deterministically on `theme` prop change (`FR-034`) without `getComputedStyle` polling per frame:
-    - **Approved Dark Core Tokens:** `#061A1D` (canvas/void), `#00D5C5` (primary accent), `#126B75` (deep teal point accent), `#E8FFFC` (light highlight).
-    - **Proposed Tokens Awaiting Sign-Off (`TBD`):** Dark secondary accents (`#DCE6E8` Liquid Chrome, `#E5B85C` Obsidian Gold, `#9A453B` Burgundy Copper) and Light Crimson Void 3D palette (`#FAF6F6` canvas/mist, `#B0122E` primary crimson, `#5E6B73` Liquid Chrome, `#C9932B` Obsidian Gold, `#7C2A24` / `#A6463B` Burgundy Copper).
+    - **Midnight Amethyst Dark Tokens (Pending Owner Sign-Off):** `#070A18` (canvas/void), `#9788FF` (primary amethyst accent), `#6B70E8` (deep indigo secondary accent), `#DDE3F3` (liquid chrome highlight), `#E7BC70` (gold accent), `#E18DAF` (metallic rose rim). Zero green/teal/cyan decorative brand colors.
+    - **Scarlet Porcelain Light Tokens (Pending Owner Sign-Off):** `#F8F7FB` (canvas/porcelain base), `#D20D46` (primary scarlet crimson), `#A70F38` (deep scarlet focus/pressed), `#7045C8` (porcelain violet highlight), `#946213` (antique gold), `#5C6475` (liquid chrome steel).
 
 ### 6.2 Zero-FOUC Initialization & Persistence Flow (`FR-033`, `FR-035`)
 1. Synchronous inline `<script>` in `index.html` `<head>` (guarded by `try/catch` and authorized via SHA-256 hash in `vercel.json` CSP, `NFR-018`) reads `localStorage.getItem('aj-portfolio-theme')`.
-2. If `'light'` or `'dark'`, applies it; otherwise sets `'dark'` (**Abyssal Teal**). Writes `document.documentElement.dataset.theme` and `style.colorScheme`.
+2. If `'light'` or `'dark'`, applies it; otherwise sets `'dark'` (**Midnight Amethyst**). Writes `document.documentElement.dataset.theme` and `style.colorScheme`.
 3. `ThemeContext` initializes state directly from `document.documentElement.dataset.theme`, synchronizes changes back to `dataset.theme`, `style.colorScheme`, and `localStorage`, and respects `prefers-reduced-motion` transition timing (`FR-036`).
 
 ---
@@ -220,7 +220,7 @@ ContactData
   - *Far Layer:* `Points` starfield/telemetry dust with custom lightweight alpha shader.
   - *Mid Layer:* 2–3 tilted orbital `LineLoop` / thin torus rings in Liquid Chrome, Obsidian Gold, and Burgundy Copper.
   - *Core Layer:* Low-vertex wireframe lattice responding subtly to clamped pointer offset on desktop (`FR-040`).
-- **Light-Mode Blending Adaptation:** Switch from additive blending (dark Abyssal Teal) to normal alpha blending (light Crimson Void) so dark ink `#1C090D` remains crisp (`UI_UX_DESIGN.md` Sec. 10).
+- **Light-Mode Blending Adaptation:** Switch from additive blending (dark Midnight Amethyst) to normal alpha blending (light Scarlet Porcelain) so deep `#1B1421` ink remains crisp (`UI_UX_DESIGN.md` Sec. 10).
 - **Lifecycle & Quality Tiers (`useQualityTier`):**
   - `desktop-high`: DPR `[1, 2]`, full procedural point budget, clamped pointer tilt.
   - `mobile-conserving` (`< 768px`, `hardwareConcurrency <= 4`, or `navigator.connection?.saveData`): DPR `[1, 1.5]`, ~40% particle density, pointer parallax disabled (`FR-041`).
@@ -330,7 +330,7 @@ No DOM node may have `transform` or `opacity` mutated concurrently by both GSAP 
 - **GSAP StrictMode Double-Mount Bugs:** Mitigated by scoping every ScrollTrigger inside `gsap.context()` with deterministic `ctx.revert()` cleanup.
 
 ### 15.3 Dependencies & Unresolved Questions (`TBD`)
-1. **Color Token Sign-Off:** Final approval of the proposed light-adapted Crimson Void and secondary accent hex values (`UI_UX_DESIGN.md` Sec. 2).
+1. **Color Token Sign-Off:** Final owner approval of the refreshed Midnight Amethyst dark palette and Scarlet Porcelain light palette (`UI_UX_DESIGN.md` Sec. 2).
 2. **Personal Content & Replaceable Assets (`src/data/*.ts` & `public/assets/`):** Configurable `roleLabel`, Hero tagline, About narrative, skills taxonomy, project records/media/links, experience records, achievements, email, social URLs, portrait image (`3:4`), résumé PDF, and `og-image.png`.
 3. **Domain, Analytics & CI Profile:** Production domain name, cookie-less Vercel Analytics approval (`NFR-019`), and exact Lighthouse throttling preset (`NFR-003`).
 4. **Optional `Could` / `[Proposed]` Scope:** Explicit decision to keep excluded or selectively promote `FR-006`, `FR-010`, `FR-014`, `FR-020`, `FR-021`, `FR-025`, `FR-028`, `FR-042`, or optional theme reset `FR-037`.

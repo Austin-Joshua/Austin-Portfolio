@@ -9,7 +9,7 @@
 ## 1. Technical Overview and Architectural Principles
 
 ### 1.1 System Overview
-The Austin Joshua engineering portfolio is a client-rendered, single-page React + TypeScript application built with Vite and deployed as static assets on Vercel (`NFR-018`). No custom backend, CMS, or database is included in v1 (`FR-032`). The architecture separates semantic DOM content from progressive WebGL rendering (`FR-038`, `FR-044`), coordinates scroll choreography (GSAP + ScrollTrigger) separately from UI state transitions (Motion), and enforces dual-theme parity between **Abyssal Teal** (dark default, `FR-033`) and **light-adapted Crimson Void** (`FR-034`).
+The Austin Joshua engineering portfolio is a client-rendered, single-page React + TypeScript application built with Vite and deployed as static assets on Vercel (`NFR-018`). No custom backend, CMS, or database is included in v1 (`FR-032`). The architecture separates semantic DOM content from progressive WebGL rendering (`FR-038`, `FR-044`), coordinates scroll choreography (GSAP + ScrollTrigger) separately from UI state transitions (Motion), and enforces dual-theme parity between **Midnight Amethyst** (dark default, `FR-033`, pending owner sign-off) and **Scarlet Porcelain** (`FR-034`, pending owner sign-off).
 
 ### 1.2 Core Architectural Principles
 1. **DOM-First Progressive Enhancement (`FR-038`, `FR-043`, `FR-044`, `NFR-009`):** Semantic HTML5 landmarks, typography, and interactive controls form the primary application layer. The Three.js / React Three Fiber (R3F) canvas renders purely as a decorative, `aria-hidden`, non-blocking visual layer that loads asynchronously after initial text paint.
@@ -101,7 +101,7 @@ Portfolio/
 │   ├── main.tsx                      # React root mount + GSAP ScrollTrigger plugin registration
 │   ├── App.tsx                       # Providers, semantic shell, lazy 3D mount, overlay portals
 │   ├── styles/
-│   │   ├── tokens.css                # CSS custom properties (Abyssal Teal & Crimson Void tokens)
+│   │   ├── tokens.css                # CSS custom properties (Midnight Amethyst & Scarlet Porcelain tokens)
 │   │   ├── glass.css                 # Glassmorphism utilities & contrast-safe scrims
 │   │   └── index.css                 # Tailwind directives, base typography, focus/scroll-padding rules
 │   ├── types/
@@ -114,7 +114,7 @@ Portfolio/
 │   │   ├── achievements.ts           # Achievements & credentials records (TBD)
 │   │   └── contact.ts                # Email & verified social links (TBD)
 │   ├── context/
-│   │   ├── ThemeContext.tsx          # Abyssal Teal <-> Crimson Void state & localStorage persistence
+│   │   ├── ThemeContext.tsx          # Midnight Amethyst <-> Scarlet Porcelain state & localStorage persistence
 │   │   └── MotionPreferenceContext.tsx # prefers-reduced-motion (+ optional FR-042 manual override)
 │   ├── hooks/
 │   │   ├── useActiveSection.ts       # IntersectionObserver active nav tracking (FR-002)
@@ -138,7 +138,8 @@ Portfolio/
 │       ├── ui/
 │       │   ├── GlassCard.tsx         # Contrast-verified translucent container
 │       │   ├── ThemeToggle.tsx       # Accessible dark/light switch (FR-034)
-│       │   ├── PortraitSlot.tsx      # Replaceable portrait + Swiss geometric fallback (FR-008, FR-047)
+│       │   ├── HeroPortraitReveal.tsx # Hero silhouette-to-colour portrait reveal over 3D scene
+│       │   ├── PortraitSlot.tsx      # Replaceable cutout portrait frame + Swiss geometric fallback (FR-008, FR-047)
 │       │   └── ProjectDetailModal.tsx # Accessible dialog, focus trap, Escape/Back handling (FR-016, FR-017)
 │       └── sections/
 │           ├── HeroSection.tsx
@@ -178,17 +179,17 @@ Portfolio/
 ## 6. Design Tokens, Theme Architecture, and Persistence
 
 ### 6.1 Semantic Token Architecture (`FR-033`, `FR-034`, `NFR-007`)
-- Define semantic CSS custom properties under `[data-theme="dark"]` (**Abyssal Teal**, default) and `[data-theme="light"]` (**light-adapted Crimson Void**) in `src/styles/tokens.css`, mapped into `tailwind.config.ts` (e.g., `bg-surface-primary`, `text-content-primary`, `border-glass-edge`).
-- **Token Categories (Exact Color Values `TBD` pending Design System):**
-  - **Surfaces:** `--surface-canvas`, `--surface-elevated`, `--surface-glass`, `--surface-scrim` (scrim alpha tuned so text contrast always clears `4.5:1`).
-  - **Typography:** `--text-primary`, `--text-secondary`, `--text-muted`, `--font-display` (`TBD`), `--font-sans` (`TBD`), `--font-mono` (`TBD`).
-  - **Accents:** `--accent-primary` (Teal in dark / Crimson in light), `--accent-chrome` (Liquid Chrome), `--accent-gold` (Obsidian Gold), `--accent-copper` (Burgundy Copper).
-  - **3D Uniform Tokens:** Expose RGB/Hex scene tokens (`--scene-bg`, `--scene-primary`, `--scene-secondary`, `--scene-highlight`) read by `DigitalUniverseScene` when theme changes (`FR-034`).
+- Define semantic CSS custom properties under `[data-theme="dark"]` (**Midnight Amethyst**, default) and `[data-theme="light"]` (**Scarlet Porcelain**) in `src/styles/tokens.css`, mapped into `tailwind.config.ts` (e.g., `bg-surface-primary`, `text-content-primary`, `border-glass-edge`).
+- **Token Categories (Proposed Values Pending Owner Sign-Off in Design System):**
+  - **Surfaces:** `--surface-canvas`, `--surface-elevated`, `--surface-card`, `--surface-glass`, `--surface-scrim` (scrim alpha tuned so text contrast always clears `4.5:1`).
+  - **Typography:** `--text-primary`, `--text-secondary`, `--text-muted`, `--font-display` (`Syne`), `--font-sans` (`Inter`), `--font-mono` (`JetBrains Mono`).
+  - **Accents:** `--accent-primary` (`#9788FF` dark / `#D20D46` light), `--accent-chrome`, `--accent-gold`, `--accent-copper` (metallic rose / warm carmine copper).
+  - **3D Uniform Tokens:** Expose typed scene palette tokens (`src/three/themePalettes.ts` + CSS tokens) read by `DigitalUniverseScene` when theme changes (`FR-034`).
 
 ### 6.2 Zero-FOUC Pre-Paint Persistence (`FR-033`, `FR-035`)
 - **Required Mechanism:** A minimal synchronous `<script>` in `<head>` of `index.html` executes before first paint:
   1. Reads `localStorage.getItem('aj-portfolio-theme')` inside a `try/catch` (safe in private/restricted storage contexts).
-  2. Validates value is `'dark'` or `'light'`; otherwise defaults to `'dark'` (**Abyssal Teal**, per `FR-033`—do not override with `prefers-color-scheme` unless `FR-037`/Brief conflict is changed).
+  2. Validates value is `'dark'` or `'light'`; otherwise defaults to `'dark'` (**Midnight Amethyst**, per `FR-033`—do not override with `prefers-color-scheme` unless `FR-037`/Brief conflict is changed).
   3. Sets `document.documentElement.dataset.theme = theme` and `document.documentElement.style.colorScheme = theme`.
 - `ThemeContext` initializes state directly from `document.documentElement.dataset.theme`, keeping React hydration 100% consistent with initial paint.
 - **CSP Consideration:** Because `index.html` uses a small inline script, compute its SHA-256 hash in `vercel.json` CSP (`script-src 'self' 'sha256-...'`) rather than enabling `'unsafe-inline'` (`NFR-018`).
@@ -385,8 +386,8 @@ Configure `vercel.json` HTTP response headers for all routes:
 | **Mobile Safari / WebGL memory pressure & `100dvh` jumps** | Medium | Cap DPR at `1.5` on mobile, scale geometry counts (`useQualityTier`), pause offscreen render loops (`NFR-004`), and use `100dvh` for Hero sizing. |
 
 ### 17.2 Unresolved Technical & Product Decisions (`TBD`)
-1. **Brief-vs-PRD Theme Conflict:** Confirm strict adherence to `FR-033` (always default to Abyssal Teal on first visit) vs. supporting `prefers-color-scheme` on initial visit (`PROJECT_BRIEF.md`).
-2. **Design System Tokens:** Final hex/OKLCH palette values for Abyssal Teal, light-adapted Crimson Void, Liquid Chrome, Obsidian Gold, Burgundy Copper, plus font families (`woff2` self-hosted vs. font subsetting) and max container width.
+1. **Brief-vs-PRD Theme Conflict:** Confirm strict adherence to `FR-033` (always default to Midnight Amethyst dark theme on first visit) vs. supporting `prefers-color-scheme` on initial visit (`PROJECT_BRIEF.md`).
+2. **Design System Tokens:** Final owner sign-off on Midnight Amethyst (`#070A18`, `#9788FF`, `#6B70E8`) and Scarlet Porcelain (`#F8F7FB`, `#D20D46`, `#A70F38`) palettes (`UI_UX_DESIGN.md` Sec. 2).
 3. **3D Scene Scope & Asset Budget:** Exact 3D Digital Universe geometry/shader composition (procedural starfield/orbital vs. custom GLSL) and exact particle/draw-call budgets per quality tier.
 4. **Optional `[Proposed]` Features (`Could` tier):** Confirm inclusion/exclusion of `FR-006`, `FR-010`, `FR-014`, `FR-020`, `FR-021`, `FR-025`, `FR-028`, `FR-042` before implementation sprint.
 5. **Domain, OG Image & Analytics:** Final production domain, `og-image.png` asset, and decision on enabling cookie-less Vercel Analytics (`NFR-019`).

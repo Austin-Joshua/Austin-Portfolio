@@ -12,10 +12,10 @@ export const profileData: ProfileData = {
   aboutPendingNotice:
     'Verified personal narrative and academic profile details will be published here prior to release.',
   portrait: {
-    src: '/assets/portrait/austin-joshua.jpg',
+    src: '/assets/portrait/austin-joshua-cutout.png',
     alt: 'Austin Joshua — Computer Science Engineering student and developer',
-    width: 760,
-    height: 1013,
+    width: 604,
+    height: 806,
   },
   resume: {
     url: '/assets/resume/Austin_Joshua_Resume.pdf',

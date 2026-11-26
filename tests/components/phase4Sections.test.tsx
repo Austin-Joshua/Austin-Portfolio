@@ -93,7 +93,7 @@ describe('Phase 4 Sections & Components', () => {
     expect(screen.getByText('Building software and AI systems.')).toBeInTheDocument();
     expect(screen.getByText('Paragraph one narrative.')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /Résumé/i })).toHaveLength(2);
-    expect(screen.getByRole('img', { name: 'Austin Joshua portrait' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: 'Austin Joshua portrait' })).toHaveLength(2);
   });
 
   it('PortraitSlot switches cleanly to Swiss AJ monogram fallback when image errors', () => {

@@ -51,8 +51,8 @@
       linear-gradient(
         180deg,
         var(--surface-canvas) 0%,
-        rgba(6, 26, 29, 0.0) 30%,
-        rgba(6, 26, 29, 0.0) 70%,
+        rgba(7, 10, 24, 0) 30%,
+        rgba(7, 10, 24, 0) 70%,
         var(--surface-canvas) 100%
       );
   }
@@ -63,15 +63,15 @@
       linear-gradient(
         180deg,
         var(--surface-canvas) 0%,
-        rgba(250, 246, 246, 0.0) 30%,
-        rgba(250, 246, 246, 0.0) 70%,
+        rgba(248, 247, 251, 0) 30%,
+        rgba(248, 247, 251, 0) 70%,
         var(--surface-canvas) 100%
       );
   }
 
   /* ── Cinematic card with accent gradient ─────────────────────────────── */
   .glass-card-cinematic {
-    background: color-mix(in srgb, var(--surface-card) 90%, var(--accent-primary) 10%);
+    background: var(--surface-glass);
     background-image: var(--grad-card-accent);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-card);
@@ -132,7 +132,7 @@
       transparent 100%
     );
     border-radius: 999px;
-    opacity: 0.7;
+    opacity: 0.85;
   }
 
   /* ── Section label (replaces index numbering) ────────────────────────── */
@@ -143,5 +143,56 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--accent-primary);
+  }
+
+  /* ── Interactive Hero Portrait Silhouette-to-Reveal ──────────────────── */
+  .portrait-cutout-img {
+    transition:
+      filter 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .portrait-cutout-reduced {
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-cutout-img {
+      transition: none;
+    }
+  }
+
+  [data-theme='dark'] .portrait-cutout-shadow {
+    filter:
+      brightness(0.14)
+      contrast(1.3)
+      saturate(0)
+      drop-shadow(0 0 2px rgba(183, 170, 255, 0.72))
+      drop-shadow(0 0 28px rgba(151, 136, 255, 0.48));
+  }
+
+  [data-theme='light'] .portrait-cutout-shadow {
+    filter:
+      brightness(0.16)
+      contrast(1.25)
+      saturate(0)
+      drop-shadow(0 0 2px rgba(167, 15, 56, 0.56))
+      drop-shadow(0 12px 26px rgba(27, 20, 33, 0.28));
+  }
+
+  [data-theme='dark'] .portrait-cutout-revealed {
+    filter:
+      brightness(1.02)
+      contrast(1.03)
+      saturate(1.04)
+      drop-shadow(0 16px 36px rgba(7, 10, 24, 0.55));
+  }
+
+  [data-theme='light'] .portrait-cutout-revealed {
+    filter:
+      brightness(1.01)
+      contrast(1.02)
+      saturate(1.03)
+      drop-shadow(0 14px 32px rgba(27, 20, 33, 0.24));
   }
 }

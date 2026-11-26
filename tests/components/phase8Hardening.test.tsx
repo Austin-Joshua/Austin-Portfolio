@@ -48,7 +48,7 @@ describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', 
     expect(robots).not.toMatch(/localhost|127\.0\.0\.1|TBD|example\.com/i);
   });
 
-  it('preserves locked Abyssal Teal core tokens, mobile scroll-padding-bottom, and @supports glass fallback', () => {
+  it('preserves locked Midnight Amethyst & Scarlet Porcelain tokens, mobile scroll-padding-bottom, and @supports glass fallback', () => {
     const tokensCss = fs.readFileSync(
       path.join(ROOT_DIR, 'src/styles/tokens.css'),
       'utf8',
@@ -62,10 +62,14 @@ describe('Phase 8 — Contrast, Accessibility, Responsiveness & SEO Hardening', 
       'utf8',
     );
 
-    expect(tokensCss).toContain('--surface-canvas: #061a1d;');
-    expect(tokensCss).toContain('--accent-primary: #00d5c5;');
-    expect(tokensCss).toContain('--accent-primary-deep: #126b75;');
-    expect(tokensCss).toContain('--text-primary: #e8fffc;');
+    expect(tokensCss).toContain('--surface-canvas: #070a18;');
+    expect(tokensCss).toContain('--accent-primary: #9788ff;');
+    expect(tokensCss).toContain('--accent-primary-deep: #6b70e8;');
+    expect(tokensCss).toContain('--text-primary: #f4f5ff;');
+    expect(tokensCss).toContain('--surface-canvas: #f8f7fb;');
+    expect(tokensCss).toContain('--accent-primary: #d20d46;');
+    expect(tokensCss).not.toContain('#00d5c5');
+    expect(tokensCss).not.toContain('#061a1d');
     expect(tokensCss).toContain('--gutter-mobile: 20px;');
 
     expect(glassCss).toContain('@supports ((backdrop-filter: blur(1px))');

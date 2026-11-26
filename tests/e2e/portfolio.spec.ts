@@ -60,7 +60,7 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
 
     // Default dark theme -> toggle light -> reload preserves light without FOUC
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    const toggleBtn = page.locator('button[aria-label*="Switch to Crimson Void" i]:visible').first();
+    const toggleBtn = page.locator('button[aria-label*="Switch to Scarlet Porcelain" i]:visible').first();
     await toggleBtn.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await page.waitForTimeout(300);
@@ -95,7 +95,7 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     await expect(page.locator('#main-content')).toBeFocused();
 
     // Toggle to settled light theme and re-run axe
-    const toggleBtn = page.locator('button[aria-label*="Switch to Crimson Void" i]:visible').first();
+    const toggleBtn = page.locator('button[aria-label*="Switch to Scarlet Porcelain" i]:visible').first();
     await toggleBtn.click();
     await page.waitForTimeout(350);
 
@@ -263,11 +263,39 @@ test.describe('Phase 9 — Production Portfolio E2E Verification', () => {
     expect(stageBox!.height).toBeGreaterThan(300);
     expect(stageBox!.x).toBeGreaterThanOrEqual(headingBox!.x + headingBox!.width - 4);
 
+    // Hero portrait cutout starts as shadow silhouette and reveals colour on hover & click/tap without shifting layout
+    const heroStage = page.getByTestId('hero-3d-stage');
+    await expect(heroStage.locator('canvas')).toHaveCount(await page.locator('canvas').count());
+    const heroPortrait = page.getByTestId('hero-portrait-figure');
+    const heroImg = heroPortrait.locator('img');
+    await expect(heroImg).toBeVisible();
+    const imgDims = await heroImg.evaluate((el) => {
+      const img = el as HTMLImageElement;
+      return { complete: img.complete, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight };
+    });
+    expect(imgDims).toEqual({ complete: true, naturalWidth: 604, naturalHeight: 806 });
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+
+    const beforeRevealBox = await heroImg.boundingBox();
+    await page.getByTestId('portrait-reveal-toggle').hover();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    const afterRevealBox = await heroImg.boundingBox();
+    expect(Math.abs(beforeRevealBox!.y - afterRevealBox!.y)).toBeLessThan(2);
+
+    await page.mouse.move(10, 10);
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+
+    await page.getByTestId('portrait-reveal-toggle').click();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    await expect(page.getByTestId('portrait-reveal-toggle')).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('portrait-reveal-toggle').click();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+
     // Static assets HTTP 200 & accurate Content-Types
-    const portraitRes = await request.get('/assets/portrait/austin-joshua.jpg');
+    const portraitRes = await request.get('/assets/portrait/austin-joshua-cutout.png');
     expect(portraitRes.status()).toBe(200);
-    expect(portraitRes.headers()['content-type']).toContain('image/jpeg');
-    expect((await portraitRes.body()).byteLength).toBeGreaterThan(10_000);
+    expect(portraitRes.headers()['content-type']).toContain('image/png');
+    expect((await portraitRes.body()).byteLength).toBeGreaterThan(20_000);
 
     const resumeRes = await request.get('/assets/resume/Austin_Joshua_Resume.pdf');
     expect(resumeRes.status()).toBe(200);

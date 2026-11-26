@@ -39,7 +39,13 @@ function createSeededRandom(seed: number): () => number {
 
 function buildStarGeometry(
   count: number,
-  palette: { primary: string; secondary: string; highlight: string; gold: string },
+  palette: {
+    primary: string;
+    secondary: string;
+    highlight: string;
+    gold: string;
+    metallic: string;
+  },
 ): BufferGeometry {
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
@@ -48,6 +54,7 @@ function buildStarGeometry(
   const cSecondary = new Color(palette.secondary);
   const cHighlight = new Color(palette.highlight);
   const cGold = new Color(palette.gold);
+  const cMetallic = new Color(palette.metallic);
 
   for (let i = 0; i < count; i++) {
     const radius = 1.25 + Math.pow(rand(), 0.6) * 4.2;
@@ -59,7 +66,15 @@ function buildStarGeometry(
 
     const pick = rand();
     const tone =
-      pick < 0.5 ? cPrimary : pick < 0.78 ? cSecondary : pick < 0.92 ? cHighlight : cGold;
+      pick < 0.44
+        ? cPrimary
+        : pick < 0.7
+          ? cSecondary
+          : pick < 0.85
+            ? cHighlight
+            : pick < 0.94
+              ? cGold
+              : cMetallic;
     colors[i * 3] = tone.r;
     colors[i * 3 + 1] = tone.g;
     colors[i * 3 + 2] = tone.b;
@@ -73,16 +88,17 @@ function buildStarGeometry(
 
 function buildNebulaGeometry(
   count: number,
-  palette: { primary: string; secondary: string },
+  palette: { primary: string; secondary: string; metallic: string },
 ): BufferGeometry {
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const rand = createSeededRandom(99 + count);
   const cPrimary = new Color(palette.primary);
   const cSecondary = new Color(palette.secondary);
+  const cMetallic = new Color(palette.metallic);
 
   for (let i = 0; i < count; i++) {
-    const radius = 0.35 + rand() * 1.15;
+    const radius = 0.4 + rand() * 1.25;
     const theta = rand() * Math.PI * 2;
     const phi = Math.acos(2 * rand() - 1);
     positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
@@ -90,7 +106,7 @@ function buildNebulaGeometry(
     positions[i * 3 + 2] = radius * Math.cos(phi);
 
     const t = rand();
-    const tone = t < 0.6 ? cPrimary : cSecondary;
+    const tone = t < 0.5 ? cPrimary : t < 0.85 ? cSecondary : cMetallic;
     colors[i * 3] = tone.r;
     colors[i * 3 + 1] = tone.g;
     colors[i * 3 + 2] = tone.b;
@@ -226,7 +242,7 @@ export function DigitalUniverseScene({
       {/* Far starfield */}
       <points ref={starFieldRef} geometry={starGeometry}>
         <pointsMaterial
-          size={isMobile ? 0.036 : 0.028}
+          size={isMobile ? 0.04 : 0.032}
           vertexColors
           transparent
           opacity={palette.particleOpacity}
@@ -240,10 +256,10 @@ export function DigitalUniverseScene({
       {nebulaGeometry && (
         <points ref={nebulaRef} geometry={nebulaGeometry}>
           <pointsMaterial
-            size={0.055}
+            size={0.062}
             vertexColors
             transparent
-            opacity={palette.particleOpacity * 0.42}
+            opacity={palette.particleOpacity * 0.48}
             depthWrite={false}
             blending={blending}
             sizeAttenuation
@@ -251,69 +267,69 @@ export function DigitalUniverseScene({
         </points>
       )}
 
-      {/* Outermost deep orbital ring */}
+      {/* Outermost indigo/crimson orbital ring */}
       <mesh ref={outerRing1Ref} rotation={[1.05, 0.22, 0.1]}>
-        <torusGeometry args={[2.35, 0.008, 8, seg]} />
+        <torusGeometry args={[2.38, 0.011, 8, seg]} />
         <meshBasicMaterial
           color={palette.secondary}
           transparent
-          opacity={Math.min(0.85, palette.ringOpacity * 0.9)}
+          opacity={Math.min(0.9, palette.ringOpacity * 1.05)}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Chrome / high-contrast outer tilted ring */}
+      {/* High-contrast chrome/violet outer tilted ring */}
       <mesh ref={outerRing2Ref} rotation={[-0.72, 0.55, 0.3]}>
-        <torusGeometry args={[1.92, 0.009, 8, seg]} />
+        <torusGeometry args={[1.96, 0.011, 8, seg]} />
         <meshBasicMaterial
           color={palette.highlight}
           transparent
-          opacity={Math.min(0.8, palette.ringOpacity * 0.72)}
+          opacity={Math.min(0.88, palette.ringOpacity * 0.9)}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Mid obsidian-gold highlight ring */}
+      {/* Mid champagne-gold highlight ring */}
       <mesh ref={midRingRef} rotation={[0.6, -0.4, 0.5]}>
-        <torusGeometry args={[1.44, 0.011, 8, seg]} />
+        <torusGeometry args={[1.5, 0.012, 8, seg]} />
         <meshBasicMaterial
           color={palette.gold}
           transparent
-          opacity={Math.min(0.9, palette.ringOpacity * 1.15)}
+          opacity={Math.min(0.92, palette.ringOpacity * 1.15)}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Inner primary accent ring */}
+      {/* Inner primary violet/scarlet accent ring */}
       <mesh ref={innerRingRef} rotation={[0.3, 0.65, -0.2]}>
-        <torusGeometry args={[1.02, 0.014, 8, Math.min(seg, 72)]} />
+        <torusGeometry args={[1.06, 0.015, 8, Math.min(seg, 72)]} />
         <meshBasicMaterial
           color={palette.primary}
           transparent
-          opacity={Math.min(0.95, palette.ringOpacity * 1.5)}
+          opacity={Math.min(0.96, palette.ringOpacity * 1.35)}
           depthWrite={false}
         />
       </mesh>
 
       {/* Core wireframe icosahedron */}
       <mesh ref={coreRef} rotation={[0.4, 0.6, 0.2]}>
-        <icosahedronGeometry args={[0.68, isMobile ? 1 : 2]} />
+        <icosahedronGeometry args={[0.72, isMobile ? 1 : 2]} />
         <meshBasicMaterial
           color={palette.primary}
           wireframe
           transparent
-          opacity={Math.min(0.92, palette.coreOpacity * 1.2)}
+          opacity={palette.coreOpacity}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Inner solid orb */}
+      {/* Inner luminous faceted core */}
       <mesh ref={coreSolidRef}>
-        <icosahedronGeometry args={[0.38, 1]} />
+        <icosahedronGeometry args={[0.42, 1]} />
         <meshBasicMaterial
           color={palette.secondary}
           transparent
-          opacity={Math.min(0.8, palette.coreOpacity * 0.72)}
+          opacity={palette.coreOpacity * 0.65}
           depthWrite={false}
         />
       </mesh>

@@ -1,6 +1,7 @@
 /*
  * Semantic Design Tokens — Austin Joshua Engineering Portfolio
- * Cinematic Redesign — Abyssal Teal (dark) + Crimson Void (light)
+ * Proposed Visual Refresh: Midnight Amethyst (dark) + Scarlet Porcelain (light)
+ * Status: Proposed tokens pending owner visual sign-off on screenshots
  */
 
 :root {
@@ -79,120 +80,140 @@
   }
 }
 
-/* ─── ABYSSAL TEAL — Dark Theme ──────────────────────────────────────────── */
+/* ─── MIDNIGHT AMETHYST — Dark Theme (Default) ──────────────────────────── */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --surface-canvas: #061a1d;
-  --surface-elevated: #0b262b;
-  --surface-card: #0e3137;
-  --surface-card-hover: #122e36;
-  --surface-glass: rgba(11, 38, 43, 0.72);
-  --surface-glass-strong: rgba(6, 26, 29, 0.88);
-  --surface-scrim: rgba(6, 26, 29, 0.85);
+  --surface-canvas: #070a18;
+  --surface-elevated: #0e1428;
+  --surface-card: #141d36;
+  --surface-card-hover: #1b2745;
+  --surface-glass: rgba(14, 20, 40, 0.84);
+  --surface-glass-strong: rgba(7, 10, 24, 0.94);
+  --surface-scrim: rgba(7, 10, 24, 0.9);
 
-  --text-primary: #e8fffc;
-  --text-secondary: #9cc7c3;
-  --text-muted: #6b9e9a;
-  --text-on-accent: #061a1d;
+  --text-primary: #f4f5ff;
+  --text-secondary: #c1c9e4;
+  --text-muted: #9aa6c7;
+  --text-on-accent: #070a18;
 
-  --accent-primary: #00d5c5;
-  --accent-primary-deep: #126b75;
-  --accent-primary-glow: rgba(0, 213, 197, 0.18);
-  --accent-chrome: #dce6e8;
-  --accent-chrome-muted: #a8b7bc;
-  --accent-gold: #e5b85c;
-  --accent-gold-line: rgba(229, 184, 92, 0.6);
-  --accent-copper: #d07a68;
-  --accent-copper-deep: #9a453b;
+  --accent-primary: #9788ff;
+  --accent-primary-deep: #6b70e8;
+  --accent-secondary: #6b70e8;
+  --accent-primary-glow: rgba(151, 136, 255, 0.24);
+  --accent-chrome: #dde3f3;
+  --accent-chrome-muted: #aeb8d2;
+  --accent-gold: #e7bc70;
+  --accent-gold-line: rgba(231, 188, 112, 0.58);
+  --accent-copper: #e18daf;
+  --accent-copper-deep: #a65578;
 
-  --border-subtle: rgba(168, 183, 188, 0.14);
-  --border-glass: rgba(0, 213, 197, 0.32);
-  --border-glass-strong: rgba(0, 213, 197, 0.55);
-  --focus-ring: #00d5c5;
+  --border-subtle: rgba(174, 184, 210, 0.16);
+  --border-glass: rgba(151, 136, 255, 0.34);
+  --border-glass-strong: rgba(151, 136, 255, 0.58);
+  --focus-ring: #b7aaff;
 
-  --status-success: #34e0a1;
-  --status-warning: #e5b85c;
+  --status-success: #9fb5ff;
+  --status-warning: #e7bc70;
 
-  --shadow-glass: 0 4px 24px rgba(2, 12, 14, 0.5), 0 1px 0 rgba(0, 213, 197, 0.1) inset;
-  --shadow-elevated: 0 16px 56px rgba(2, 12, 14, 0.65), 0 1px 0 rgba(0, 213, 197, 0.08) inset;
-  --shadow-card-hover: 0 8px 40px rgba(0, 213, 197, 0.12), 0 2px 12px rgba(2, 12, 14, 0.4);
-  --shadow-glow: 0 0 40px rgba(0, 213, 197, 0.14), 0 0 80px rgba(18, 107, 117, 0.08);
+  --shadow-glass:
+    0 8px 32px rgba(2, 4, 14, 0.65),
+    0 1px 0 rgba(151, 136, 255, 0.14) inset;
+  --shadow-elevated:
+    0 20px 64px rgba(2, 4, 14, 0.78),
+    0 1px 0 rgba(221, 227, 243, 0.1) inset;
+  --shadow-card-hover:
+    0 12px 44px rgba(107, 112, 232, 0.22),
+    0 4px 16px rgba(2, 4, 14, 0.65);
+  --shadow-glow:
+    0 0 48px rgba(151, 136, 255, 0.22),
+    0 0 96px rgba(107, 112, 232, 0.12);
 
   /* Atmospheric gradients */
   --grad-hero-radial: radial-gradient(
-    ellipse 70% 60% at 65% 50%,
-    rgba(18, 107, 117, 0.22) 0%,
-    rgba(0, 213, 197, 0.06) 45%,
-    transparent 75%
+    ellipse 68% 62% at 68% 48%,
+    rgba(107, 112, 232, 0.24) 0%,
+    rgba(151, 136, 255, 0.1) 42%,
+    transparent 76%
   );
   --grad-section-top: linear-gradient(
     180deg,
-    rgba(6, 26, 29, 0.0) 0%,
-    rgba(6, 26, 29, 0.0) 100%
+    rgba(7, 10, 24, 0) 0%,
+    rgba(7, 10, 24, 0) 100%
   );
   --grad-card-accent: linear-gradient(
     135deg,
-    rgba(0, 213, 197, 0.06) 0%,
-    rgba(18, 107, 117, 0.03) 100%
+    rgba(151, 136, 255, 0.09) 0%,
+    rgba(107, 112, 232, 0.04) 55%,
+    rgba(231, 188, 112, 0.03) 100%
   );
 }
 
-/* ─── CRIMSON VOID — Light Theme ─────────────────────────────────────────── */
+/* ─── SCARLET PORCELAIN — Light Theme ────────────────────────────────────── */
 [data-theme='light'] {
   color-scheme: light;
 
-  --surface-canvas: #faf6f6;
+  --surface-canvas: #f8f7fb;
   --surface-elevated: #ffffff;
-  --surface-card: #f3ebeb;
-  --surface-card-hover: #ede1e1;
-  --surface-glass: rgba(255, 255, 255, 0.76);
-  --surface-glass-strong: rgba(255, 255, 255, 0.92);
-  --surface-scrim: rgba(250, 246, 246, 0.90);
+  --surface-card: #f0edf5;
+  --surface-card-hover: #e8e2ef;
+  --surface-glass: rgba(255, 255, 255, 0.84);
+  --surface-glass-strong: rgba(255, 255, 255, 0.94);
+  --surface-scrim: rgba(248, 247, 251, 0.9);
 
-  --text-primary: #1c090d;
-  --text-secondary: #54383e;
-  --text-muted: #6e4e55;
+  --text-primary: #1b1421;
+  --text-secondary: #51465c;
+  --text-muted: #6c6176;
   --text-on-accent: #ffffff;
 
-  --accent-primary: #b0122e;
-  --accent-primary-deep: #7a0c20;
-  --accent-primary-glow: rgba(176, 18, 46, 0.12);
-  --accent-chrome: #5e6b73;
-  --accent-chrome-muted: #c9d2d8;
-  --accent-gold: #8a5e08;
-  --accent-gold-line: rgba(138, 94, 8, 0.5);
-  --accent-copper: #7c2a24;
-  --accent-copper-deep: #a6463b;
+  --accent-primary: #d20d46;
+  --accent-primary-deep: #a70f38;
+  --accent-secondary: #7045c8;
+  --accent-primary-glow: rgba(210, 13, 70, 0.15);
+  --accent-chrome: #5c6475;
+  --accent-chrome-muted: #c9cedb;
+  --accent-gold: #946213;
+  --accent-gold-line: rgba(148, 98, 19, 0.45);
+  --accent-copper: #a64f46;
+  --accent-copper-deep: #853830;
 
-  --border-subtle: rgba(28, 9, 13, 0.1);
-  --border-glass: rgba(122, 12, 32, 0.28);
-  --border-glass-strong: rgba(176, 18, 46, 0.45);
-  --focus-ring: #b0122e;
+  --border-subtle: rgba(27, 20, 33, 0.12);
+  --border-glass: rgba(167, 15, 56, 0.24);
+  --border-glass-strong: rgba(210, 13, 70, 0.44);
+  --focus-ring: #a70f38;
 
-  --status-success: #0f6e4e;
-  --status-warning: #8a5e08;
+  --status-success: #3d3591;
+  --status-warning: #946213;
 
-  --shadow-glass: 0 4px 24px rgba(28, 9, 13, 0.08), 0 1px 0 rgba(176, 18, 46, 0.06) inset;
-  --shadow-elevated: 0 16px 56px rgba(28, 9, 13, 0.14), 0 1px 0 rgba(176, 18, 46, 0.05) inset;
-  --shadow-card-hover: 0 8px 40px rgba(176, 18, 46, 0.1), 0 2px 12px rgba(28, 9, 13, 0.08);
-  --shadow-glow: 0 0 40px rgba(176, 18, 46, 0.1), 0 0 80px rgba(122, 12, 32, 0.06);
+  --shadow-glass:
+    0 6px 24px rgba(27, 20, 33, 0.08),
+    0 1px 0 rgba(210, 13, 70, 0.06) inset;
+  --shadow-elevated:
+    0 18px 54px rgba(27, 20, 33, 0.12),
+    0 1px 0 rgba(112, 69, 200, 0.06) inset;
+  --shadow-card-hover:
+    0 10px 36px rgba(167, 15, 56, 0.12),
+    0 3px 12px rgba(27, 20, 33, 0.06);
+  --shadow-glow:
+    0 0 42px rgba(210, 13, 70, 0.12),
+    0 0 80px rgba(112, 69, 200, 0.08);
 
   --grad-hero-radial: radial-gradient(
-    ellipse 70% 60% at 65% 50%,
-    rgba(176, 18, 46, 0.1) 0%,
-    rgba(122, 12, 32, 0.04) 45%,
-    transparent 75%
+    ellipse 68% 62% at 68% 48%,
+    rgba(210, 13, 70, 0.11) 0%,
+    rgba(112, 69, 200, 0.07) 42%,
+    transparent 76%
   );
   --grad-section-top: linear-gradient(
     180deg,
-    rgba(250, 246, 246, 0.0) 0%,
-    rgba(250, 246, 246, 0.0) 100%
+    rgba(248, 247, 251, 0) 0%,
+    rgba(248, 247, 251, 0) 100%
   );
   --grad-card-accent: linear-gradient(
     135deg,
-    rgba(176, 18, 46, 0.04) 0%,
-    rgba(122, 12, 32, 0.02) 100%
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(240, 237, 245, 0.94) 72%,
+    rgba(210, 13, 70, 0.05) 100%
   );
 }

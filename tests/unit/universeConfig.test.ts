@@ -13,23 +13,25 @@ describe('Three theme palettes & adaptive quality tiers', () => {
   it('uses strictly approved dark core tokens and resolves light mode from active CSS variables', () => {
     const dark = getUniversePalette('dark');
     expect(dark).toEqual(DARK_UNIVERSE_PALETTE);
-    expect(dark.canvas).toBe('#061A1D');
-    expect(dark.primary).toBe('#00D5C5');
-    expect(dark.secondary).toBe('#126B75');
-    expect(dark.highlight).toBe('#E8FFFC');
+    expect(dark.canvas).toBe('#070A18');
+    expect(dark.primary).toBe('#9788FF');
+    expect(dark.secondary).toBe('#6B70E8');
+    expect(dark.highlight).toBe('#DDE3F3');
+    expect(dark.gold).toBe('#E7BC70');
+    expect(dark.metallic).toBe('#E18DAF');
     expect(dark.additiveBlending).toBe(true);
 
-    document.documentElement.style.setProperty('--surface-canvas', '#FAF6F6');
-    document.documentElement.style.setProperty('--accent-primary', '#B0122E');
-    document.documentElement.style.setProperty('--accent-primary-deep', '#7A0C20');
-    document.documentElement.style.setProperty('--text-primary', '#1C090D');
+    document.documentElement.style.setProperty('--surface-canvas', '#F8F7FB');
+    document.documentElement.style.setProperty('--accent-primary', '#D20D46');
+    document.documentElement.style.setProperty('--accent-primary-deep', '#A70F38');
+    document.documentElement.style.setProperty('--text-primary', '#1B1421');
 
     const light = getUniversePalette('light');
     expect(light.additiveBlending).toBe(false);
-    expect(light.canvas).toBe('#FAF6F6');
-    expect(light.primary).toBe('#B0122E');
-    expect(light.secondary).toBe('#7A0C20');
-    expect(light.highlight).toBe('#1C090D');
+    expect(light.canvas).toBe('#F8F7FB');
+    expect(light.primary).toBe('#D20D46');
+    expect(light.secondary).toBe('#A70F38');
+    expect(light.highlight).toBe('#7045C8');
   });
 
   it('selects static demand mode under prefers-reduced-motion', () => {

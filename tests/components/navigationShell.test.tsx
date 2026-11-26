@@ -77,7 +77,7 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     const { container } = renderWithProviders(<ThemeToggle />);
 
     const toggle = screen.getByRole('button', {
-      name: /Abyssal active — Switch to Crimson Void light theme/i,
+      name: /Midnight Amethyst active — Switch to Scarlet Porcelain light theme/i,
     });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBe('dark');
@@ -90,7 +90,7 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
     expect(
       screen.getByRole('button', {
-        name: /Crimson active — Switch to Abyssal Teal dark theme/i,
+        name: /Scarlet Porcelain active — Switch to Midnight Amethyst dark theme/i,
       }),
     ).toHaveAttribute('aria-pressed', 'true');
   });
