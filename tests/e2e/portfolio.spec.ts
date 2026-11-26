@@ -35,11 +35,11 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
 
-    // First visit shows AJ emblem, cosmic aura behind it, and left/right curtains (clock-stabilized against CPU variance)
+    // First visit shows AJ emblem, cosmic aura behind it, and left/right curtains (fastForward avoids 100+ WebGL rAF ticks)
     await page.clock.install({ time: 1000 });
-    await page.clock.pauseAt(1000);
+    await page.clock.pauseAt(1500);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.clock.runFor(200);
+    await page.clock.fastForward(200);
     const loader = page.getByTestId('cosmic-intro-loader');
     await expect(loader).toBeVisible();
     await expect(page.getByTestId('intro-curtain-left')).toBeVisible();
@@ -47,8 +47,9 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('intro-cosmic-aura')).toBeVisible();
     await expect(loader.locator('img[src="/assets/brand/aj-emblem.png"]')).toBeVisible();
 
-    // Completes automatically and records first-visit flag
-    await page.clock.runFor(1700);
+    // Completes automatically across holding -> splitting -> done and records first-visit flag
+    await page.clock.fastForward(900);
+    await page.clock.fastForward(900);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
     const seenFlag = await page.evaluate(() => window.localStorage.getItem('aj-cosmic-intro-seen'));
     expect(seenFlag).toBe('1');
@@ -457,6 +458,13 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     const emblemRes = await request.get('/assets/brand/aj-emblem.png');
     expect(emblemRes.status()).toBe(200);
     expect(emblemRes.headers()['content-type']).toContain('image/png');
+
+    const faviconRes = await request.get('/favicon.png');
+    expect(faviconRes.status()).toBe(200);
+    expect(faviconRes.headers()['content-type']).toContain('image/png');
+
+    const faviconIcoRes = await request.get('/favicon.ico');
+    expect(faviconIcoRes.status()).toBe(200);
 
     const portraitRes = await request.get('/assets/portrait/austin-joshua-cutout.png');
     expect(portraitRes.status()).toBe(200);
