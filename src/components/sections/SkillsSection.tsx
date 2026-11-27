@@ -9,6 +9,7 @@ import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { projectsData } from '@/data/projects';
 import { skillsData } from '@/data/skills';
 import { FILTER_LAYOUT_TRANSITION, REDUCED_TRANSITION } from '@/motion/variants';
+import { getSectionRoute } from '@/routes/routes';
 import type { ProjectItem, SkillCategory, SkillItem } from '@/types/portfolio';
 import { hasNonEmptyText } from '@/utils/dataGuards';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -383,7 +384,7 @@ export function SkillsSection({
                 {matchingProjects.map((project) => (
                   <li key={project.slug}>
                     <a
-                      href="#projects"
+                      href={getSectionRoute('projects')}
                       onClick={handleJumpToProjects}
                       className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--planet-skills)] transition-[border-color,transform] duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >

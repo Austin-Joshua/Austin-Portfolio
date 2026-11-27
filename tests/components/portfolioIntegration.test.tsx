@@ -139,12 +139,12 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     expect(linkedinLinks).toHaveLength(1);
     expect(document.querySelector('#hero a[href*="github.com"]')).toBeNull();
     expect(document.querySelector('footer a[href*="github.com"]')).toBeNull();
-    expect(document.querySelector('footer a[href="#hero"]')).toBeNull();
+    expect(document.querySelector('footer a[href="/"]')).toBeNull();
   });
 
-  it('verifies curated project worlds cross-reference verified skills and open deep links', async () => {
+  it('verifies curated project worlds cross-reference verified skills and open /projects/:slug routes', async () => {
     const user = userEvent.setup();
-    window.history.replaceState(null, '', '/?project=agriflux#projects');
+    window.history.replaceState(null, '', '/projects/agriflux');
 
     renderWithProviders(<ProjectsSection projects={projectsData} />);
 
@@ -167,14 +167,15 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe('/projects');
   });
 
-  it('preserves window.history.state and query string across scrollToSection and handles central hash helpers', () => {
+  it('preserves window.history.state across scrollToSection and handles central route & legacy hash helpers', () => {
     expect(parseSectionHash('#CONTACT')).toBe('contact');
     expect(parseSectionHash('#unknown')).toBeNull();
-    expect(buildSectionUrl('skills', 'https://example.com/?project=agriflux#projects')).toBe(
-      '/?project=agriflux#skills',
-    );
+    expect(buildSectionUrl('hero')).toBe('/');
+    expect(buildSectionUrl('skills')).toBe('/skills');
+    expect(buildSectionUrl('achievements')).toBe('/achievements');
     expect(PORTFOLIO_SECTIONS).toHaveLength(7);
 
     const aboutEl = document.createElement('section');
@@ -183,19 +184,19 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     document.body.append(aboutEl);
 
     try {
-      window.history.replaceState({ projectSlug: 'agriflux', customTag: 42 }, '', '/?project=agriflux#projects');
+      window.history.replaceState({ customTag: 42 }, '', '/projects');
 
       act(() => {
         scrollToSection('about', {
           prefersReducedMotion: true,
-          updateHash: true,
+          updateRoute: true,
         });
       });
 
-      expect(window.location.search).toBe('?project=agriflux');
-      expect(window.location.hash).toBe('#about');
+      expect(window.location.pathname).toBe('/about');
+      expect(window.location.search).toBe('');
+      expect(window.location.hash).toBe('');
       expect(window.history.state).toMatchObject({
-        projectSlug: 'agriflux',
         customTag: 42,
         sectionId: 'about',
       });

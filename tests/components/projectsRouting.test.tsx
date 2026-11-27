@@ -50,7 +50,7 @@ describe('Phase 5 ProjectsSection Modal + URL Integration', () => {
     window.history.replaceState(null, '', '/');
   });
 
-  it('opens matching modal from card, syncs ?project= URL, preserves filters, keeps external links independent, and restores focus on close', async () => {
+  it('opens matching modal from card, syncs /projects/:slug route, preserves filters, keeps external links independent, and restores focus on close', async () => {
     const user = userEvent.setup();
     const { container } = render(
       <MotionPreferenceProvider>
@@ -75,21 +75,23 @@ describe('Phase 5 ProjectsSection Modal + URL Integration', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAccessibleName('Signal Audit');
-    expect(window.location.search).toBe('?project=signal-audit');
-    expect(window.location.hash).toBe('#projects');
+    expect(window.location.pathname).toBe('/projects/signal-audit');
+    expect(window.location.search).toBe('');
+    expect(window.location.hash).toBe('');
     expect(await axe(dialog)).toHaveNoViolations();
 
-    // Closing via Escape restores clean URL and trigger button focus
+    // Closing via Escape restores clean /projects route and trigger button focus
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe('/projects');
     expect(window.location.search).toBe('');
-    expect(window.location.hash).toBe('#projects');
+    expect(window.location.hash).toBe('');
     expect(triggerBtn).toHaveFocus();
     expect(container.querySelector('form')).toBeNull();
   });
 
-  it('handles invalid deep links safely even when projects dataset is empty', async () => {
-    window.history.replaceState(null, '', '/?project=non-existent');
+  it('handles invalid deep links cleanly (/projects/:invalid and legacy ?project=)', async () => {
+    window.history.replaceState(null, '', '/projects/non-existent');
     const user = userEvent.setup();
 
     render(
@@ -99,8 +101,9 @@ describe('Phase 5 ProjectsSection Modal + URL Integration', () => {
     );
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe('/projects');
     expect(window.location.search).toBe('');
-    expect(window.location.hash).toBe('#projects');
+    expect(window.location.hash).toBe('');
     expect(screen.getByText('No projects added yet.')).toBeInTheDocument();
 
     const notice = screen.getByTestId('invalid-project-notice');

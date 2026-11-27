@@ -6,6 +6,7 @@ import { SolarSystemHud } from '@/components/ui/SolarSystemHud';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { profileData } from '@/data/profile';
+import { getSectionRoute } from '@/routes/routes';
 import type { ProfileData } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -154,7 +155,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
             {/* Minimal Circular Cosmic Icon Actions */}
             <div className="flex items-center justify-center lg:justify-end gap-3.5 sm:gap-4 pt-1">
               <a
-                href="#projects"
+                href={getSectionRoute('projects')}
                 onClick={(event) => handleJump(event, 'projects')}
                 aria-label="View Projects"
                 title="Projects"
@@ -164,7 +165,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
               </a>
 
               <a
-                href="#contact"
+                href={getSectionRoute('contact')}
                 onClick={(event) => handleJump(event, 'contact')}
                 aria-label="Contact Me"
                 title="Contact"
@@ -187,7 +188,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
               )}
 
               <a
-                href="#about"
+                href={getSectionRoute('about')}
                 onClick={(event) => handleJump(event, 'about')}
                 aria-label="Explore About Planet"
                 title="Explore Planets"

@@ -75,7 +75,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     await page.goto('about:blank');
-    await page.goto('/#projects', { waitUntil: 'domcontentloaded' });
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
     await page.clock.fastForward(350);
     await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
     await page.clock.fastForward(650);
@@ -233,38 +233,46 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.getByTestId('planet-nav-skills').hover();
     await expect(hud).toContainText('Aether Violet · Molecular Core');
     await page.getByTestId('planet-nav-skills').click();
-    await expect(page).toHaveURL(/#skills$/);
+    await expect(page).toHaveURL(/\/skills$/);
 
     await page.getByTestId('skill-atom-typescript').click();
     await expect(page.getByTestId('skill-cross-reference')).toBeVisible();
     await expect(page.getByTestId('skill-cross-reference')).toContainText('AgriFlux');
 
-    // Scroll to bottom shows Scroll-to-Top button which returns smoothly to #hero
+    // Scroll to bottom shows Scroll-to-Top button which returns smoothly to root /
     await page.getByTestId('planet-nav-contact').evaluate((el) => el.scrollIntoView());
     await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
     const scrollTopBtn = page.getByTestId('scroll-to-top-button');
     await expect(scrollTopBtn).toBeVisible();
     await scrollTopBtn.click();
     await page.waitForTimeout(450);
-    await expect(page).toHaveURL(/#hero$/);
+    await expect(page).toHaveURL(/\/$/);
 
     expect(consoleErrors).toEqual([]);
     expect(pageErrors).toEqual([]);
   });
 
-  test('recovers cleanly on invalid ?project= deep links without crashing', async ({ page }) => {
+  test('recovers cleanly on invalid /projects/:slug and legacy ?project= deep links without crashing', async ({
+    page,
+  }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
-    await page.goto('/?project=invalid-project-slug', { waitUntil: 'networkidle' });
+    await page.goto('/projects/invalid-project-slug', { waitUntil: 'networkidle' });
     await waitForIntroToFinish(page);
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByTestId('invalid-project-notice')).toBeVisible();
-    await expect(page).not.toHaveURL(/project=/);
+    await expect(page).toHaveURL(/\/projects$/);
 
     await page.getByRole('button', { name: /Dismiss invalid project link notice/i }).click();
     await expect(page.getByTestId('invalid-project-notice')).toHaveCount(0);
+
+    // Legacy ?project= fallback also recovers cleanly to /projects
+    await page.goto('/?project=invalid-project-slug', { waitUntil: 'networkidle' });
+    await waitForIntroToFinish(page);
+    await expect(page.getByTestId('invalid-project-notice')).toBeVisible();
+    await expect(page).toHaveURL(/\/projects$/);
     expect(pageErrors).toEqual([]);
   });
 
@@ -454,7 +462,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.locator('#about img')).toHaveCount(0);
     await expect(page.locator('#hero a[href*="github.com"], #hero a[href*="linkedin.com"]')).toHaveCount(0);
     await expect(page.locator('footer a[href*="github.com"], footer a[href*="linkedin.com"]')).toHaveCount(0);
-    await expect(page.locator('footer a[href="#hero"]')).toHaveCount(0);
+    await expect(page.locator('footer a[href="/"]')).toHaveCount(0);
     await expect(page.getByTestId('contact-relay-dock').locator('a[href*="github.com"]')).toHaveCount(1);
     await expect(page.getByTestId('contact-relay-dock').locator('a[href*="linkedin.com"]')).toHaveCount(1);
 
@@ -563,17 +571,27 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(fontRes.status()).toBe(200);
     expect(fontRes.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2|application\/octet-stream/);
 
-    // Direct load and reload of all 7 section hashes
-    for (const sectionId of SECTION_IDS) {
-      await page.goto(`/#${sectionId}`, { waitUntil: 'load' });
+    // Direct load and reload of all 7 canonical page routes
+    const sectionRoutes: Array<{ id: (typeof SECTION_IDS)[number]; path: string }> = [
+      { id: 'hero', path: '/' },
+      { id: 'about', path: '/about' },
+      { id: 'skills', path: '/skills' },
+      { id: 'projects', path: '/projects' },
+      { id: 'experience', path: '/experience' },
+      { id: 'achievements', path: '/achievements' },
+      { id: 'contact', path: '/contact' },
+    ];
+
+    for (const route of sectionRoutes) {
+      await page.goto(route.path, { waitUntil: 'load' });
       await dismissIntroForSuite(page);
       await page.waitForTimeout(120);
-      await expect(page).toHaveURL(new RegExp(`#${sectionId}$`));
-      const railActive = page.getByTestId('desktop-section-rail').locator(`a[href="#${sectionId}"]`);
+      await expect(page).toHaveURL(new RegExp(`${route.path === '/' ? '\\/$' : `${route.path}$`}`));
+      const railActive = page.getByTestId('desktop-section-rail').locator(`a[href="${route.path}"]`);
       await expect(railActive).toHaveAttribute('aria-current', 'location');
     }
 
-    // Reload on #contact stays anchored cleanly on Contact
+    // Reload on /contact stays anchored cleanly on Contact
     await page.reload({ waitUntil: 'load' });
     await dismissIntroForSuite(page);
     await page.waitForTimeout(150);
@@ -581,22 +599,29 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(contactTop).toBeGreaterThanOrEqual(0);
     expect(contactTop).toBeLessThan(400);
 
-    // Valid project deep-link -> modal opens -> Browser Back closes -> Forward reopens
+    // Legacy hash URL /#achievements canonicalizes cleanly to /achievements
+    await page.goto('/#achievements', { waitUntil: 'load' });
+    await dismissIntroForSuite(page);
+    await expect(page).toHaveURL(/\/achievements$/);
+
+    // Canonical /projects/:slug and legacy ?project=agriflux#projects deep links + Back/Forward history
     await page.goto('/?project=agriflux#projects', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
+    await expect(page).toHaveURL(/\/projects\/agriflux$/);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
 
-    await page.goto('/#skills', { waitUntil: 'load' });
+    await page.goto('/skills', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
-    await page.goto('/?project=agriflux#projects', { waitUntil: 'load' });
+    await page.goto('/projects/agriflux', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
 
     await page.goBack({ waitUntil: 'load' });
-    await expect(page).toHaveURL(/#skills$/);
+    await expect(page).toHaveURL(/\/skills$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     await page.goForward({ waitUntil: 'load' });
+    await expect(page).toHaveURL(/\/projects\/agriflux$/);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
   });
 
@@ -605,7 +630,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
   }) => {
     test.setTimeout(90_000);
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto('/#skills', { waitUntil: 'load' });
+    await page.goto('/skills', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
     await page.waitForTimeout(850);
 
@@ -628,8 +653,8 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(destinationPlanet).not.toBeNull();
     await page.mouse.click(destinationPlanet!.x, destinationPlanet!.y);
 
-    await expect(page).not.toHaveURL(/#skills$/);
-    await expect(page).toHaveURL(/#(hero|about|projects|experience|achievements|contact)$/);
+    await expect(page).not.toHaveURL(/\/skills$/);
+    await expect(page).toHaveURL(/\/(about|projects|experience|achievements|contact)?$/);
   });
 
   test('verifies zero mobile Hero utility overlap and layout integrity across 320px–430px', async ({

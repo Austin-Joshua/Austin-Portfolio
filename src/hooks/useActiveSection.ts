@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PORTFOLIO_SECTIONS, parseSectionHash } from '@/data/sections';
+import { PORTFOLIO_SECTIONS } from '@/data/sections';
+import { resolveLocationRoute } from '@/routes/routes';
 
 export interface UseActiveSectionOptions {
   sectionIds?: readonly string[];
@@ -54,9 +55,9 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
 
   const [activeSection, setActiveSection] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      const fromHash = parseSectionHash(window.location.hash);
-      if (fromHash && sectionIds.includes(fromHash)) {
-        return fromHash;
+      const fromRoute = resolveLocationRoute().sectionId;
+      if (fromRoute && sectionIds.includes(fromRoute)) {
+        return fromRoute;
       }
     }
     return defaultSection;
@@ -68,10 +69,10 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
     }
 
     const syncFromLocation = () => {
-      const parsed = parseSectionHash(window.location.hash);
+      const parsed = resolveLocationRoute().sectionId;
       if (parsed && stableSectionIds.includes(parsed)) {
         setActiveSection(parsed);
-      } else if (window.location.hash === '') {
+      } else {
         setActiveSection(defaultSection);
       }
     };

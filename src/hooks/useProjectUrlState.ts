@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ProjectItem } from '@/types/portfolio';
 import {
-  parseProjectQueryParam,
-  resolveProjectBySlug,
-} from '@/utils/slugValidation';
+  buildProjectUrl,
+  buildRouteTitle,
+  PROJECTS_BASE_ROUTE,
+  resolveLocationRoute,
+} from '@/routes/routes';
+import type { ProjectItem } from '@/types/portfolio';
+import { resolveProjectBySlug } from '@/utils/slugValidation';
 
 export interface UseProjectUrlStateOptions {
   projects: readonly ProjectItem[];
@@ -21,23 +24,6 @@ export interface UseProjectUrlStateResult {
 const INVALID_SLUG_MESSAGE =
   'Requested project entry was not found. Displaying all available projects.';
 
-function buildProjectsUrl(slug: string | null): string {
-  if (typeof window === 'undefined') {
-    return slug ? `?project=${encodeURIComponent(slug)}#projects` : '#projects';
-  }
-
-  const url = new URL(window.location.href);
-  if (slug !== null) {
-    url.searchParams.set('project', slug);
-  } else {
-    url.searchParams.delete('project');
-  }
-
-  url.hash = '#projects';
-
-  return `${url.pathname}${url.search}${url.hash}`;
-}
-
 interface InitialUrlResolution {
   initialSlug: string | null;
   initialInvalid: boolean;
@@ -50,12 +36,12 @@ function readInitialUrlResolution(
     return { initialSlug: null, initialInvalid: false };
   }
 
-  const { hasParam, rawValue } = parseProjectQueryParam(window.location.search);
-  if (!hasParam) {
+  const resolvedRoute = resolveLocationRoute();
+  if (!resolvedRoute.hasProjectParam) {
     return { initialSlug: null, initialInvalid: false };
   }
 
-  const resolved = resolveProjectBySlug(rawValue, projects);
+  const resolved = resolveProjectBySlug(resolvedRoute.projectParam, projects);
   if (!resolved) {
     return { initialSlug: null, initialInvalid: true };
   }
@@ -77,7 +63,7 @@ export function useProjectUrlState({
   );
 
   const onInvalidSlugRef = useRef<(() => void) | undefined>(onInvalidSlug);
-  const cleanedInitialInvalidRef = useRef(false);
+  const syncedInitialRouteRef = useRef(false);
 
   useEffect(() => {
     onInvalidSlugRef.current = onInvalidSlug;
@@ -88,30 +74,47 @@ export function useProjectUrlState({
       return;
     }
 
-    if (!cleanedInitialInvalidRef.current) {
-      const { hasParam, rawValue } = parseProjectQueryParam(window.location.search);
-      if (hasParam && !resolveProjectBySlug(rawValue, projects)) {
-        cleanedInitialInvalidRef.current = true;
-        window.history.replaceState(
-          window.history.state,
-          '',
-          buildProjectsUrl(null),
-        );
-        onInvalidSlugRef.current?.();
+    if (!syncedInitialRouteRef.current) {
+      syncedInitialRouteRef.current = true;
+      const initialRoute = resolveLocationRoute();
+
+      if (initialRoute.hasProjectParam) {
+        const matched = resolveProjectBySlug(initialRoute.projectParam, projects);
+        if (!matched) {
+          window.history.replaceState(
+            window.history.state,
+            '',
+            buildProjectUrl(null),
+          );
+          document.title = buildRouteTitle('projects');
+          onInvalidSlugRef.current?.();
+        } else {
+          const canonicalUrl = buildProjectUrl(matched.slug);
+          const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+          if (currentUrl !== canonicalUrl) {
+            window.history.replaceState(
+              { projectSlug: matched.slug, sectionId: 'projects' },
+              '',
+              canonicalUrl,
+            );
+          }
+          document.title = buildRouteTitle('projects', matched.title);
+        }
       }
     }
 
     const handlePopState = () => {
-      const { hasParam, rawValue } = parseProjectQueryParam(window.location.search);
-      if (!hasParam) {
+      const nextRoute = resolveLocationRoute();
+      if (!nextRoute.hasProjectParam) {
         setSelectedSlug(null);
         return;
       }
 
-      const resolved = resolveProjectBySlug(rawValue, projects);
+      const resolved = resolveProjectBySlug(nextRoute.projectParam, projects);
       if (resolved) {
         setSelectedSlug(resolved.slug);
         setInvalidSlugNotice(null);
+        document.title = buildRouteTitle('projects', resolved.title);
         return;
       }
 
@@ -120,8 +123,9 @@ export function useProjectUrlState({
       window.history.replaceState(
         window.history.state,
         '',
-        buildProjectsUrl(null),
+        buildProjectUrl(null),
       );
+      document.title = buildRouteTitle('projects');
       onInvalidSlugRef.current?.();
     };
 
@@ -142,14 +146,15 @@ export function useProjectUrlState({
         setSelectedSlug(null);
         setInvalidSlugNotice(INVALID_SLUG_MESSAGE);
         if (typeof window !== 'undefined') {
-          const { hasParam } = parseProjectQueryParam(window.location.search);
-          if (hasParam) {
+          const currentRoute = resolveLocationRoute();
+          if (currentRoute.hasProjectParam) {
             window.history.replaceState(
               window.history.state,
               '',
-              buildProjectsUrl(null),
+              buildProjectUrl(null),
             );
           }
+          document.title = buildRouteTitle('projects');
         }
         onInvalidSlugRef.current?.();
         return;
@@ -159,15 +164,22 @@ export function useProjectUrlState({
       setSelectedSlug(resolved.slug);
 
       if (typeof window !== 'undefined') {
-        const { rawValue } = parseProjectQueryParam(window.location.search);
-        const currentResolved = resolveProjectBySlug(rawValue, projects);
-        if (currentResolved?.slug !== resolved.slug) {
+        const currentRoute = resolveLocationRoute();
+        const currentResolved = resolveProjectBySlug(
+          currentRoute.projectParam,
+          projects,
+        );
+        const canonicalUrl = buildProjectUrl(resolved.slug);
+        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+        if (currentResolved?.slug !== resolved.slug || currentUrl !== canonicalUrl) {
           window.history.pushState(
-            { projectSlug: resolved.slug },
+            { projectSlug: resolved.slug, sectionId: 'projects' },
             '',
-            buildProjectsUrl(resolved.slug),
+            canonicalUrl,
           );
         }
+        document.title = buildRouteTitle('projects', resolved.title);
       }
     },
     [projects],
@@ -177,14 +189,15 @@ export function useProjectUrlState({
     setSelectedSlug(null);
 
     if (typeof window !== 'undefined') {
-      const { hasParam } = parseProjectQueryParam(window.location.search);
-      if (hasParam) {
+      const currentRoute = resolveLocationRoute();
+      if (currentRoute.hasProjectParam) {
         window.history.pushState(
-          { projectSlug: null },
+          { projectSlug: null, sectionId: 'projects' },
           '',
-          buildProjectsUrl(null),
+          PROJECTS_BASE_ROUTE,
         );
       }
+      document.title = buildRouteTitle('projects');
     }
   }, []);
 

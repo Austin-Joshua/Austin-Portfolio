@@ -1,0 +1,15 @@
+export {
+  buildProjectUrl,
+  buildRouteTitle,
+  buildSectionUrl,
+  getProjectRoute,
+  getSectionRoute,
+  parseLegacySectionHash,
+  PROJECTS_BASE_ROUTE,
+  resolveLocationRoute,
+  ROOT_ROUTE,
+  SECTION_ROUTE_TITLES,
+  SECTION_ROUTES,
+  type LocationParts,
+  type ResolvedPortfolioRoute,
+} from '@/routes/routes';

@@ -10,7 +10,7 @@ import { ExperienceSection } from '@/components/sections/ExperienceSection';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
-import { PortraitSlot } from '@/components/ui/PortraitSlot';
+import { HeroPortraitReveal } from '@/components/ui/HeroPortraitReveal';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
 import type {
   AchievementItem,
@@ -91,10 +91,11 @@ describe('Phase 4 Sections & Components', () => {
     expect(document.querySelector('#about img')).toBeNull();
   });
 
-  it('PortraitSlot switches cleanly to Swiss AJ monogram fallback when image errors', () => {
+  it('HeroPortraitReveal omits image cleanly if cutout asset fails to load', () => {
     render(
-      <PortraitSlot
-        portrait={{ src: '/assets/portrait/missing.webp', alt: 'Austin portrait' }}
+      <HeroPortraitReveal
+        portrait={{ src: '/assets/portrait/missing.png', alt: 'Austin portrait' }}
+        prefersReducedMotion={false}
       />,
     );
 
@@ -102,7 +103,6 @@ describe('Phase 4 Sections & Components', () => {
     fireEvent.error(img);
 
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    expect(screen.getByText('PORTRAIT // ASSET_PENDING')).toBeInTheDocument();
   });
 
   it('SkillsSection supports keyboard tabs, cross-references projects, and renders neutral empty state', async () => {

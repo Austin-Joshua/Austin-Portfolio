@@ -99,11 +99,11 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     for (const label of expectedLabels) {
       expect(within(desktopNav).getByRole('link', { name: label })).toHaveAttribute(
         'href',
-        `#${label.toLowerCase()}`,
+        `/${label.toLowerCase()}`,
       );
       expect(within(mobileNav).getByRole('link', { name: label })).toHaveAttribute(
         'href',
-        `#${label.toLowerCase()}`,
+        `/${label.toLowerCase()}`,
       );
     }
 

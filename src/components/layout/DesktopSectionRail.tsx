@@ -36,7 +36,7 @@ export function DesktopSectionRail({
           return (
             <li key={section.id}>
               <a
-                href={`#${section.id}`}
+                href={section.route}
                 onClick={(event) => onSectionSelect?.(event, section.id)}
                 aria-current={isActive ? 'location' : undefined}
                 aria-label={section.label}

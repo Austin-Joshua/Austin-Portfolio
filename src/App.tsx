@@ -17,7 +17,11 @@ import {
   UniverseNavigationProvider,
   useUniverseNavigation,
 } from '@/context/UniverseNavigationContext';
-import { parseSectionHash } from '@/data/sections';
+import {
+  buildRouteTitle,
+  buildSectionUrl,
+  resolveLocationRoute,
+} from '@/routes/routes';
 import { UniverseLayer } from '@/three/UniverseLayer';
 import { scrollToSection } from '@/utils/scrollNavigation';
 
@@ -27,22 +31,37 @@ const loadMotionFeatures = () =>
 function CosmicPortfolioShell() {
   const { scrollProgressRef } = useUniverseNavigation();
 
-  // Initial deep-link hash alignment after React mounts
+  // Initial route alignment & legacy hash/query normalization after React mounts
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    const initialSection = parseSectionHash(window.location.hash);
-    if (!initialSection) {
+    const initialRoute = resolveLocationRoute();
+    const targetSection = initialRoute.sectionId ?? 'hero';
+
+    // Normalize legacy `/#section` or unknown routes cleanly without disrupting valid project routes
+    if (!initialRoute.hasProjectParam && initialRoute.shouldCanonicalize) {
+      window.history.replaceState(
+        window.history.state,
+        '',
+        buildSectionUrl(targetSection),
+      );
+    }
+
+    if (!initialRoute.hasProjectParam) {
+      document.title = buildRouteTitle(targetSection);
+    }
+
+    if (targetSection === 'hero' && !initialRoute.hasProjectParam) {
       return;
     }
 
     const frameId = window.requestAnimationFrame(() => {
-      scrollToSection(initialSection, {
+      scrollToSection(targetSection, {
         prefersReducedMotion: true,
         focusTarget: false,
-        updateHash: false,
+        updateRoute: false,
       });
     });
 
@@ -51,22 +70,31 @@ function CosmicPortfolioShell() {
     };
   }, []);
 
-  // Browser Back/Forward & hashchange section synchronization
+  // Browser Back/Forward & hashchange route synchronization
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
     const handleHistoryNavigation = () => {
-      const targetSection = parseSectionHash(window.location.hash);
-      if (!targetSection) {
-        return;
+      const nextRoute = resolveLocationRoute();
+      const targetSection = nextRoute.sectionId ?? 'hero';
+
+      if (!nextRoute.hasProjectParam) {
+        if (nextRoute.shouldCanonicalize) {
+          window.history.replaceState(
+            window.history.state,
+            '',
+            buildSectionUrl(targetSection),
+          );
+        }
+        document.title = buildRouteTitle(targetSection);
       }
 
       scrollToSection(targetSection, {
         prefersReducedMotion: true,
         focusTarget: false,
-        updateHash: false,
+        updateRoute: false,
       });
     };
 

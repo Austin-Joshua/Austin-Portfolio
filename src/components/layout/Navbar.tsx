@@ -15,6 +15,7 @@ import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { PRIMARY_NAV_SECTIONS, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { getSectionRoute } from '@/routes/routes';
 import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 import { scrollToSection } from '@/utils/scrollNavigation';
 import { playPlanetSound } from '@/utils/soundEffects';
@@ -70,7 +71,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
           {/* Desktop sticky pill (AJ Logo ONLY + minimal section links + sound icon toggle) */}
           <div className="hidden md:flex relative glass-surface pointer-events-auto flex-nowrap w-full min-h-[58px] items-center justify-between gap-x-4 px-5 lg:px-7">
             <a
-              href="#hero"
+              href={getSectionRoute('hero')}
               onClick={(event) => handleAnchorClick(event, 'hero')}
               aria-label="Austin Joshua — Return to Sun Overview"
               className="group inline-flex min-h-[44px] min-w-[44px] items-center justify-center shrink-0 rounded-full p-1 transition-transform duration-200 hover:scale-110 active:scale-95 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
@@ -94,7 +95,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                 return (
                   <a
                     key={section.id}
-                    href={`#${section.id}`}
+                    href={section.route}
                     onClick={(event) => handleAnchorClick(event, section.id)}
                     aria-current={isActive ? 'location' : undefined}
                     className={[
@@ -139,7 +140,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
           {/* Mobile minimal floating AJ emblem badge + Sound toggle */}
           <div className="flex md:hidden items-center justify-between">
             <a
-              href="#hero"
+              href={getSectionRoute('hero')}
               onClick={(event) => handleAnchorClick(event, 'hero')}
               aria-label="Austin Joshua — Return to Sun Overview"
               className="glass-surface pointer-events-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-1.5 transition-transform duration-200 active:scale-95 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
@@ -184,7 +185,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
             return (
               <a
                 key={section.id}
-                href={`#${section.id}`}
+                href={section.route}
                 onClick={(event) => handleAnchorClick(event, section.id)}
                 aria-current={isActive ? 'location' : undefined}
                 className={[

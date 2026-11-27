@@ -137,7 +137,7 @@ describe('T3.3 Navigation Enhancements', () => {
       const link = within(railNav).getByRole('link', {
         name: section.label,
       });
-      expect(link).toHaveAttribute('href', `#${section.id}`);
+      expect(link).toHaveAttribute('href', section.route);
 
       if (section.id === 'projects') {
         expect(link).toHaveAttribute('aria-current', 'location');

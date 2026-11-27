@@ -10,8 +10,9 @@ import {
   type RefObject,
 } from 'react';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
-import { parseSectionHash, type SectionId } from '@/data/sections';
+import type { SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { resolveLocationRoute } from '@/routes/routes';
 import type { PlanetId } from '@/three/universeConfig';
 import { computeGyroTilt, subscribeDeviceOrientation } from '@/utils/gyroParallax';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -73,8 +74,8 @@ export function UniverseNavigationProvider({
   const [navSectionOverride, setNavSectionOverride] =
     useState<SectionId | null>(() => {
       if (typeof window === 'undefined') return null;
-      const initialHash = parseSectionHash(window.location.hash);
-      return initialHash && initialHash !== 'hero' ? initialHash : null;
+      const initialSection = resolveLocationRoute().sectionId;
+      return initialSection && initialSection !== 'hero' ? initialSection : null;
     });
   const [navigationMode, setNavigationMode] =
     useState<UniverseNavigationMode>('explore');

@@ -7,6 +7,7 @@ import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { experienceData } from '@/data/experience';
 import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
+import { getSectionRoute } from '@/routes/routes';
 import type { ExperienceItem } from '@/types/portfolio';
 import { hasNonEmptyText } from '@/utils/dataGuards';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -179,7 +180,7 @@ export function ExperienceSection({
 
                 <div className="relative z-10 flex flex-wrap gap-3 border-t border-[var(--border-subtle)] pt-5">
                   <a
-                    href="#projects"
+                    href={getSectionRoute('projects')}
                     onClick={(e) => {
                       e.preventDefault();
                       handleJump('projects');
@@ -189,7 +190,7 @@ export function ExperienceSection({
                     Inspect Shipped Projects
                   </a>
                   <a
-                    href="#contact"
+                    href={getSectionRoute('contact')}
                     onClick={(e) => {
                       e.preventDefault();
                       handleJump('contact');
