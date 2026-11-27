@@ -17,6 +17,9 @@ export function SolarSystemHud() {
   const { prefersReducedMotion } = useMotionPreference();
   const angleReadoutRef = useRef<HTMLSpanElement>(null);
   const hoverDegRef = useRef<HTMLSpanElement>(null);
+  const lastCanvasTimeRef = useRef<number | null>(null);
+  const fallbackTimeRef = useRef<number>(0);
+  const lastTickMsRef = useRef<number>(0);
 
   const activeSection = nav?.activeSection ?? 'hero';
   const navigationMode = nav?.navigationMode ?? 'explore';
@@ -49,22 +52,39 @@ export function SolarSystemHud() {
       ? SOLAR_SYSTEM_PLANETS[activePlanetIdx + 1]
       : null;
 
-  // Lightweight DOM-only orbital angle updater (~5Hz) so planetary longitude ticks live with zero React re-renders
+  // Lightweight DOM-only orbital angle updater (~5Hz) syncing live WebGL or fallback orbital clock
   useEffect(() => {
-    const computeDeg = (planetId: Exclude<PlanetId, 'sun'>): number => {
+    const computeDeg = (planetId: Exclude<PlanetId, 'sun'>, elapsedSec: number): number => {
       const def = SOLAR_SYSTEM_PLANETS.find((p) => p.id === planetId);
       if (!def) return 0;
-      const t = liveOrbitTimeRef?.current ?? 0;
-      const [px, , pz] = getPlanetWorldPosition(def, t, 1);
+      const [px, , pz] = getPlanetWorldPosition(def, elapsedSec, 1);
       return Math.round((((Math.atan2(pz, px) * 180) / Math.PI) + 360) % 360);
     };
 
+    lastTickMsRef.current = performance.now();
+
     const syncReadout = () => {
+      const now = performance.now();
+      const dtSec = Math.min(0.5, Math.max(0, (now - lastTickMsRef.current) / 1000));
+      lastTickMsRef.current = now;
+
+      const canvasTime = liveOrbitTimeRef?.current ?? 0;
+      const prevCanvas = lastCanvasTimeRef.current;
+      let resolvedTime = canvasTime;
+
+      if (prevCanvas === null || canvasTime > prevCanvas + 1e-4) {
+        lastCanvasTimeRef.current = canvasTime;
+        fallbackTimeRef.current = canvasTime;
+      } else if (!prefersReducedMotion) {
+        fallbackTimeRef.current += dtSec * 0.58;
+        resolvedTime = fallbackTimeRef.current;
+      }
+
       if (angleReadoutRef.current && currentSectionPlanet) {
-        angleReadoutRef.current.textContent = `${computeDeg(currentSectionPlanet.id)}°`;
+        angleReadoutRef.current.textContent = `${computeDeg(currentSectionPlanet.id, resolvedTime)}°`;
       }
       if (hoverDegRef.current && activeHoveredMeta) {
-        hoverDegRef.current.textContent = ` · ${computeDeg(activeHoveredMeta.id)}°`;
+        hoverDegRef.current.textContent = ` · ${computeDeg(activeHoveredMeta.id, resolvedTime)}°`;
       } else if (hoverDegRef.current) {
         hoverDegRef.current.textContent = '';
       }

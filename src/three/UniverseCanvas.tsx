@@ -376,6 +376,7 @@ export function UniverseCanvas({
       data-testid="universe-canvas-wrapper"
       data-quality-tier={qualityTier.tier}
       data-frameloop={effectiveFrameloop}
+      data-webgl-ready={isReady ? 'true' : 'false'}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUpOrCancel}

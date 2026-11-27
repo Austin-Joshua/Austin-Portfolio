@@ -691,35 +691,43 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/skills', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
-    // Allow Three.js to fully render + animate planets into position (Firefox WebGL is slower to warm up)
-    await page.waitForTimeout(1500);
+    await expect(
+      page.locator('[data-testid="universe-canvas-wrapper"][data-webgl-ready="true"]'),
+    ).toBeVisible({ timeout: 15_000 });
+    await page.waitForTimeout(900);
 
-    let destinationPlanet: { x: number; y: number; toast: string } | null = null;
-    // Retry the entire planet-scan so Firefox's slower WebGL hover detection is reliably caught
-    await expect(async () => {
-      // Reset scan state on each retry attempt so a full sweep happens
-      destinationPlanet = null;
-      for (let y = 100; y <= 680 && !destinationPlanet; y += 20) {
-        for (const x of [20, 36, 200, 400, 600, 720, 900, 960, 1100, 1140, 1230, 1260]) {
-          if (destinationPlanet) break;
-          await page.mouse.move(x, y);
-          await page.waitForTimeout(60);
-          const result = await page.evaluate(() => {
-            // Primary: check toast element directly (more reliable than cursor across browsers)
-            const toastEl = document.querySelector('[data-testid="planet-hover-toast"]');
-            const toastText = toastEl?.textContent ?? null;
-            if (toastText) return toastText;
-            // Fallback: cursor style
-            if (document.body.style.cursor === 'pointer') return '__cursor_pointer__';
-            return null;
-          });
-          if (result && result !== '__cursor_pointer__' && !result.startsWith('Skills')) {
-            destinationPlanet = { x, y, toast: result };
+    // Pre-filter to coordinates where the 3D canvas is actually exposed (not blocked by DOM cards)
+    const exposedPoints = await page.evaluate(() => {
+      const pts: Array<{ x: number; y: number }> = [];
+      const xs = [18, 32, 46, 220, 440, 640, 820, 980, 1140, 1210, 1244, 1264];
+      for (let y = 96; y <= 680; y += 24) {
+        for (const x of xs) {
+          const hit = document.elementFromPoint(x, y);
+          if (hit?.closest('[data-testid="universe-canvas-wrapper"]')) {
+            pts.push({ x, y });
           }
         }
       }
+      return pts;
+    });
+    expect(exposedPoints.length).toBeGreaterThan(0);
+
+    let destinationPlanet: { x: number; y: number; toast: string } | null = null;
+    await expect(async () => {
+      destinationPlanet = null;
+      for (const pt of exposedPoints) {
+        await page.mouse.move(pt.x, pt.y);
+        await page.waitForTimeout(45);
+        const toast = await page.evaluate(() => {
+          return document.querySelector('[data-testid="planet-hover-toast"]')?.textContent ?? null;
+        });
+        if (toast && !toast.startsWith('Skills')) {
+          destinationPlanet = { x: pt.x, y: pt.y, toast };
+          break;
+        }
+      }
       expect(destinationPlanet).not.toBeNull();
-    }).toPass({ timeout: 20_000 });
+    }).toPass({ timeout: 25_000 });
     await page.mouse.click(destinationPlanet!.x, destinationPlanet!.y);
 
     await expect(page).not.toHaveURL(/\/skills$/);
@@ -864,12 +872,12 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(async () => {
       const angleAfter = await telemetry.textContent();
       expect(angleAfter).not.toBe(angleBefore);
-    }).toPass({ timeout: 4000 });
+    }).toPass({ timeout: 8000 });
 
     // Clicking interactive content inside Skills links directly to planet telemetry
     await page.locator('#skills').getByRole('button', { name: /TypeScript/i }).click();
     // pulsePlanet sets planetActivity asynchronously; poll until telemetry reflects the new label
-    await expect(telemetry).toContainText('TypeScript', { timeout: 3000 });
+    await expect(telemetry).toContainText('TypeScript', { timeout: 5000 });
 
     // Scroll down into Projects -> telemetry switches to Projects and links filter state
     await page.evaluate(() =>

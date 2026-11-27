@@ -65,7 +65,8 @@ export function SolarSystemScene({
     const scrollBoost = Math.min(0.65, Math.abs(scrollVelocityRef.current ?? 0) * 0.16);
     const targetRate = baseRate + scrollBoost;
     orbitRateRef.current += (targetRate - orbitRateRef.current) * Math.min(1, delta * 9);
-    elapsedTimeRef.current += Math.min(delta, 0.05) * orbitRateRef.current;
+    // Allow larger frame steps (up to 250ms) so software WebGL keeps wall-clock orbital motion
+    elapsedTimeRef.current += Math.min(delta, 0.25) * orbitRateRef.current;
     if (liveOrbitTimeRef?.current !== undefined) {
       liveOrbitTimeRef.current = elapsedTimeRef.current;
     }
