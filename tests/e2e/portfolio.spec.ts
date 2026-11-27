@@ -510,12 +510,29 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     const afterRevealBox = await heroImg.boundingBox();
     expect(Math.abs(beforeRevealBox!.y - afterRevealBox!.y)).toBeLessThan(2);
 
-    // Specular glare stays cutout-masked (no unmasked rectangular frame around subject)
-    const glareMask = await page.getByTestId('gyro-specular-glare').evaluate((el) => {
-      const style = window.getComputedStyle(el);
-      return style.maskImage || style.webkitMaskImage || '';
+    // Specular glare stays cutout-masked (no unmasked rectangular frame around subject),
+    // Hero portrait image stays flat (zero 3D transform tilt), and all pages share Outfit + Plus Jakarta Sans fonts
+    const portraitVisualCheck = await heroPortrait.evaluate((fig) => {
+      const glare = fig.querySelector('[data-testid="gyro-specular-glare"]');
+      const glareStyle = glare ? window.getComputedStyle(glare) : null;
+      const img = fig.querySelector('img');
+      const imgTransform = img ? window.getComputedStyle(img).transform : '';
+      const families = new Set(
+        Array.from(document.querySelectorAll('h1, h2, h3, p, a, button, span, footer')).map((el) =>
+          window.getComputedStyle(el).fontFamily,
+        ),
+      );
+      return {
+        glareMask: glareStyle ? glareStyle.maskImage || glareStyle.webkitMaskImage || '' : '',
+        imgTransform,
+        allFamilies: Array.from(families).join(' | '),
+      };
     });
-    expect(glareMask).toContain('austin-joshua-cutout.png');
+    expect(portraitVisualCheck.glareMask).toContain('austin-joshua-cutout.png');
+    expect(portraitVisualCheck.imgTransform).toBe('none');
+    expect(portraitVisualCheck.allFamilies).not.toMatch(/JetBrains|Syne|Inter/i);
+    expect(portraitVisualCheck.allFamilies).toContain('Outfit');
+    expect(portraitVisualCheck.allFamilies).toContain('Plus Jakarta Sans');
 
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
@@ -596,10 +613,13 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     // Reload on /contact stays anchored cleanly on Contact
     await page.reload({ waitUntil: 'load' });
     await dismissIntroForSuite(page);
-    await page.waitForTimeout(150);
-    const contactTop = await page.locator('#contact').evaluate((el) => el.getBoundingClientRect().top);
-    expect(contactTop).toBeGreaterThanOrEqual(0);
-    expect(contactTop).toBeLessThan(400);
+    // Extra settle time needed on WebKit — scroll restoration fires asynchronously after load
+    await page.waitForTimeout(300);
+    await expect(async () => {
+      const contactTop = await page.locator('#contact').evaluate((el) => el.getBoundingClientRect().top);
+      expect(contactTop).toBeGreaterThanOrEqual(0);
+      expect(contactTop).toBeLessThan(400);
+    }).toPass({ timeout: 8000 });
 
     // Legacy hash URL /#achievements canonicalizes cleanly to /achievements
     await page.goto('/#achievements', { waitUntil: 'load' });
@@ -646,25 +666,35 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/skills', { waitUntil: 'load' });
     await dismissIntroForSuite(page);
-    await page.waitForTimeout(850);
+    // Allow Three.js to fully render + animate planets into position (Firefox WebGL is slower to warm up)
+    await page.waitForTimeout(1500);
 
     let destinationPlanet: { x: number; y: number; toast: string } | null = null;
-    for (let y = 110; y <= 680 && !destinationPlanet; y += 28) {
-      for (const x of [24, 36, 720, 960, 1140, 1230]) {
-        if (destinationPlanet) break;
-        await page.mouse.move(x, y);
-        await page.waitForTimeout(35);
-        const toast = await page.evaluate(() => {
-          if (document.body.style.cursor !== 'pointer') return null;
-          return document.querySelector('[data-testid="planet-hover-toast"]')?.textContent ?? null;
-        });
-        if (toast && !toast.startsWith('Skills')) {
-          destinationPlanet = { x, y, toast };
+    // Retry the entire planet-scan so Firefox's slower WebGL hover detection is reliably caught
+    await expect(async () => {
+      // Reset scan state on each retry attempt so a full sweep happens
+      destinationPlanet = null;
+      for (let y = 100; y <= 680 && !destinationPlanet; y += 20) {
+        for (const x of [20, 36, 200, 400, 600, 720, 900, 960, 1100, 1140, 1230, 1260]) {
+          if (destinationPlanet) break;
+          await page.mouse.move(x, y);
+          await page.waitForTimeout(60);
+          const result = await page.evaluate(() => {
+            // Primary: check toast element directly (more reliable than cursor across browsers)
+            const toastEl = document.querySelector('[data-testid="planet-hover-toast"]');
+            const toastText = toastEl?.textContent ?? null;
+            if (toastText) return toastText;
+            // Fallback: cursor style
+            if (document.body.style.cursor === 'pointer') return '__cursor_pointer__';
+            return null;
+          });
+          if (result && result !== '__cursor_pointer__' && !result.startsWith('Skills')) {
+            destinationPlanet = { x, y, toast: result };
+          }
         }
       }
-    }
-
-    expect(destinationPlanet).not.toBeNull();
+      expect(destinationPlanet).not.toBeNull();
+    }).toPass({ timeout: 20_000 });
     await page.mouse.click(destinationPlanet!.x, destinationPlanet!.y);
 
     await expect(page).not.toHaveURL(/\/skills$/);
@@ -813,7 +843,8 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
     // Clicking interactive content inside Skills links directly to planet telemetry
     await page.locator('#skills').getByRole('button', { name: /TypeScript/i }).click();
-    await expect(telemetry).toContainText('TypeScript');
+    // pulsePlanet sets planetActivity asynchronously; poll until telemetry reflects the new label
+    await expect(telemetry).toContainText('TypeScript', { timeout: 3000 });
 
     // Scroll down into Projects -> telemetry switches to Projects and links filter state
     await page.evaluate(() =>

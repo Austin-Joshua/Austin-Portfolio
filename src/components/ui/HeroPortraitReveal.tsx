@@ -3,7 +3,6 @@ import type { PortraitAsset } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
 import {
   computeGyroTilt,
-  computePointerTilt,
   requestIosGyroPermission,
   subscribeDeviceOrientation,
 } from '@/utils/gyroParallax';
@@ -12,7 +11,6 @@ import { playClick } from '@/utils/soundEffects';
 export interface HeroPortraitRevealProps {
   portrait: PortraitAsset | null;
   prefersReducedMotion: boolean;
-  pointerOffset?: { x: number; y: number };
 }
 
 const TORCH_SPARKLES = [
@@ -28,14 +26,13 @@ const TORCH_SPARKLES = [
 const DEFAULT_SPOT = { x: 52, y: 24 };
 
 /**
- * Interactive Hero portrait cutout showing a pure silhouetted form at rest,
- * revealing ONLY the touched/hovered portion via localized warm torchlight
- * and masked cosmic sparkles with zero rectangular frame boundaries.
+ * Interactive flat Hero portrait cutout rendering a silhouette at rest and
+ * illuminating only the touched or hovered portion with localized torchlight
+ * and cosmic sparkles—zero 3D transform distortion and zero box boundaries.
  */
 export function HeroPortraitReveal({
   portrait,
   prefersReducedMotion,
-  pointerOffset,
 }: HeroPortraitRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastInputModalityRef = useRef<'keyboard' | 'pointer'>('keyboard');
@@ -46,19 +43,7 @@ export function HeroPortraitReveal({
   const [gyroActive, setGyroActive] = useState(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const [spot, setSpot] = useState<{ x: number; y: number }>(DEFAULT_SPOT);
-  const [tilt, setTilt] = useState<{
-    rotateX: number;
-    rotateY: number;
-    shiftX: number;
-    glareX: number;
-    glareY: number;
-  }>({
-    rotateX: 0,
-    rotateY: 0,
-    shiftX: 0,
-    glareX: 50,
-    glareY: 38,
-  });
+  const [glare, setGlare] = useState<{ x: number; y: number }>({ x: 50, y: 38 });
 
   useEffect(() => {
     const handleKeyDown = () => {
@@ -78,7 +63,7 @@ export function HeroPortraitReveal({
     };
   }, []);
 
-  // Device Gyroscope orientation tracking
+  // Subtle 2D specular light shift on device orientation without tilting the portrait in 3D
   useEffect(() => {
     if (prefersReducedMotion || typeof window === 'undefined') return;
 
@@ -86,13 +71,7 @@ export function HeroPortraitReveal({
       if (event.beta == null && event.gamma == null) return;
       const g = computeGyroTilt(event.gamma, event.beta, 9);
       setGyroActive(true);
-      setTilt({
-        rotateX: g.rotateX,
-        rotateY: g.rotateY,
-        shiftX: g.px * 12,
-        glareX: g.glareX,
-        glareY: g.glareY,
-      });
+      setGlare({ x: g.glareX, y: g.glareY });
     });
   }, [prefersReducedMotion]);
 
@@ -116,6 +95,9 @@ export function HeroPortraitReveal({
     const xPct = Math.max(4, Math.min(96, ((clientX - rect.left) / rect.width) * 100));
     const yPct = Math.max(4, Math.min(96, ((clientY - rect.top) / rect.height) * 100));
     setSpot({ x: xPct, y: yPct });
+    if (!gyroActive) {
+      setGlare({ x: xPct, y: yPct });
+    }
   };
 
   const handleTogglePin = (event: MouseEvent<HTMLButtonElement>) => {
@@ -131,40 +113,7 @@ export function HeroPortraitReveal({
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     updateSpotFromClient(event.clientX, event.clientY);
-    if (prefersReducedMotion || event.pointerType === 'touch') {
-      return;
-    }
-    const el = containerRef.current;
-    if (!el) return;
-    const next = computePointerTilt(
-      event.clientX,
-      event.clientY,
-      el.getBoundingClientRect(),
-      8.5,
-    );
-    setTilt({
-      rotateX: next.rotateX,
-      rotateY: next.rotateY,
-      shiftX: next.px * 12,
-      glareX: next.glareX,
-      glareY: next.glareY,
-    });
   };
-
-  const activeRotateX =
-    isHovered || gyroActive
-      ? tilt.rotateX
-      : -(pointerOffset?.y ?? 0) * 1.4;
-  const activeRotateY =
-    isHovered || gyroActive
-      ? tilt.rotateY
-      : (pointerOffset?.x ?? 0) * 4.5;
-  const activeShiftX =
-    isHovered || gyroActive ? tilt.shiftX : (pointerOffset?.x ?? 0) * 5;
-
-  const portrait3DTransform = prefersReducedMotion
-    ? undefined
-    : `perspective(1100px) rotateX(${activeRotateX.toFixed(2)}deg) rotateY(${activeRotateY.toFixed(2)}deg) translate3d(${activeShiftX.toFixed(1)}px, 0px, 0px)`;
 
   const cutoutMaskStyle = {
     WebkitMaskImage: `url(${portrait.src})`,
@@ -209,9 +158,6 @@ export function HeroPortraitReveal({
       onPointerLeave={(event) => {
         if (event.pointerType !== 'touch') {
           setIsHovered(false);
-          if (!gyroActive) {
-            setTilt((prev) => ({ ...prev, rotateX: 0, rotateY: 0, shiftX: 0 }));
-          }
         }
       }}
       onPointerMove={handlePointerMove}
@@ -228,20 +174,18 @@ export function HeroPortraitReveal({
       }}
       className="pointer-events-none relative z-10 m-0 inline-flex h-full items-end justify-center select-none"
     >
-      {/* Cutout-masked Gyro-Parallax specular sheen (strictly inside subject pixels — zero rectangular box) */}
+      {/* Cutout-masked specular glare shimmer (zero rectangular boundary, zero 3D transform) */}
       <div
         aria-hidden="true"
         data-testid="gyro-specular-glare"
         className={[
-          'pointer-events-none absolute inset-0 z-15 will-change-transform',
+          'pointer-events-none absolute inset-0 z-15',
           prefersReducedMotion ? 'transition-none' : 'transition-opacity duration-300',
           isRevealed || gyroActive ? 'opacity-65' : 'opacity-0',
         ].join(' ')}
         style={{
-          transform: portrait3DTransform,
-          transformOrigin: 'center bottom',
           ...cutoutMaskStyle,
-          background: `radial-gradient(circle 200px at ${tilt.glareX}% ${tilt.glareY}%, rgba(255, 255, 255, 0.22) 0%, transparent 72%)`,
+          background: `radial-gradient(circle 200px at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.22) 0%, transparent 72%)`,
           mixBlendMode: 'screen',
         }}
       />
@@ -255,9 +199,8 @@ export function HeroPortraitReveal({
         loading="eager"
         decoding="async"
         onError={() => setFailedSrc(portrait.src)}
-        style={{ transform: portrait3DTransform, transformOrigin: 'center bottom' }}
         className={[
-          'relative z-10 h-full max-h-full w-auto max-w-full object-contain object-bottom will-change-transform',
+          'relative z-10 h-full max-h-full w-auto max-w-full object-contain object-bottom',
           'portrait-cutout-img portrait-cutout-shadow',
           prefersReducedMotion ? 'portrait-cutout-reduced' : '',
         ]
@@ -269,13 +212,11 @@ export function HeroPortraitReveal({
       <div
         aria-hidden="true"
         className={[
-          'pointer-events-none absolute inset-0 z-20 will-change-transform',
+          'pointer-events-none absolute inset-0 z-20',
           prefersReducedMotion ? 'transition-none' : 'transition-opacity duration-200',
           isRevealed ? 'opacity-100 portrait-cutout-revealed' : 'opacity-0',
         ].join(' ')}
         style={{
-          transform: portrait3DTransform,
-          transformOrigin: 'center bottom',
           backgroundImage: `url(${portrait.src})`,
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
@@ -289,15 +230,11 @@ export function HeroPortraitReveal({
       <div
         aria-hidden="true"
         className={[
-          'pointer-events-none absolute inset-0 z-25 overflow-hidden will-change-transform',
+          'pointer-events-none absolute inset-0 z-25 overflow-hidden',
           prefersReducedMotion ? 'transition-none' : 'transition-opacity duration-200',
           isRevealed ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
-        style={{
-          transform: portrait3DTransform,
-          transformOrigin: 'center bottom',
-          ...cutoutMaskStyle,
-        }}
+        style={cutoutMaskStyle}
       >
         <div
           className="absolute inset-0"

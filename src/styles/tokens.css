@@ -6,10 +6,10 @@
 :root {
   color-scheme: dark;
 
-  /* Typography families (self-hosted) */
+  /* Typography families (self-hosted across all pages) */
   --font-display: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Fluid typography scale — crisp editorial hierarchy */
   --text-hero: min(clamp(3.5rem, 2.8rem + 5.2vw, 7.5rem), 16vw);
@@ -31,7 +31,7 @@
   --tracking-h3: -0.015em;
   --tracking-lead: -0.005em;
   --tracking-body: 0;
-  --tracking-meta: 0.06em;
+  --tracking-meta: 0.02em;
 
   --weight-regular: 400;
   --weight-medium: 500;

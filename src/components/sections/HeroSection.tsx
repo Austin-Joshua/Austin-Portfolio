@@ -113,12 +113,11 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
             </h1>
           </div>
 
-          {/* Larger 3D Silhouette -> Torchlight Interactive Portrait extending flush to bottom */}
+          {/* Flat Interactive Portrait extending flush to bottom */}
           <div className="pointer-events-none relative z-10 h-full flex items-end justify-center">
             <HeroPortraitReveal
               portrait={profile.portrait}
               prefersReducedMotion={prefersReducedMotion}
-              pointerOffset={parallax}
             />
           </div>
         </div>
