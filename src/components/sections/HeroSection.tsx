@@ -70,7 +70,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
       labelledbyId="hero-heading"
       headingLevel={1}
       withDivider={false}
-      className="relative flex flex-col justify-between overflow-x-clip !pt-12 !pb-[4.75rem] sm:!pt-14 sm:!pb-24 md:!pt-[4.75rem] md:!pb-1 min-h-[calc(100dvh-4rem)] md:min-h-[100dvh]"
+      className="relative flex flex-col justify-between overflow-x-clip !pt-16 sm:!pt-[4.25rem] !pb-[4.25rem] sm:!pb-[4.5rem] lg:!pt-[4.25rem] lg:!pb-0 min-h-[100dvh]"
     >
       {/* Atmospheric solar corona radial aura */}
       <div
@@ -81,19 +81,19 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
         }}
       />
 
-      {/* Centered Monumental Stage (Name behind Full-Height Portrait reaching the bottom + Credentials spread Left & Right) */}
+      {/* Centered Monumental Stage (Full-Length Name behind Giant Silhouette Portrait reaching the bottom) */}
       <div
         onPointerMove={handlePointerMove}
         onPointerLeave={() => setParallax({ x: 0, y: 0 })}
-        className="pointer-events-none relative z-10 my-auto md:my-0 md:flex-1 w-full flex flex-col items-center justify-center md:justify-end gap-2 sm:gap-3 lg:gap-0"
+        className="pointer-events-none relative z-10 flex-1 w-full flex flex-col items-center justify-end"
       >
         <div
           data-testid="hero-3d-stage"
-          className="pointer-events-none relative mx-auto flex h-[clamp(245px,38dvh,340px)] sm:h-[clamp(290px,43dvh,420px)] md:h-[calc(100dvh-8.5rem)] md:min-h-[430px] md:max-h-[900px] w-full max-w-[92rem] items-end justify-center"
+          className="pointer-events-none relative mx-auto flex h-[calc(100dvh-8.25rem)] min-h-[430px] max-h-[820px] lg:h-[calc(100dvh-4.25rem)] lg:min-h-[540px] lg:max-h-[1080px] w-full max-w-[96rem] items-end justify-center"
         >
-          {/* Monumental 3D Name layered directly behind Austin's full-height portrait */}
+          {/* Full-length Monumental 3D Name layered directly behind Austin's full-height portrait */}
           <div
-            className="pointer-events-none absolute inset-x-0 top-[0%] sm:top-[1%] z-0 flex flex-col items-center justify-center text-center select-none overflow-visible"
+            className="pointer-events-none absolute inset-x-0 top-[2%] sm:top-[3%] lg:top-[2%] z-0 flex flex-col items-center justify-center text-center select-none overflow-visible"
             style={{
               transform: prefersReducedMotion
                 ? undefined
@@ -103,7 +103,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
           >
             <h1
               id="hero-heading"
-              className="font-display text-[clamp(3rem,14.5vw,5.25rem)] sm:text-[clamp(4rem,12.5vw,8rem)] lg:text-[clamp(5.75rem,min(12.6vw,21.5dvh),12.5rem)] font-bold uppercase tracking-[0.04em] sm:tracking-[0.05em] lg:tracking-[0.06em] leading-[0.82] text-[#eef3fb]/92 select-none"
+              className="font-display w-full text-[clamp(4.2rem,22vw,6.85rem)] sm:text-[clamp(6rem,20vw,10.25rem)] lg:text-[clamp(8.5rem,min(18.5vw,28dvh),17.5rem)] font-extrabold uppercase tracking-[0.02em] lg:tracking-[0.03em] leading-[0.82] text-[#eef3fb]/92 select-none"
               style={{
                 textShadow:
                   '0 2px 0 rgba(190,202,222,0.5), 0 5px 0 rgba(132,146,172,0.42), 0 12px 0 rgba(74,86,108,0.34), 0 28px 56px rgba(2,3,7,0.96)',
@@ -113,7 +113,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
             </h1>
           </div>
 
-          {/* Larger 3D Shadow->Colour Gyro-Parallax Portrait extending to bottom */}
+          {/* Larger 3D Silhouette -> Torchlight Interactive Portrait extending flush to bottom */}
           <div className="pointer-events-none relative z-10 h-full flex items-end justify-center">
             <HeroPortraitReveal
               portrait={profile.portrait}
@@ -123,39 +123,39 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Left & Right Flanked Credentials on Desktop (Stacked centered cleanly on mobile/tablet) */}
-        <div className="pointer-events-none relative z-20 w-full max-w-[92rem] flex flex-col items-center text-center gap-2 sm:gap-3.5 px-2 lg:pointer-events-none lg:static">
+        {/* Left & Right Flanked Subtle Credentials on Desktop Only (Zero bottom clutter on Mobile Hero) */}
+        <div className="pointer-events-none hidden lg:block">
           {/* Left Credential Column */}
-          <div className="pointer-events-auto flex flex-col items-center text-center gap-1 sm:gap-2 max-w-[44ch] lg:max-w-[16.5rem] xl:max-w-[22.5rem] 2xl:max-w-[24.5rem] lg:items-start lg:text-left lg:absolute lg:left-2 xl:left-4 lg:bottom-5 xl:bottom-8">
+          <div className="pointer-events-auto flex flex-col items-start text-left gap-1.5 max-w-[16rem] xl:max-w-[20.5rem] 2xl:max-w-[22.5rem] absolute left-3 xl:left-6 bottom-6 xl:bottom-9 z-20">
             {hasRole && profile.roleLabel && (
-              <p className="eyebrow-label !mb-0 !text-[10.5px] sm:!text-xs lg:!text-[11px] xl:!text-[13px] !tracking-[0.12em] xl:!tracking-[0.14em] !text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
+              <p className="font-sans text-[11px] xl:text-xs font-medium tracking-[0.04em] text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
                 {profile.roleLabel}
               </p>
             )}
 
             {hasTagline && profile.heroTagline && (
-              <p className="type-lead text-[13.5px] sm:text-base lg:text-[13.5px] xl:text-base 2xl:text-[1.0625rem] leading-snug sm:leading-relaxed text-[var(--text-secondary)] [text-shadow:0_2px_16px_rgba(2,3,7,0.92)]">
+              <p className="font-sans text-[12.5px] xl:text-[13.5px] font-normal leading-relaxed text-[var(--text-secondary)] [text-shadow:0_2px_16px_rgba(2,3,7,0.92)]">
                 {profile.heroTagline}
               </p>
             )}
 
-            <p className="type-meta text-[10.5px] sm:text-xs lg:text-[11px] xl:text-xs text-[var(--text-muted)]">
+            <p className="font-sans text-[11px] text-[var(--text-muted)] tracking-[0.01em]">
               B.E. CSE (2024–2028) · Rajalakshmi Institute of Technology, Chennai
             </p>
           </div>
 
           {/* Right Credential Column & Minimal Circular Actions */}
-          <div className="pointer-events-auto flex flex-col items-center text-center gap-2 sm:gap-3 max-w-[40ch] lg:max-w-[16.5rem] xl:max-w-[23.5rem] lg:items-end lg:text-right lg:absolute lg:right-2 xl:right-4 lg:bottom-5 xl:bottom-8">
-            <div className="space-y-1 hidden sm:block">
-              <p className="type-meta text-[11px] font-medium text-[var(--accent-primary)]">
+          <div className="pointer-events-auto flex flex-col items-end text-right gap-2 max-w-[16rem] xl:max-w-[20.5rem] absolute right-3 xl:right-6 bottom-6 xl:bottom-9 z-20">
+            <div className="space-y-0.5">
+              <p className="font-sans text-[11.5px] font-medium text-[var(--accent-primary)]">
                 5 Shipped Systems · 3 Hackathon Awards
               </p>
-              <p className="type-meta text-[11px] text-[var(--text-muted)]">
+              <p className="font-sans text-[11px] text-[var(--text-muted)]">
                 President, Infinitus Mathematics Club · Python, React &amp; AI/ML
               </p>
             </div>
 
-            <div className="flex items-center justify-center lg:justify-end gap-3 sm:gap-3.5 pt-0.5 sm:pt-1">
+            <div className="flex items-center justify-end gap-2.5 pt-1">
               <a
                 href={getSectionRoute('projects')}
                 onClick={(event) => handleJump(event, 'projects')}

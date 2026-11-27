@@ -72,8 +72,8 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     const buf = readFileSync(cutoutPath);
     expect(buf.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
-    expect(buf.readUInt32BE(16)).toBe(604);
-    expect(buf.readUInt32BE(20)).toBe(806);
+    expect(buf.readUInt32BE(16)).toBe(376);
+    expect(buf.readUInt32BE(20)).toBe(732);
     expect(buf[25]).toBe(6);
   });
 

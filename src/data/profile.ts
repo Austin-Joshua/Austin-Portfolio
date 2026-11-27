@@ -14,8 +14,8 @@ export const profileData: ProfileData = {
   portrait: {
     src: '/assets/portrait/austin-joshua-cutout.png',
     alt: 'Austin Joshua — Computer Science Engineering student and developer',
-    width: 604,
-    height: 806,
+    width: 376,
+    height: 732,
   },
   resume: {
     url: '/assets/resume/Austin_Joshua_Resume.pdf',

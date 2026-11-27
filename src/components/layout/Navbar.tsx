@@ -172,7 +172,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                 className={[
                   'relative inline-flex min-h-[44px] min-w-0 w-full flex-col items-center justify-center gap-1',
                   'px-0.5 py-1.5 rounded-[var(--radius-control)]',
-                  'font-mono text-[10px] leading-tight tracking-tight',
+                  'font-sans text-[9.5px] sm:text-[10.5px] leading-tight tracking-[-0.02em]',
                   'transition-colors duration-200 active:scale-95',
                   'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                   isActive

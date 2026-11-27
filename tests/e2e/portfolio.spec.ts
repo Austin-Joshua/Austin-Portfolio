@@ -62,8 +62,9 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(loader.locator('img[src="/assets/brand/aj-emblem.png"]')).toBeVisible();
 
     // Completes automatically across holding (800ms) -> splitting -> done (1400ms)
-    await page.clock.fastForward(600);
     await page.clock.fastForward(650);
+    await page.clock.fastForward(650);
+    await page.clock.fastForward(300);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     // Subsequent full page reload OR fresh navigation REPLAYS the intro loader every refresh
@@ -72,6 +73,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
     await page.clock.fastForward(650);
     await page.clock.fastForward(650);
+    await page.clock.fastForward(300);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     await page.goto('about:blank');
@@ -80,6 +82,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
     await page.clock.fastForward(650);
     await page.clock.fastForward(650);
+    await page.clock.fastForward(300);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
     await context.close();
 
@@ -480,18 +483,18 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
         complete: img.complete,
         naturalWidth: img.naturalWidth,
         naturalHeight: img.naturalHeight,
-        bgTopLeft: readAlpha(15, 15),
-        bgUpperRight: readAlpha(544, 80),
-        bgLeftMid: readAlpha(30, 400),
-        subjectForehead: readAlpha(290, 145),
-        subjectCheek: readAlpha(270, 210),
-        subjectShirt: readAlpha(300, 450),
+        bgTopLeft: readAlpha(10, 10),
+        bgUpperRight: readAlpha(img.naturalWidth - 10, 10),
+        bgLeftMid: readAlpha(10, 360),
+        subjectForehead: readAlpha(176, 71),
+        subjectCheek: readAlpha(156, 136),
+        subjectShirt: readAlpha(186, 376),
       };
     });
     expect(failedPortraitRequests).toEqual([]);
     expect(canvasAlphaCheck.complete).toBe(true);
-    expect(canvasAlphaCheck.naturalWidth).toBe(604);
-    expect(canvasAlphaCheck.naturalHeight).toBe(806);
+    expect(canvasAlphaCheck.naturalWidth).toBe(376);
+    expect(canvasAlphaCheck.naturalHeight).toBe(732);
     expect(canvasAlphaCheck.bgTopLeft).toBeLessThan(255);
     expect(canvasAlphaCheck.bgUpperRight).toBeLessThan(255);
     expect(canvasAlphaCheck.bgLeftMid).toBeLessThan(255);
@@ -506,6 +509,13 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
     const afterRevealBox = await heroImg.boundingBox();
     expect(Math.abs(beforeRevealBox!.y - afterRevealBox!.y)).toBeLessThan(2);
+
+    // Specular glare stays cutout-masked (no unmasked rectangular frame around subject)
+    const glareMask = await page.getByTestId('gyro-specular-glare').evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return style.maskImage || style.webkitMaskImage || '';
+    });
+    expect(glareMask).toContain('austin-joshua-cutout.png');
 
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
@@ -555,9 +565,13 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     expect(resumeRes.headers()['content-type']).toContain('application/pdf');
     expect((await resumeRes.body()).byteLength).toBeGreaterThan(10_000);
 
-    const fontRes = await request.get('/fonts/syne-700-latin.woff2');
-    expect(fontRes.status()).toBe(200);
-    expect(fontRes.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2|application\/octet-stream/);
+    const displayFontRes = await request.get('/fonts/outfit-800-latin.woff2');
+    expect(displayFontRes.status()).toBe(200);
+    expect(displayFontRes.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2|application\/octet-stream/);
+
+    const sansFontRes = await request.get('/fonts/plus-jakarta-sans-400-latin.woff2');
+    expect(sansFontRes.status()).toBe(200);
+    expect(sansFontRes.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2|application\/octet-stream/);
 
     // Direct load and reload of all 7 canonical page routes
     const sectionRoutes: Array<{ id: (typeof SECTION_IDS)[number]; path: string }> = [

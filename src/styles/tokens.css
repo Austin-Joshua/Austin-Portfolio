@@ -7,17 +7,17 @@
   color-scheme: dark;
 
   /* Typography families (self-hosted) */
-  --font-display: 'Syne', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Fluid typography scale — commanding desktop proportions */
+  /* Fluid typography scale — crisp editorial hierarchy */
   --text-hero: min(clamp(3.5rem, 2.8rem + 5.2vw, 7.5rem), 16vw);
-  --text-h2: min(clamp(2.5rem, 1.85rem + 3.6vw, 5.25rem), 13.5vw);
-  --text-h3: clamp(1.45rem, 1.15rem + 0.95vw, 2.15rem);
-  --text-lead: clamp(1.125rem, 1.02rem + 0.52vw, 1.425rem);
-  --text-body: clamp(1rem, 0.96rem + 0.16vw, 1.075rem);
-  --text-meta: clamp(0.75rem, 0.72rem + 0.14vw, 0.875rem);
+  --text-h2: min(clamp(2.25rem, 1.75rem + 3.1vw, 4.5rem), 12.5vw);
+  --text-h3: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem);
+  --text-lead: clamp(0.95rem, 0.9rem + 0.32vw, 1.1rem);
+  --text-body: clamp(0.9rem, 0.87rem + 0.14vw, 0.975rem);
+  --text-meta: clamp(0.72rem, 0.7rem + 0.12vw, 0.8125rem);
 
   --leading-hero: 0.95;
   --leading-h2: 1.06;

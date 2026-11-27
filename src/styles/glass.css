@@ -58,19 +58,44 @@
 
   .portrait-cutout-shadow {
     filter:
-      brightness(0.13)
-      contrast(1.32)
+      brightness(0.06)
+      contrast(1.42)
       saturate(0)
-      drop-shadow(0 0 2px rgba(255, 198, 109, 0.72))
-      drop-shadow(0 0 22px rgba(255, 179, 71, 0.35));
+      drop-shadow(0 0 2px rgba(255, 200, 118, 0.78))
+      drop-shadow(0 0 20px rgba(255, 179, 71, 0.34));
   }
 
   .portrait-cutout-revealed {
     filter:
-      brightness(1.03)
-      contrast(1.04)
-      saturate(1.04)
-      drop-shadow(0 16px 32px rgba(2, 3, 7, 0.65));
+      brightness(1.06)
+      contrast(1.05)
+      saturate(1.06);
+  }
+
+  @keyframes cosmicSparkleTwinkle {
+    0%,
+    100% {
+      opacity: 0.28;
+      transform: translate(-50%, -50%) scale(0.7) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.25) rotate(45deg);
+    }
+  }
+
+  .cosmic-sparkle {
+    clip-path: polygon(
+      50% 0%,
+      60% 40%,
+      100% 50%,
+      60% 60%,
+      50% 100%,
+      40% 60%,
+      0% 50%,
+      40% 40%
+    );
+    animation: cosmicSparkleTwinkle 1.6s ease-in-out infinite;
   }
 
   @keyframes cosmicSpinSlow {
@@ -104,7 +129,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .cosmic-aura-spin,
-    .cosmic-aura-pulse {
+    .cosmic-aura-pulse,
+    .cosmic-sparkle {
       animation: none;
     }
   }
