@@ -11,24 +11,24 @@
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Fluid typography scale — crisp editorial hierarchy */
-  --text-hero: min(clamp(3.5rem, 2.8rem + 5.2vw, 7.5rem), 16vw);
-  --text-h2: min(clamp(2.25rem, 1.75rem + 3.1vw, 4.5rem), 12.5vw);
-  --text-h3: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem);
-  --text-lead: clamp(0.95rem, 0.9rem + 0.32vw, 1.1rem);
-  --text-body: clamp(0.9rem, 0.87rem + 0.14vw, 0.975rem);
-  --text-meta: clamp(0.72rem, 0.7rem + 0.12vw, 0.8125rem);
+  /* Fluid typography scale — sleek, restrained editorial hierarchy */
+  --text-hero: min(clamp(3.25rem, 2.6rem + 4.8vw, 7rem), 15.5vw);
+  --text-h2: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem);
+  --text-h3: clamp(1.02rem, 0.96rem + 0.28vw, 1.1875rem);
+  --text-lead: clamp(0.84375rem, 0.81rem + 0.14vw, 0.9375rem);
+  --text-body: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --text-meta: clamp(0.6875rem, 0.67rem + 0.06vw, 0.75rem);
 
   --leading-hero: 0.95;
-  --leading-h2: 1.06;
-  --leading-h3: 1.22;
+  --leading-h2: 1.12;
+  --leading-h3: 1.28;
   --leading-lead: 1.55;
-  --leading-body: 1.65;
+  --leading-body: 1.6;
   --leading-meta: 1.4;
 
   --tracking-hero: -0.03em;
-  --tracking-h2: -0.025em;
-  --tracking-h3: -0.015em;
+  --tracking-h2: -0.02em;
+  --tracking-h3: -0.01em;
   --tracking-lead: -0.005em;
   --tracking-body: 0;
   --tracking-meta: 0.02em;
@@ -59,8 +59,8 @@
   --grid-gap-mobile: 16px;
   --grid-gap-tablet: 20px;
   --grid-gap-desktop: 24px;
-  --section-py-mobile: 3.25rem;
-  --section-py-desktop: 5rem;
+  --section-py-mobile: 2.75rem;
+  --section-py-desktop: 4rem;
   --nav-offset: 5.5rem;
 
   /* Radii — sleek cosmic geometry */

@@ -238,7 +238,7 @@ function ProjectDetailDialogInner({
             </div>
             <h2
               id={titleId}
-              className="type-h3 md:type-h2 text-[var(--text-primary)] break-words"
+              className="type-h3 text-lg sm:text-xl text-[var(--text-primary)] break-words"
             >
               {project.title}
             </h2>
@@ -250,21 +250,21 @@ function ProjectDetailDialogInner({
             onClick={handleCloseWithSound}
             aria-label="Close project details"
             className={[
-              'glass-surface inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
+              'glass-surface inline-flex min-h-[40px] min-w-[40px] shrink-0 items-center justify-center',
               'rounded-[var(--radius-control)] text-[var(--text-primary)] cursor-pointer',
               'hover:border-[var(--accent-primary)] hover:bg-[var(--surface-card)]',
               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
             ].join(' ')}
           >
-            <X className="size-5" aria-hidden="true" />
+            <X className="size-4" aria-hidden="true" />
           </button>
         </div>
 
         <div
           ref={bodyScrollRef}
-          className="overflow-y-auto px-5 py-5 md:px-7 md:py-6 space-y-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+          className="overflow-y-auto px-5 py-4 md:px-6 md:py-5 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
         >
-          <p id={summaryId} className="type-lead text-[var(--text-secondary)]">
+          <p id={summaryId} className="type-body text-[var(--text-secondary)]">
             {project.summary}
           </p>
 

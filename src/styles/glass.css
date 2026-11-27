@@ -65,35 +65,9 @@
 
   .portrait-cutout-revealed {
     filter:
-      brightness(1.06)
-      contrast(1.05)
-      saturate(1.06);
-  }
-
-  @keyframes cosmicSparkleTwinkle {
-    0%,
-    100% {
-      opacity: 0.28;
-      transform: translate(-50%, -50%) scale(0.7) rotate(0deg);
-    }
-    50% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.25) rotate(45deg);
-    }
-  }
-
-  .cosmic-sparkle {
-    clip-path: polygon(
-      50% 0%,
-      60% 40%,
-      100% 50%,
-      60% 60%,
-      50% 100%,
-      40% 60%,
-      0% 50%,
-      40% 40%
-    );
-    animation: cosmicSparkleTwinkle 1.6s ease-in-out infinite;
+      brightness(1.04)
+      contrast(1.03)
+      saturate(1.04);
   }
 
   @keyframes cosmicSpinSlow {
@@ -127,8 +101,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .cosmic-aura-spin,
-    .cosmic-aura-pulse,
-    .cosmic-sparkle {
+    .cosmic-aura-pulse {
       animation: none;
     }
   }

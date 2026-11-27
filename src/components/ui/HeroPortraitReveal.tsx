@@ -13,22 +13,12 @@ export interface HeroPortraitRevealProps {
   prefersReducedMotion: boolean;
 }
 
-const TORCH_SPARKLES = [
-  { dx: -6, dy: -7, size: 10, delay: '0ms', color: '#FFF8E2' },
-  { dx: 8, dy: -5, size: 8, delay: '260ms', color: '#FFD27A' },
-  { dx: -9, dy: 2, size: 7, delay: '510ms', color: '#E2EFFF' },
-  { dx: 9, dy: 4, size: 9, delay: '160ms', color: '#FFE4A3' },
-  { dx: -4, dy: 8, size: 7, delay: '720ms', color: '#FFF8E2' },
-  { dx: 2, dy: -10, size: 8, delay: '380ms', color: '#A5D8FF' },
-  { dx: 5, dy: 9, size: 7, delay: '600ms', color: '#FFD27A' },
-] as const;
-
 const DEFAULT_SPOT = { x: 52, y: 24 };
 
 /**
- * Interactive flat Hero portrait cutout rendering a silhouette at rest and
- * illuminating only the touched or hovered portion with localized torchlight
- * and cosmic sparkles—zero 3D transform distortion and zero box boundaries.
+ * Interactive flat Hero portrait cutout rendering a dark silhouette at rest,
+ * subtle localized hover reveal (zero sparkles), and click-to-toggle between
+ * full-colour portrait mode and shadow mode—zero 3D tilt and zero box frames.
  */
 export function HeroPortraitReveal({
   portrait,
@@ -40,6 +30,7 @@ export function HeroPortraitReveal({
   const [isTouchActive, setIsTouchActive] = useState(false);
   const [isFocusedWithin, setIsFocusedWithin] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [shadowLockedUntilLeave, setShadowLockedUntilLeave] = useState(false);
   const [gyroActive, setGyroActive] = useState(false);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const [spot, setSpot] = useState<{ x: number; y: number }>(DEFAULT_SPOT);
@@ -85,7 +76,10 @@ export function HeroPortraitReveal({
     return null;
   }
 
-  const isRevealed = isHovered || isTouchActive || isFocusedWithin || isPinned;
+  const isHoverOrTouchActive =
+    !shadowLockedUntilLeave && (isHovered || isTouchActive);
+  const isRevealed = isPinned || isHoverOrTouchActive || isFocusedWithin;
+  const isSpotlightOnly = !isPinned && (isHoverOrTouchActive || isFocusedWithin);
 
   const updateSpotFromClient = (clientX: number, clientY: number) => {
     const el = containerRef.current;
@@ -108,7 +102,12 @@ export function HeroPortraitReveal({
     } else {
       setSpot(DEFAULT_SPOT);
     }
-    setIsPinned((prev) => !prev);
+    const nextPinned = !isPinned;
+    setIsPinned(nextPinned);
+    // Second pointer click immediately returns portrait to shadow mode even while cursor stays inside
+    setShadowLockedUntilLeave(
+      !nextPinned && lastInputModalityRef.current === 'pointer',
+    );
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -134,12 +133,16 @@ export function HeroPortraitReveal({
       ref={containerRef}
       data-testid="hero-portrait-figure"
       data-portrait-revealed={isRevealed ? 'true' : 'false'}
+      data-portrait-full={isPinned ? 'true' : 'false'}
       data-gyro-active={gyroActive ? 'true' : 'false'}
       data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
       onPointerDownCapture={(event) => {
         lastInputModalityRef.current = 'pointer';
         updateSpotFromClient(event.clientX, event.clientY);
         if (event.pointerType === 'touch') {
+          if (!isPinned) {
+            setShadowLockedUntilLeave(false);
+          }
           setIsTouchActive(true);
         }
       }}
@@ -151,6 +154,7 @@ export function HeroPortraitReveal({
       onPointerCancelCapture={() => setIsTouchActive(false)}
       onPointerEnter={(event) => {
         if (event.pointerType !== 'touch') {
+          setShadowLockedUntilLeave(false);
           updateSpotFromClient(event.clientX, event.clientY);
           setIsHovered(true);
         }
@@ -158,12 +162,14 @@ export function HeroPortraitReveal({
       onPointerLeave={(event) => {
         if (event.pointerType !== 'touch') {
           setIsHovered(false);
+          setShadowLockedUntilLeave(false);
         }
       }}
       onPointerMove={handlePointerMove}
       onFocusCapture={() => {
         if (lastInputModalityRef.current === 'keyboard') {
           setSpot(DEFAULT_SPOT);
+          setShadowLockedUntilLeave(false);
           setIsFocusedWithin(true);
         }
       }}
@@ -190,7 +196,7 @@ export function HeroPortraitReveal({
         }}
       />
 
-      {/* Base pure subject silhouette cutout flush to Hero bottom edge */}
+      {/* Base pure subject cutout: dark shadow mode at rest, full-colour photo when clicked */}
       <img
         src={portrait.src}
         alt={portrait.alt}
@@ -201,20 +207,21 @@ export function HeroPortraitReveal({
         onError={() => setFailedSrc(portrait.src)}
         className={[
           'relative z-10 h-full max-h-full w-auto max-w-full object-contain object-bottom',
-          'portrait-cutout-img portrait-cutout-shadow',
+          'portrait-cutout-img',
+          isPinned ? 'portrait-cutout-revealed' : 'portrait-cutout-shadow',
           prefersReducedMotion ? 'portrait-cutout-reduced' : '',
         ]
           .filter(Boolean)
           .join(' ')}
       />
 
-      {/* Localized Torchlight Full-Colour Reveal Layer (only the hovered/touched circle shows real photo) */}
+      {/* Clean localized hover/focus spotlight layer (zero sparkles, hidden when full image is active) */}
       <div
         aria-hidden="true"
         className={[
           'pointer-events-none absolute inset-0 z-20',
           prefersReducedMotion ? 'transition-none' : 'transition-opacity duration-200',
-          isRevealed ? 'opacity-100 portrait-cutout-revealed' : 'opacity-0',
+          isSpotlightOnly ? 'opacity-100 portrait-cutout-revealed' : 'opacity-0',
         ].join(' ')}
         style={{
           backgroundImage: `url(${portrait.src})`,
@@ -226,40 +233,6 @@ export function HeroPortraitReveal({
         }}
       />
 
-      {/* Masked Torchlight Glow & Sparkling Starlight Effect clipped strictly to Austin's silhouette */}
-      <div
-        aria-hidden="true"
-        className={[
-          'pointer-events-none absolute inset-0 z-25 overflow-hidden',
-          prefersReducedMotion ? 'transition-none' : 'transition-opacity duration-200',
-          isRevealed ? 'opacity-100' : 'opacity-0',
-        ].join(' ')}
-        style={cutoutMaskStyle}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(circle 126px at ${spot.x.toFixed(1)}% ${spot.y.toFixed(1)}%, rgba(255, 224, 152, 0.32) 0%, rgba(255, 179, 71, 0.12) 48%, transparent 82%)`,
-            mixBlendMode: 'screen',
-          }}
-        />
-        {TORCH_SPARKLES.map((spark, idx) => (
-          <span
-            key={idx}
-            className="cosmic-sparkle absolute pointer-events-none"
-            style={{
-              left: `${Math.max(4, Math.min(96, spot.x + spark.dx))}%`,
-              top: `${Math.max(4, Math.min(96, spot.y + spark.dy))}%`,
-              width: `${spark.size}px`,
-              height: `${spark.size}px`,
-              backgroundColor: spark.color,
-              boxShadow: `0 0 8px ${spark.color}`,
-              animationDelay: spark.delay,
-            }}
-          />
-        ))}
-      </div>
-
       {/* Tight accessible hit target hugging only Austin's silhouette (zero empty side margins) */}
       <button
         type="button"
@@ -267,8 +240,8 @@ export function HeroPortraitReveal({
         aria-pressed={isPinned}
         aria-label={
           isPinned
-            ? 'Unpin torchlight portrait preview'
-            : 'Touch or hover portrait to illuminate with torchlight'
+            ? 'Return portrait to shadow mode'
+            : 'Click portrait to reveal full image'
         }
         onClick={handleTogglePin}
         style={{ touchAction: 'pan-y' }}
@@ -276,10 +249,10 @@ export function HeroPortraitReveal({
       >
         <span className="sr-only">
           {isPinned
-            ? 'Torchlight portrait spotlight pinned'
-            : isRevealed
-              ? 'Torchlight portrait portion revealed'
-              : 'Hover or touch portrait to reveal spotlight'}
+            ? 'Full portrait revealed; click again for shadow mode'
+            : isSpotlightOnly
+              ? 'Portrait spotlight preview; click for full image'
+              : 'Shadow mode active; click to reveal full portrait'}
         </span>
       </button>
     </figure>

@@ -94,10 +94,31 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     expect(img).toHaveAttribute('src', '/assets/portrait/austin-joshua-cutout.png');
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
+    expect(figure).toHaveAttribute('data-portrait-full', 'false');
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(img).toHaveClass('portrait-cutout-shadow');
 
+    // Hovering illuminates without any sparkle particles
     fireEvent.pointerEnter(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+    expect(figure).toHaveAttribute('data-portrait-full', 'false');
+    expect(figure.querySelectorAll('.cosmic-sparkle')).toHaveLength(0);
+
+    // 1st click shows full image; 2nd click while still hovered immediately returns to shadow mode
+    fireEvent.pointerDown(figure, { pointerType: 'mouse' });
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(figure).toHaveAttribute('data-portrait-full', 'true');
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
+    expect(img).toHaveClass('portrait-cutout-revealed');
+
+    fireEvent.pointerDown(figure, { pointerType: 'mouse' });
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(figure).toHaveAttribute('data-portrait-full', 'false');
+    expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
+    expect(img).toHaveClass('portrait-cutout-shadow');
+
     fireEvent.pointerLeave(figure, { pointerType: 'mouse' });
     expect(figure).toHaveAttribute('data-portrait-revealed', 'false');
 
@@ -108,8 +129,10 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
 
     await user.keyboard('{Enter}');
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(figure).toHaveAttribute('data-portrait-full', 'true');
     await user.keyboard(' ');
     expect(toggleBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(figure).toHaveAttribute('data-portrait-full', 'false');
     expect(toggleBtn).toHaveFocus();
     expect(figure).toHaveAttribute('data-portrait-revealed', 'true');
 

@@ -56,7 +56,7 @@ export function AchievementsSection({
             </p>
           </GlassCard>
         ) : (
-          <div className="pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-5">
             {validItems.map((item, idx) => {
               const accent: AchievementAccent = item.accent ?? 'gold';
               const starColor = ACCENT_COLOR_MAP[accent];
@@ -70,7 +70,7 @@ export function AchievementsSection({
                 >
                   <article
                     className={[
-                      'glass-surface group relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-[border-color,background-color] duration-150 hover:border-[var(--planet-achievements)]/60',
+                      'glass-surface group relative flex w-full flex-col justify-between gap-4 p-5 transition-[border-color,background-color] duration-150 hover:border-[var(--planet-achievements)]/60',
                       hasVerificationLink ? 'cursor-pointer hover:bg-[var(--surface-card)]/90' : '',
                     ]
                       .filter(Boolean)
@@ -79,12 +79,12 @@ export function AchievementsSection({
                       borderTop: `2px solid ${starColor}`,
                     }}
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       <span
-                        className="inline-flex items-center gap-1.5 type-meta text-xs font-semibold"
+                        className="inline-flex items-center gap-1.5 type-meta text-[11px] font-semibold"
                         style={{ color: starColor }}
                       >
-                        <Star className="size-4 fill-current" aria-hidden="true" />
+                        <Star className="size-3.5 fill-current" aria-hidden="true" />
                         <span>{item.date}</span>
                       </span>
 
@@ -92,12 +92,12 @@ export function AchievementsSection({
                         {item.title}
                       </h3>
 
-                      <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
+                      <p className="type-meta text-xs text-[var(--text-muted)]">
                         {item.issuer}
                       </p>
 
                       {hasNonEmptyText(item.context) && (
-                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                        <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)]">
                           {item.context}
                         </p>
                       )}
@@ -112,10 +112,10 @@ export function AchievementsSection({
                           playClick();
                           universeNav?.pulsePlanet('achievements', 1.0, item.title);
                         }}
-                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--planet-achievements)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
+                        className="inline-flex min-h-[38px] items-center gap-1.5 self-start font-mono text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--planet-achievements)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                       >
                         <span>Verify Repository</span>
-                        <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                        <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                       </a>
                     )}
                   </article>
@@ -127,21 +127,21 @@ export function AchievementsSection({
 
         <SideReveal
           direction="left"
-          className="pointer-events-auto glass-surface p-6 md:p-8 space-y-5"
+          className="pointer-events-auto glass-surface p-5 md:p-6 space-y-4"
         >
-          <p className="type-meta text-xs font-medium text-[var(--planet-achievements)]">
+          <p className="type-meta text-[11px] font-medium text-[var(--planet-achievements)]">
             Certifications &amp; workshops
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {VERIFIED_CERTIFICATIONS.map((cert) => (
               <div
                 key={cert.title}
-                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/80 px-4 py-3.5 transition-colors duration-150 hover:border-[var(--planet-achievements)]/45"
+                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/80 px-3.5 py-2.5 transition-colors duration-150 hover:border-[var(--planet-achievements)]/45"
               >
-                <p className="text-base font-medium text-[var(--text-primary)]">
+                <p className="text-[13px] sm:text-sm font-medium text-[var(--text-primary)]">
                   {cert.title}
                 </p>
-                <p className="type-meta text-xs text-[var(--text-muted)] mt-1">
+                <p className="type-meta text-[11px] text-[var(--text-muted)] mt-0.5">
                   {cert.issuer}
                 </p>
               </div>

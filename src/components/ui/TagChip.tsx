@@ -41,7 +41,7 @@ export function TagChip(props: TagChipProps) {
   } = props;
 
   const baseClasses = [
-    'type-meta inline-flex items-center rounded-[var(--radius-control)] border px-2.5 py-1',
+    'type-meta text-[11px] inline-flex items-center rounded-[var(--radius-control)] border px-2 py-0.5',
     'leading-tight select-none',
     selected
       ? 'bg-[var(--accent-primary)] text-[var(--text-on-accent)] border-[var(--accent-primary)] font-semibold'

@@ -189,8 +189,8 @@ export function ProjectsSection({
                     aria-pressed={isSelected}
                     onClick={() => handleSelectCategory(option)}
                     className={[
-                      'inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
-                      'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-[background-color,border-color,color] duration-150',
+                      'inline-flex min-h-[40px] md:min-h-[34px] items-center px-3.5 py-1.5 rounded-[var(--radius-control)]',
+                      'font-mono text-xs font-medium cursor-pointer border transition-[background-color,border-color,color] duration-150',
                       'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                       isSelected
                         ? 'bg-[var(--planet-projects)] text-[#020307] border-[var(--planet-projects)] font-semibold'
@@ -203,7 +203,7 @@ export function ProjectsSection({
               })}
             </div>
 
-            <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)] tabular-nums">
+            <p className="type-meta text-xs text-[var(--text-muted)] tabular-nums">
               {filteredProjects.length}{' '}
               {filteredProjects.length === 1 ? 'project' : 'projects'}
             </p>
@@ -213,7 +213,7 @@ export function ProjectsSection({
         <LiveAnnouncer message={announcement} politeness="polite" />
 
         {filteredProjects.length > 0 ? (
-          <div className="pointer-events-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="pointer-events-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredProjects.map((project, idx) => {
               const accent = getProjectAccent(project.slug);
               const cleanStack = project.stack.filter((item) => hasNonEmptyText(item));
@@ -237,16 +237,16 @@ export function ProjectsSection({
                   <m.article
                     layout={!prefersReducedMotion}
                     transition={layoutTransition}
-                    className="glass-surface group relative flex w-full flex-col justify-between gap-5 p-6 md:p-7 cursor-pointer transition-[border-color,background-color] duration-150 hover:border-[var(--planet-projects)]/70 hover:bg-[var(--surface-card)]/90"
+                    className="glass-surface group relative flex w-full flex-col justify-between gap-4 p-5 cursor-pointer transition-[border-color,background-color] duration-150 hover:border-[var(--planet-projects)]/70 hover:bg-[var(--surface-card)]/90"
                     style={{ borderTop: `2px solid ${accent}` }}
                   >
-                    <div className="space-y-3.5">
+                    <div className="space-y-2.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="type-meta text-xs" style={{ color: accent }}>
+                        <span className="type-meta text-[11px]" style={{ color: accent }}>
                           {project.categoryLabel}
                         </span>
                         {project.outcomes?.[0] && (
-                          <span className="type-meta text-[11px] text-[var(--planet-achievements)] truncate max-w-[14rem]">
+                          <span className="type-meta text-[10.5px] text-[var(--planet-achievements)] truncate max-w-[13rem]">
                             {project.outcomes[0]}
                           </span>
                         )}
@@ -256,12 +256,12 @@ export function ProjectsSection({
                         {project.title}
                       </h3>
 
-                      <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                      <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)]">
                         {project.summary}
                       </p>
 
                       {visibleStack.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
                           {visibleStack.map((tech) => (
                             <TagChip key={tech}>{tech}</TagChip>
                           ))}
@@ -270,10 +270,10 @@ export function ProjectsSection({
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-3">
                       <button
                         type="button"
-                        className="inline-flex min-h-[44px] md:min-h-[36px] min-w-[44px] items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-glass)] bg-transparent px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] select-none whitespace-nowrap cursor-pointer transition-[background-color,border-color,color] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--surface-card)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
+                        className="inline-flex min-h-[38px] md:min-h-[32px] min-w-[44px] items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-glass)] bg-transparent px-2.5 py-1 text-xs font-medium text-[var(--text-primary)] select-none whitespace-nowrap cursor-pointer transition-[background-color,border-color,color] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--surface-card)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                         onClick={() => {
                           playProjectWorldSound(project.slug);
                           universeNav?.pulsePlanet('projects', 1.1, project.title);
@@ -284,7 +284,7 @@ export function ProjectsSection({
                         Inspect Details
                       </button>
 
-                      <div className="relative z-10 flex items-center gap-2">
+                      <div className="relative z-10 flex items-center gap-1.5">
                         {externalLinks.map((ext) => (
                           <a
                             key={ext.label}
@@ -293,7 +293,7 @@ export function ProjectsSection({
                             rel="noopener noreferrer"
                             onClick={() => playClick()}
                             className={[
-                              'inline-flex min-h-[44px] items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-control)] font-mono text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
+                              'inline-flex min-h-[36px] items-center gap-1 px-2 py-1 rounded-[var(--radius-control)] font-mono text-[11px] sm:text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                               ext.primary
                                 ? 'font-semibold hover:brightness-110'
                                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
@@ -301,7 +301,7 @@ export function ProjectsSection({
                             style={ext.primary ? { color: accent } : undefined}
                           >
                             <span>{ext.label}</span>
-                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                            <ArrowUpRight className="size-3" aria-hidden="true" />
                           </a>
                         ))}
                       </div>

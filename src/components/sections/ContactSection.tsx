@@ -79,12 +79,12 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
       title="Contact"
       description={hasHeadline && contact.headline ? contact.headline : undefined}
     >
-      <div className="pointer-events-none space-y-8">
+      <div className="pointer-events-none space-y-6">
         {hasAvailability && contact.availabilityNote && (
           <SideReveal direction="left">
-            <div className="pointer-events-auto inline-flex items-center gap-3 rounded-full border border-[var(--planet-contact)]/35 bg-[var(--surface-glass)] px-4 py-2 backdrop-blur-md">
-              <Radio className="size-4 text-[var(--planet-contact)] shrink-0" aria-hidden="true" />
-              <p className="type-meta text-xs sm:text-sm text-[var(--planet-contact)]">
+            <div className="pointer-events-auto inline-flex items-center gap-2.5 rounded-full border border-[var(--planet-contact)]/35 bg-[var(--surface-glass)] px-3.5 py-1.5 backdrop-blur-md">
+              <Radio className="size-3.5 text-[var(--planet-contact)] shrink-0" aria-hidden="true" />
+              <p className="type-meta text-[11px] sm:text-xs text-[var(--planet-contact)]">
                 {contact.availabilityNote}
               </p>
             </div>
@@ -92,7 +92,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
         )}
 
         {validEmail || validSocialLinks.length > 0 ? (
-          <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
+          <div className="swiss-grid items-stretch gap-y-6 pointer-events-none">
             {validEmail && (
               <SideReveal
                 direction="left"
@@ -102,36 +102,36 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                   as="article"
                   padding="lg"
                   variant="strong"
-                  className="h-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-6 border-[var(--planet-contact)]/40"
+                  className="h-full p-5 sm:p-6 lg:p-7 flex flex-col justify-between gap-5 border-[var(--planet-contact)]/40"
                 >
-                  <div className="space-y-5">
-                    <p className="type-meta text-xs font-medium text-[var(--planet-contact)]">
+                  <div className="space-y-4">
+                    <p className="type-meta text-[11px] font-medium text-[var(--planet-contact)]">
                       Direct email
                     </p>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <a
                         ref={emailRef}
                         href={`mailto:${validEmail}`}
                         onClick={() => playClick()}
-                        className="inline-flex min-h-[44px] items-center gap-3.5 text-xl sm:text-2xl lg:text-[2.1rem] leading-tight font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-150 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="inline-flex min-h-[40px] items-center gap-3 text-base sm:text-lg lg:text-xl leading-tight font-display font-semibold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-150 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
-                        <MailIcon className="size-6 shrink-0 text-[var(--planet-contact)]" />
+                        <MailIcon className="size-5 shrink-0 text-[var(--planet-contact)]" />
                         <span>{validEmail}</span>
                       </a>
 
-                      <div className="flex flex-wrap items-center gap-3.5 pt-1">
+                      <div className="flex flex-wrap items-center gap-3 pt-0.5">
                         <Button
                           variant="secondary"
-                          size="md"
+                          size="sm"
                           onClick={() => {
                             void handleCopyEmail();
                           }}
                           leftIcon={
                             status === 'copied' ? (
-                              <Check className="size-4 text-[var(--status-success)]" />
+                              <Check className="size-3.5 text-[var(--status-success)]" />
                             ) : (
-                              <Copy className="size-4" />
+                              <Copy className="size-3.5" />
                             )
                           }
                           aria-label={
@@ -146,10 +146,10 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         <a
                           href={`mailto:${validEmail}`}
                           onClick={() => playClick()}
-                          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-5 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                          className="inline-flex min-h-[40px] md:min-h-[36px] items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-4 py-1.5 font-mono text-xs font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                         >
                           <span>Compose Mail</span>
-                          <ArrowUpRight className="size-4 text-[var(--planet-contact)]" aria-hidden="true" />
+                          <ArrowUpRight className="size-3.5 text-[var(--planet-contact)]" aria-hidden="true" />
                         </a>
                       </div>
                     </div>
@@ -166,14 +166,14 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         visible={status !== 'idle'}
                         className={
                           status === 'copied'
-                            ? 'text-sm text-[var(--status-success)]'
-                            : 'text-sm text-[var(--status-warning)]'
+                            ? 'text-xs text-[var(--status-success)]'
+                            : 'text-xs text-[var(--status-warning)]'
                         }
                       />
                     </m.div>
                   </div>
 
-                  <p className="type-body text-sm md:text-base text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-5">
+                  <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-4">
                     Open to <span className="font-medium text-[var(--text-primary)]">Software Engineering</span>,{' '}
                     <span className="font-medium text-[var(--text-primary)]">Python Backend</span>, and{' '}
                     <span className="font-medium text-[var(--text-primary)]">Applied AI/ML</span> roles.
@@ -189,13 +189,13 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
               <GlassCard
                 padding="lg"
                 variant="default"
-                className="w-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-7 border-[var(--planet-contact)]/25"
+                className="w-full p-5 sm:p-6 lg:p-7 flex flex-col justify-between gap-5 border-[var(--planet-contact)]/25"
               >
-                <div className="space-y-2">
-                  <p className="type-meta text-xs font-medium text-[var(--planet-contact)]">
+                <div className="space-y-1.5">
+                  <p className="type-meta text-[11px] font-medium text-[var(--planet-contact)]">
                     Profiles
                   </p>
-                  <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                  <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)]">
                     Source repositories and direct professional profiles.
                   </p>
                 </div>
@@ -203,7 +203,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                 <nav
                   aria-label="Verified Contact & Social Links"
                   data-testid="contact-relay-dock"
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-0.5"
                 >
                   {validSocialLinks.map((link) => {
                     const Icon = PLATFORM_ICONS[link.platform] ?? ArrowUpRight;
@@ -214,18 +214,18 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => playClick()}
-                        className="group flex min-h-[48px] items-center gap-3.5 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-elevated)]/80 px-4 py-3.5 transition-colors duration-150 hover:border-[var(--planet-contact)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="group flex min-h-[44px] items-center gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-elevated)]/80 px-3.5 py-2.5 transition-colors duration-150 hover:border-[var(--planet-contact)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
-                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-card)] text-[var(--planet-contact)]">
-                          <Icon className="size-[18px]" />
+                        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-card)] text-[var(--planet-contact)]">
+                          <Icon className="size-4" />
                         </span>
                         <span className="min-w-0 flex flex-col">
-                          <span className="font-display text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-150">
+                          <span className="font-display text-xs sm:text-[13px] font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-150">
                             {link.label}
                             <span className="sr-only">{` — Austin Joshua on ${link.label}`}</span>
                           </span>
                           {hasNonEmptyText(link.handle) && (
-                            <span className="font-mono text-xs text-[var(--text-muted)] truncate">
+                            <span className="font-mono text-[11px] text-[var(--text-muted)] truncate">
                               {link.handle}
                             </span>
                           )}
@@ -235,7 +235,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                   })}
                 </nav>
 
-                <p className="type-meta text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-4">
+                <p className="type-meta text-[11px] text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3.5">
                   Based in Chennai, India
                 </p>
               </GlassCard>

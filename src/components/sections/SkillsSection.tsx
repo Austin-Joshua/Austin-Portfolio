@@ -189,8 +189,8 @@ export function SkillsSection({
                     }}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     className={[
-                      'relative isolate inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
-                      'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-colors duration-150',
+                      'relative isolate inline-flex min-h-[40px] md:min-h-[34px] items-center px-3.5 py-1.5 rounded-[var(--radius-control)]',
+                      'font-mono text-xs font-medium cursor-pointer border transition-colors duration-150',
                       'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                       isSelected
                         ? 'border-[var(--planet-skills)] text-[#020307] font-semibold'
@@ -221,7 +221,7 @@ export function SkillsSection({
           role="tabpanel"
           aria-labelledby={activeTabDomId}
           data-testid="skills-molecular-clusters"
-          className="pointer-events-none grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="pointer-events-none grid grid-cols-1 lg:grid-cols-2 gap-5"
         >
           {visibleCategories.map((category, catIdx) => {
             const accent = CLUSTER_ACCENTS[catIdx % CLUSTER_ACCENTS.length];
@@ -231,13 +231,13 @@ export function SkillsSection({
               <SideReveal
                 key={category.id}
                 direction={catIdx % 2 === 0 ? 'left' : 'right'}
-                className="pointer-events-auto relative glass-surface p-6 md:p-8 transition-colors duration-150 hover:border-[var(--border-glass-strong)]"
+                className="pointer-events-auto relative glass-surface p-5 md:p-6 transition-colors duration-150 hover:border-[var(--border-glass-strong)]"
               >
-                <div className="space-y-5">
-                  <div className="flex items-start gap-3">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-2.5">
                     <span
                       aria-hidden="true"
-                      className="mt-2 size-2.5 rounded-full shrink-0"
+                      className="mt-1.5 size-2 rounded-full shrink-0"
                       style={{ backgroundColor: accent }}
                     />
                     <div className="space-y-1 flex-1 min-w-0">
@@ -245,12 +245,12 @@ export function SkillsSection({
                         <h3 className="type-h3 text-[var(--text-primary)]">
                           {category.label}
                         </h3>
-                        <span className="type-meta text-xs text-[var(--text-muted)] tabular-nums">
+                        <span className="type-meta text-[11px] text-[var(--text-muted)] tabular-nums">
                           {itemCount} {itemCount === 1 ? 'skill' : 'skills'}
                         </span>
                       </div>
                       {hasNonEmptyText(category.description) && (
-                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                        <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)]">
                           {category.description}
                         </p>
                       )}
@@ -258,7 +258,7 @@ export function SkillsSection({
                   </div>
 
                   {category.items.length > 0 ? (
-                    <div className="flex flex-wrap gap-2.5 pt-1">
+                    <div className="flex flex-wrap gap-2 pt-0.5">
                       {category.items.map((skill) => {
                         const isSkillSelected = skill.id === selectedSkillId;
                         const isBondedToHovered =
@@ -281,8 +281,8 @@ export function SkillsSection({
                             onMouseLeave={() => setHoveredSkillId(null)}
                             onClick={() => handleToggleSkill(skill)}
                             className={[
-                              'inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2',
-                              'rounded-[var(--radius-control)] font-mono text-xs sm:text-sm cursor-pointer border',
+                              'inline-flex min-h-[38px] md:min-h-[32px] items-center gap-1.5 px-3 py-1.5',
+                              'rounded-[var(--radius-control)] font-mono text-xs cursor-pointer border',
                               'transition-[border-color,background-color,color,transform] duration-150 active:scale-[0.97]',
                               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                               isSkillSelected
@@ -300,11 +300,11 @@ export function SkillsSection({
                           >
                             <span
                               aria-hidden="true"
-                              className="size-2 rounded-full shrink-0"
+                              className="size-1.5 rounded-full shrink-0"
                               style={{ backgroundColor: accent }}
                             />
                             <span>{skill.name}</span>
-                            <span className="text-[11px] text-[var(--text-muted)] tabular-nums">
+                            <span className="text-[10.5px] text-[var(--text-muted)] tabular-nums">
                               · {linkedCount}
                             </span>
                           </button>
@@ -325,12 +325,12 @@ export function SkillsSection({
         {selectedSkill && (
           <GlassCard
             variant="strong"
-            padding="lg"
+            padding="md"
             data-testid="skill-cross-reference"
-            className="pointer-events-auto space-y-4 border-[var(--planet-skills)]/50"
+            className="pointer-events-auto space-y-3 border-[var(--planet-skills)]/50"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="type-meta text-xs sm:text-sm font-medium text-[var(--planet-skills)]">
+              <p className="type-meta text-xs font-medium text-[var(--planet-skills)]">
                 Projects using {selectedSkill.name} ({matchingProjects.length})
               </p>
               <button
@@ -339,29 +339,29 @@ export function SkillsSection({
                   playClick();
                   setSelectedSkillId(null);
                 }}
-                className="type-meta inline-flex min-h-[44px] items-center px-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                className="type-meta inline-flex min-h-[36px] items-center px-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
               >
                 Clear
               </button>
             </div>
 
             {matchingProjects.length > 0 ? (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 m-0 p-0 list-none">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 m-0 p-0 list-none">
                 {matchingProjects.map((project) => (
                   <li key={project.slug}>
                     <a
                       href={getSectionRoute('projects')}
                       onClick={handleJumpToProjects}
-                      className="flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-4 py-3 text-[var(--text-primary)] hover:border-[var(--planet-skills)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="flex min-h-[40px] items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)] px-3.5 py-2 text-xs sm:text-[13px] text-[var(--text-primary)] hover:border-[var(--planet-skills)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span className="font-medium">{project.title}</span>
-                      <ArrowUpRight className="size-4 shrink-0 text-[var(--planet-skills)]" aria-hidden="true" />
+                      <ArrowUpRight className="size-3.5 shrink-0 text-[var(--planet-skills)]" aria-hidden="true" />
                     </a>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="type-body text-sm text-[var(--text-secondary)]">
+              <p className="type-body text-xs sm:text-[13px] text-[var(--text-secondary)]">
                 No mapped projects for this skill yet.
               </p>
             )}

@@ -537,14 +537,39 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
 
+    // Hover has zero sparkling stars; 1st click shows full image; 2nd click returns straight to shadow mode
+    await heroToggle.hover();
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+    expect(await heroPortrait.locator('.cosmic-sparkle').count()).toBe(0);
+
     await heroToggle.click();
     await expect(heroToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(heroPortrait).toHaveAttribute('data-portrait-full', 'true');
+    await expect(heroPortrait.locator('img')).toHaveClass(/portrait-cutout-revealed/);
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'true');
+
     await heroToggle.click();
     await expect(heroToggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(heroPortrait).toHaveAttribute('data-portrait-full', 'false');
+    await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+    await expect(heroPortrait.locator('img')).toHaveClass(/portrait-cutout-shadow/);
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+
+    // Verify section headings & content sizes stay sleek rather than oversized
+    const sectionTypography = await page.evaluate(() => {
+      const aboutHeading = document.querySelector('#about h2');
+      const aboutBody = document.querySelector('#about p.type-body');
+      return {
+        h2Px: aboutHeading ? Number.parseFloat(window.getComputedStyle(aboutHeading).fontSize) : 0,
+        bodyPx: aboutBody ? Number.parseFloat(window.getComputedStyle(aboutBody).fontSize) : 0,
+      };
+    });
+    expect(sectionTypography.h2Px).toBeGreaterThan(20);
+    expect(sectionTypography.h2Px).toBeLessThanOrEqual(40);
+    expect(sectionTypography.bodyPx).toBeGreaterThanOrEqual(12);
+    expect(sectionTypography.bodyPx).toBeLessThanOrEqual(16);
 
     // Keyboard focus keeps reveal active until blur
     await page.getByTestId('desktop-section-rail').locator('a').last().focus();

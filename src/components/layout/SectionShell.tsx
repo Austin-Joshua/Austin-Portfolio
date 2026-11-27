@@ -39,10 +39,10 @@ export function SectionShell({
       : null;
 
   const headerContent = title ? (
-    <SideReveal direction="left" className="pointer-events-none mb-8 md:mb-10">
+    <SideReveal direction="left" className="pointer-events-none mb-5 md:mb-7">
       <div className="pointer-events-auto w-fit max-w-[78ch]">
         {planet && (
-          <div className="mb-2.5">
+          <div className="mb-1.5">
             <button
               type="button"
               onClick={() => {
@@ -51,21 +51,21 @@ export function SectionShell({
               }}
               onMouseEnter={() => universeNav?.pulsePlanet(planet.id, 0.55)}
               aria-label={`Pulse ${planet.label} sphere`}
-              className="inline-flex min-h-[32px] items-center gap-2.5 rounded-full px-2 -ml-2 py-1 cursor-pointer transition-colors duration-150 hover:bg-white/6 active:scale-95 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
+              className="inline-flex min-h-[30px] items-center gap-2 rounded-full px-2 -ml-2 py-0.5 cursor-pointer transition-colors duration-150 hover:bg-white/6 active:scale-95 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
             >
               <span
                 aria-hidden="true"
-                className="size-2.5 rounded-full shrink-0"
+                className="size-2 rounded-full shrink-0"
                 style={{
                   backgroundColor: planet.color,
                   boxShadow: `0 0 8px ${planet.color}`,
                 }}
               />
-              <span className="type-meta text-xs sm:text-sm" style={{ color: planet.color }}>
+              <span className="type-meta text-[11px] sm:text-xs" style={{ color: planet.color }}>
                 {planet.cosmicTitle}
               </span>
               {activeBadge && (
-                <span className="font-mono text-[11px] text-[var(--text-muted)]">
+                <span className="font-mono text-[10.5px] text-[var(--text-muted)]">
                   · {activeBadge}
                 </span>
               )}
@@ -91,14 +91,14 @@ export function SectionShell({
         {planet && (
           <div
             aria-hidden="true"
-            className="mt-3.5 h-[2px] w-28 rounded-full"
+            className="mt-2.5 h-[1.5px] w-20 rounded-full"
             style={{
               background: `linear-gradient(90deg, ${planet.color} 0%, transparent 100%)`,
             }}
           />
         )}
         {description && (
-          <p className="type-lead text-[var(--text-secondary)] max-w-[68ch] mt-4 [text-shadow:0_2px_18px_rgba(2,3,7,0.92)]">
+          <p className="type-lead text-[var(--text-secondary)] max-w-[66ch] mt-2.5 [text-shadow:0_2px_18px_rgba(2,3,7,0.92)]">
             {description}
           </p>
         )}
