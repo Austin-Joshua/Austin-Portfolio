@@ -1,7 +1,9 @@
 import {
   createRoot,
+  events as r3fEvents,
   extend,
   type ReconcilerRoot,
+  type RootState,
   type ThreeElement,
 } from '@react-three/fiber';
 import {
@@ -90,6 +92,7 @@ export function UniverseCanvas({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rootRef = useRef<ReconcilerRoot<HTMLCanvasElement> | null>(null);
+  const rootStateRef = useRef<RootState | null>(null);
   const dragStateRef = useRef<{ active: boolean; lastX: number; lastY: number }>({
     active: false,
     lastX: 0,
@@ -101,6 +104,7 @@ export function UniverseCanvas({
       ? { width: window.innerWidth || 1280, height: window.innerHeight || 720 }
       : { width: 1280, height: 720 },
   );
+  const [isConfigured, setIsConfigured] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const [initError, setInitError] = useState<Error | null>(null);
@@ -157,6 +161,8 @@ export function UniverseCanvas({
 
     const handleContextLost = (event: Event) => {
       event.preventDefault();
+      setIsConfigured(false);
+      setIsReady(false);
       setContextLost(true);
     };
     const handleContextRestored = () => setContextLost(false);
@@ -248,6 +254,7 @@ export function UniverseCanvas({
           alpha: false,
           powerPreference: 'high-performance',
         },
+        events: r3fEvents,
         camera: { position: [-2.0, 4.6, 15.6], fov: 46, near: 0.1, far: 120 },
         dpr: [qualityTier.dpr[0], qualityTier.dpr[1]],
         frameloop: effectiveFrameloop,
@@ -257,32 +264,32 @@ export function UniverseCanvas({
           top: 0,
           left: 0,
         },
-        onCreated: ({ gl }) => {
-          gl.domElement.setAttribute('aria-hidden', 'true');
-          gl.domElement.setAttribute('tabindex', '-1');
+        onCreated: (state) => {
+          rootStateRef.current = state;
+          state.gl.domElement.setAttribute('aria-hidden', 'true');
+          state.gl.domElement.setAttribute('tabindex', '-1');
+          const eventTarget = wrapperRef.current ?? state.gl.domElement;
+          state.events?.connect?.(eventTarget);
+          state.setEvents?.({
+            compute: (event, rootState) => {
+              const x = 'clientX' in event ? event.clientX : 0;
+              const y = 'clientY' in event ? event.clientY : 0;
+              rootState.pointer.set(
+                (x / Math.max(rootState.size.width, 1)) * 2 - 1,
+                -(y / Math.max(rootState.size.height, 1)) * 2 + 1,
+              );
+              rootState.raycaster.setFromCamera(rootState.pointer, rootState.camera);
+            },
+          });
           if (!cancelled) {
             setIsReady(true);
           }
         },
       })
       .then(() => {
-        if (cancelled || rootRef.current !== root) return;
-
-        root.render(
-          <SolarSystemScene
-            qualityTier={qualityTier}
-            prefersReducedMotion={prefersReducedMotion}
-            activeSection={activeSection}
-            navigationMode={navigationMode}
-            hoveredPlanet={hoveredPlanet}
-            selectedPlanet={selectedPlanet}
-            pointerRef={pointerRef}
-            scrollVelocityRef={scrollVelocityRef}
-            orbitControlRef={orbitControlRef}
-            onHoverPlanet={onHoverPlanet}
-            onSelectPlanet={onSelectPlanet}
-          />,
-        );
+        if (!cancelled && rootRef.current === root) {
+          setIsConfigured(true);
+        }
       })
       .catch((error: unknown) => {
         if (!cancelled) {
@@ -297,9 +304,32 @@ export function UniverseCanvas({
     return () => {
       cancelled = true;
     };
+  }, [size.width, size.height, qualityTier, effectiveFrameloop, contextLost]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !isConfigured || contextLost) {
+      return;
+    }
+
+    root.render(
+      <SolarSystemScene
+        qualityTier={qualityTier}
+        prefersReducedMotion={prefersReducedMotion}
+        activeSection={activeSection}
+        navigationMode={navigationMode}
+        hoveredPlanet={hoveredPlanet}
+        selectedPlanet={selectedPlanet}
+        pointerRef={pointerRef}
+        scrollVelocityRef={scrollVelocityRef}
+        orbitControlRef={orbitControlRef}
+        onHoverPlanet={onHoverPlanet}
+        onSelectPlanet={onSelectPlanet}
+      />,
+    );
   }, [
-    size.width,
-    size.height,
+    isConfigured,
+    contextLost,
     qualityTier,
     prefersReducedMotion,
     activeSection,
@@ -311,12 +341,12 @@ export function UniverseCanvas({
     orbitControlRef,
     onHoverPlanet,
     onSelectPlanet,
-    effectiveFrameloop,
-    contextLost,
   ]);
 
   useEffect(() => {
     return () => {
+      rootStateRef.current?.events?.disconnect?.();
+      rootStateRef.current = null;
       rootRef.current?.unmount();
       rootRef.current = null;
     };

@@ -135,7 +135,7 @@ export function ProjectsSection({
       variant="elevated"
       padding="sm"
       data-testid="invalid-project-notice"
-      className="flex flex-wrap items-center justify-between gap-3 border-[var(--status-warning)]"
+      className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border-[var(--status-warning)]"
     >
       <LiveAnnouncer
         message={invalidSlugNotice}
@@ -158,9 +158,9 @@ export function ProjectsSection({
   if (validProjects.length === 0) {
     return (
       <SectionShell id="projects" index="04" indexLabel="PROJECTS" title="Projects">
-        <div className="pointer-events-auto space-y-6">
+        <div className="pointer-events-none space-y-6">
           {invalidNoticeBanner}
-          <GlassCard padding="lg" variant="elevated">
+          <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">
             <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
               PROJECTS // STATUS
             </p>
@@ -206,15 +206,15 @@ export function ProjectsSection({
       title="Projects"
       description="Five bespoke engineering worlds orbiting the Pyros Amber sector. Select any planetary world to inspect its mission architecture or launch full schematics."
     >
-      <div ref={sectionBodyRef} tabIndex={-1} className="pointer-events-auto space-y-8 focus:outline-none">
+      <div ref={sectionBodyRef} tabIndex={-1} className="pointer-events-none space-y-8 md:space-y-10 focus:outline-none">
         {invalidNoticeBanner}
 
         {/* Category Filter Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
           <div
             role="group"
             aria-label="Filter projects by category"
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap gap-2.5"
           >
             {filterOptions.map((option) => {
               const isSelected = option.id === resolvedCategory;
@@ -226,8 +226,8 @@ export function ProjectsSection({
                   aria-pressed={isSelected}
                   onClick={() => handleSelectCategory(option)}
                   className={[
-                    'inline-flex min-h-[44px] items-center px-4 py-2 rounded-[var(--radius-control)]',
-                    'font-mono text-xs font-medium cursor-pointer border transition-[background-color,border-color,color] duration-200',
+                    'inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
+                    'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-[background-color,border-color,color] duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                     isSelected
                       ? 'bg-[var(--planet-projects)] text-[#020307] border-[var(--planet-projects)] font-semibold'
@@ -240,7 +240,7 @@ export function ProjectsSection({
             })}
           </div>
 
-          <p className="type-meta text-[var(--text-muted)]">
+          <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
             {filteredProjects.length}{' '}
             {filteredProjects.length === 1 ? 'PROJECT WORLD' : 'PROJECT WORLDS'}
           </p>
@@ -249,52 +249,52 @@ export function ProjectsSection({
         <LiveAnnouncer message={announcement} politeness="polite" />
 
         {filteredProjects.length > 0 && selectedWorld ? (
-          <div className="space-y-6">
+          <div className="pointer-events-none space-y-7">
             {/* Orbital World Inspector Panel for the active selected project world */}
             <GlassCard
               variant="strong"
               padding="lg"
               data-testid="featured-project-world"
-              className="relative overflow-hidden border-[var(--border-glass-strong)]"
+              className="pointer-events-auto relative overflow-hidden p-6 sm:p-8 lg:p-10 border-[var(--border-glass-strong)]"
             >
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl opacity-35"
+                className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full blur-3xl opacity-35"
                 style={{ background: getWorldTheme(selectedWorld.slug).glow }}
               />
-              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-start gap-5">
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <div className="flex flex-col sm:flex-row items-start gap-6">
                   <ProjectWorldOrb slug={selectedWorld.slug} />
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <span
-                        className="type-meta font-semibold"
+                        className="type-meta text-xs sm:text-sm font-semibold"
                         style={{ color: getWorldTheme(selectedWorld.slug).primary }}
                       >
                         {selectedWorld.categoryLabel}
                       </span>
                       {selectedWorld.outcomes?.[0] && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--planet-achievements)]/40 bg-[var(--planet-achievements)]/10 px-2.5 py-0.5 font-mono text-[11px] text-[var(--planet-achievements)]">
-                          <Sparkles className="size-3" aria-hidden="true" />
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--planet-achievements)]/40 bg-[var(--planet-achievements)]/10 px-3 py-1 font-mono text-xs text-[var(--planet-achievements)]">
+                          <Sparkles className="size-3.5" aria-hidden="true" />
                           {selectedWorld.outcomes[0]}
                         </span>
                       )}
                     </div>
-                    <h3 className="type-h3 text-2xl text-[var(--text-primary)]">
+                    <h3 className="type-h3 text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text-primary)]">
                       {selectedWorld.title}
                     </h3>
-                    <p className="type-body text-[var(--text-secondary)] max-w-[64ch]">
+                    <p className="type-lead text-base sm:text-lg text-[var(--text-secondary)] max-w-[64ch]">
                       {selectedWorld.summary}
                     </p>
                     {selectedWorld.role && (
-                      <p className="type-meta text-xs text-[var(--text-muted)]">
+                      <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
                         Role: {selectedWorld.role}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
                   <Button
                     variant="primary"
                     size="md"
@@ -308,10 +308,10 @@ export function ProjectsSection({
                       href={selectedWorld.links.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="glass-surface inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2 rounded-[var(--radius-control)] font-mono text-xs text-[var(--text-primary)] hover:border-[var(--planet-projects)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="glass-surface inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2.5 rounded-[var(--radius-control)] font-mono text-xs sm:text-sm text-[var(--text-primary)] hover:border-[var(--planet-projects)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>GitHub</span>
-                      <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                      <ArrowUpRight className="size-4" aria-hidden="true" />
                     </a>
                   )}
                   {isValidHttpUrl(selectedWorld.links.live) && selectedWorld.links.live && (
@@ -319,11 +319,11 @@ export function ProjectsSection({
                       href={selectedWorld.links.live}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2 rounded-[var(--radius-control)] font-mono text-xs font-semibold text-[#020307] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2.5 rounded-[var(--radius-control)] font-mono text-xs sm:text-sm font-semibold text-[#020307] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       style={{ backgroundColor: getWorldTheme(selectedWorld.slug).primary }}
                     >
                       <span>Live Demo</span>
-                      <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                      <ArrowUpRight className="size-4" aria-hidden="true" />
                     </a>
                   )}
                 </div>
@@ -331,7 +331,7 @@ export function ProjectsSection({
             </GlassCard>
 
             {/* Orbital Project Trajectory Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="pointer-events-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map((project, idx) => {
                 const world = getWorldTheme(project.slug);
                 const visibleStack = project.stack
@@ -355,12 +355,12 @@ export function ProjectsSection({
                     viewport={{ once: true, amount: 0.12 }}
                     whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                     transition={layoutTransition}
-                    className="flex"
+                    className="pointer-events-auto flex"
                   >
                     <article
                       onMouseEnter={() => setFocusedWorldSlug(project.slug)}
                       className={[
-                        'glass-surface flex w-full flex-col justify-between gap-5 p-5 transition-all duration-200',
+                        'glass-surface flex w-full flex-col justify-between gap-5 p-6 md:p-7 transition-all duration-200',
                         isSelectedWorld ? 'bg-[var(--surface-card)]' : '',
                       ].join(' ')}
                       style={{
@@ -368,14 +368,14 @@ export function ProjectsSection({
                         boxShadow: isSelectedWorld ? `0 0 24px ${world.glow}` : undefined,
                       }}
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-3.5">
                         <div className="flex items-center justify-between gap-2">
                           <span
                             aria-hidden="true"
-                            className="size-2.5 rounded-full"
+                            className="size-3 rounded-full"
                             style={{ backgroundColor: world.primary }}
                           />
-                          <span className="type-meta text-[11px]" style={{ color: world.primary }}>
+                          <span className="type-meta text-xs" style={{ color: world.primary }}>
                             {project.categoryLabel}
                           </span>
                         </div>
@@ -390,12 +390,12 @@ export function ProjectsSection({
                           </h3>
                         </button>
 
-                        <p className="type-body text-sm text-[var(--text-secondary)]">
+                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
                           {project.summary}
                         </p>
 
                         {visibleStack.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-1">
+                          <div className="flex flex-wrap gap-2 pt-1">
                             {visibleStack.map((tech) => (
                               <TagChip key={tech}>{tech}</TagChip>
                             ))}
@@ -404,7 +404,7 @@ export function ProjectsSection({
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-4">
                         <Button
                           variant="outline"
                           size="sm"
@@ -450,7 +450,7 @@ export function ProjectsSection({
           <GlassCard
             padding="lg"
             variant="elevated"
-            className="border-dashed text-center space-y-4"
+            className="pointer-events-auto border-dashed text-center space-y-4"
           >
             <p className="type-body text-[var(--text-secondary)]">
               No projects match this filter.

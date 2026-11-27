@@ -45,8 +45,12 @@ export function SolarSystemScene({
 
   useFrame((_, delta) => {
     if (prefersReducedMotion) return;
-    const shouldPause = hoveredPlanet !== null || navigationMode === 'guided';
-    const targetRate = shouldPause ? 0 : 1;
+    // Immediately freeze orbits on hover so the body stays locked under the pointer for clicking
+    if (hoveredPlanet !== null) {
+      orbitRateRef.current = 0;
+      return;
+    }
+    const targetRate = navigationMode === 'guided' ? 0 : 1;
     orbitRateRef.current += (targetRate - orbitRateRef.current) * Math.min(1, delta * 9);
     elapsedTimeRef.current += Math.min(delta, 0.05) * orbitRateRef.current;
   });

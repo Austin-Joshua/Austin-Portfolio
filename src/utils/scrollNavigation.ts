@@ -69,7 +69,13 @@ export function scrollToSection(
     target.focus({ preventScroll: true });
   }
 
-  if (typeof target.scrollIntoView === 'function') {
+  if (
+    targetId === 'hero' &&
+    typeof window !== 'undefined' &&
+    typeof window.scrollTo === 'function'
+  ) {
+    window.scrollTo({ top: 0, behavior });
+  } else if (typeof target.scrollIntoView === 'function') {
     target.scrollIntoView({ behavior, block: 'start' });
   }
 

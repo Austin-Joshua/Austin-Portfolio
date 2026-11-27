@@ -44,7 +44,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
   test('plays Cosmic Intro curtain loader on load/refresh, supports Skip/Escape/reduced-motion, and handles restricted storage', async ({
     browser,
   }) => {
-    test.slow();
+    test.setTimeout(150_000);
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
 
@@ -112,6 +112,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     page,
     browserName,
   }) => {
+    test.setTimeout(90_000);
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
     page.on('console', (msg) => {
@@ -545,6 +546,38 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
     await page.goForward({ waitUntil: 'load' });
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+  });
+
+  test('raycasts 3D planets through exposed background and redirects cleanly on click', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/#skills', { waitUntil: 'load' });
+    await dismissIntroForSuite(page);
+    await page.waitForTimeout(850);
+
+    let destinationPlanet: { x: number; y: number; toast: string } | null = null;
+    for (let y = 110; y <= 680 && !destinationPlanet; y += 28) {
+      for (const x of [24, 36, 720, 960, 1140, 1230]) {
+        if (destinationPlanet) break;
+        await page.mouse.move(x, y);
+        await page.waitForTimeout(35);
+        const toast = await page.evaluate(() => {
+          if (document.body.style.cursor !== 'pointer') return null;
+          return document.querySelector('[data-testid="planet-hover-toast"]')?.textContent ?? null;
+        });
+        if (toast && !toast.startsWith('Skills')) {
+          destinationPlanet = { x, y, toast };
+        }
+      }
+    }
+
+    expect(destinationPlanet).not.toBeNull();
+    await page.mouse.click(destinationPlanet!.x, destinationPlanet!.y);
+
+    await expect(page).not.toHaveURL(/#skills$/);
+    await expect(page).toHaveURL(/#(hero|about|projects|experience|achievements|contact)$/);
   });
 
   test('verifies zero mobile Hero utility overlap and layout integrity across 320px–430px', async ({

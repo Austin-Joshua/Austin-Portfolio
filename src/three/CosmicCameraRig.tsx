@@ -36,6 +36,7 @@ export function CosmicCameraRig({
   activeSection,
   navigationMode,
   selectedPlanet,
+  hoveredPlanet,
   orbitScale,
   prefersReducedMotion,
   qualityTier,
@@ -47,16 +48,35 @@ export function CosmicCameraRig({
   const targetLookAtRef = useRef<Vector3>(new Vector3(0, 0, 0));
   const currentLookAtRef = useRef<Vector3>(new Vector3(0, 0, 0));
   const targetCamPosRef = useRef<Vector3>(new Vector3(-1.5, 4.8, 15.8));
+  const frozenPtrRef = useRef<UniversePointerVector>({ x: 0, y: 0 });
+  const initializedRef = useRef<boolean>(false);
+  const lastFocusRef = useRef<string>('hero');
+  const isTransitioningRef = useRef<boolean>(false);
 
   useFrame((_, delta) => {
     const dt = prefersReducedMotion ? 1 : Math.min(delta, 0.05);
     const t = elapsedTimeRef.current ?? 0;
     const isExploreOverview =
       navigationMode === 'explore' && activeSection === 'hero';
+    const focusKey = isExploreOverview
+      ? 'hero'
+      : activeSection !== 'hero'
+        ? activeSection
+        : selectedPlanet && selectedPlanet !== 'sun'
+          ? selectedPlanet
+          : 'about';
+    if (lastFocusRef.current !== focusKey) {
+      lastFocusRef.current = focusKey;
+      isTransitioningRef.current = true;
+    }
 
-    const ptr = qualityTier.enablePointerParallax
+    const rawPtr = qualityTier.enablePointerParallax
       ? pointerRef.current ?? { x: 0, y: 0 }
       : { x: 0, y: 0 };
+    if (!hoveredPlanet) {
+      frozenPtrRef.current = { x: rawPtr.x, y: rawPtr.y };
+    }
+    const ptr = frozenPtrRef.current;
 
     if (isExploreOverview) {
       const orbit = orbitControlRef.current ?? { yaw: 0, pitch: 0, zoom: 1 };
@@ -125,10 +145,30 @@ export function CosmicCameraRig({
       );
     }
 
-    const alpha = prefersReducedMotion ? 1 : 1 - Math.exp(-dt * 4.2);
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      isTransitioningRef.current = false;
+      camera.position.copy(targetCamPosRef.current);
+      currentLookAtRef.current.copy(targetLookAtRef.current);
+      camera.lookAt(currentLookAtRef.current);
+      return;
+    }
+
+    if (hoveredPlanet !== null && !isTransitioningRef.current) {
+      return;
+    }
+
+    const alpha = prefersReducedMotion ? 1 : 1 - Math.exp(-dt * 5.6);
     camera.position.lerp(targetCamPosRef.current, alpha);
     currentLookAtRef.current.lerp(targetLookAtRef.current, alpha);
     camera.lookAt(currentLookAtRef.current);
+
+    if (
+      isTransitioningRef.current &&
+      camera.position.distanceTo(targetCamPosRef.current) < 0.35
+    ) {
+      isTransitioningRef.current = false;
+    }
   });
 
   return null;

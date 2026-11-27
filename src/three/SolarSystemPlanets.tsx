@@ -137,6 +137,7 @@ function OrbitingPlanet({
       planetTextures.bumpMap.dispose();
       ringTexture?.dispose();
       atmosphereMaterial.dispose();
+      if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
     };
   }, [planetTextures, ringTexture, atmosphereMaterial]);
 
@@ -216,6 +217,7 @@ function OrbitingPlanet({
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (e.delta > 5) return;
     onSelectPlanet(planet.id);
   };
 
@@ -254,7 +256,7 @@ function OrbitingPlanet({
           onPointerOut={handleOut}
           onClick={handleClick}
         >
-          <sphereGeometry args={[r * 1.48, 16, 16]} />
+          <sphereGeometry args={[r * 1.68, 20, 20]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
 
@@ -268,6 +270,9 @@ function OrbitingPlanet({
           <mesh
             ref={ringRef}
             rotation={[Math.PI / 2.35, 0.26, 0]}
+            onPointerOver={handleOver}
+            onPointerOut={handleOut}
+            onClick={handleClick}
           >
             <ringGeometry args={[r * 1.38, r * 2.18, 72]} />
             <meshStandardMaterial
@@ -362,6 +367,7 @@ export function SolarSystemPlanets({
 
   const handleSunClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (e.delta > 5) return;
     onSelectPlanet('sun');
   };
 
@@ -369,12 +375,7 @@ export function SolarSystemPlanets({
     <group>
       {/* Central Sun Star Core */}
       <group>
-        <mesh
-          ref={sunRef}
-          onPointerOver={handleSunOver}
-          onPointerOut={handleSunOut}
-          onClick={handleSunClick}
-        >
+        <mesh ref={sunRef}>
           <sphereGeometry args={[1.1, 44, 44]} />
           <meshStandardMaterial
             map={sunTexture}
@@ -389,6 +390,16 @@ export function SolarSystemPlanets({
         {/* Smooth Fresnel radial solar corona fading continuously to zero at outer boundary */}
         <mesh ref={sunHaloRef} scale={1.38} material={sunCoronaMaterial}>
           <sphereGeometry args={[1.1, 36, 36]} />
+        </mesh>
+
+        {/* Generous invisible pointer collider matching solar corona so hovering/clicking Sun redirects reliably */}
+        <mesh
+          onPointerOver={handleSunOver}
+          onPointerOut={handleSunOut}
+          onClick={handleSunClick}
+        >
+          <sphereGeometry args={[1.65, 24, 24]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
 
         {/* Physical inverse-square-like solar light illuminating planet terminators */}

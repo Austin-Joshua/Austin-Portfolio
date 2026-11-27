@@ -13,7 +13,6 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { SkillsSection } from '@/components/sections/SkillsSection';
 import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
-import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import {
   UniverseNavigationProvider,
   useUniverseNavigation,
@@ -26,7 +25,6 @@ const loadMotionFeatures = () =>
   import('@/motion/motionFeatures').then((module) => module.domMax);
 
 function CosmicPortfolioShell() {
-  const { prefersReducedMotion } = useMotionPreference();
   const { scrollProgressRef } = useUniverseNavigation();
 
   // Initial deep-link hash alignment after React mounts
@@ -66,7 +64,7 @@ function CosmicPortfolioShell() {
       }
 
       scrollToSection(targetSection, {
-        prefersReducedMotion,
+        prefersReducedMotion: true,
         focusTarget: false,
         updateHash: false,
       });
@@ -78,7 +76,7 @@ function CosmicPortfolioShell() {
       window.removeEventListener('hashchange', handleHistoryNavigation);
       window.removeEventListener('popstate', handleHistoryNavigation);
     };
-  }, [prefersReducedMotion]);
+  }, []);
 
   return (
     <RootErrorBoundary>

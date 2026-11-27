@@ -170,71 +170,71 @@ export function UniverseNavigationProvider({
       lockTimerRef.current = window.setTimeout(() => {
         setNavSectionOverride(null);
         lockTimerRef.current = null;
-      }, prefersReducedMotion ? 120 : 900);
+    }, prefersReducedMotion ? 120 : 1150);
 
-      scrollToSection(targetSection, {
-        prefersReducedMotion,
-        focusTarget: false,
-        updateHash: true,
-      });
-    },
-    [prefersReducedMotion],
+  scrollToSection(targetSection, {
+    prefersReducedMotion,
+    focusTarget: false,
+    updateHash: true,
+  });
+},
+[prefersReducedMotion],
   );
 
-  const resetSolarOverview = useCallback(() => {
-    orbitControlRef.current.yaw = 0;
-    orbitControlRef.current.pitch = 0;
-    orbitControlRef.current.zoom = 1;
-    setNavigationMode('explore');
-    setSelectedPlanet('sun');
-    setHoveredPlanet(null);
-    setNavSectionOverride('hero');
+const resetSolarOverview = useCallback(() => {
+  orbitControlRef.current.yaw = 0;
+  orbitControlRef.current.pitch = 0;
+  orbitControlRef.current.zoom = 1;
+  setNavigationMode('explore');
+  setSelectedPlanet('sun');
+  setHoveredPlanet(null);
+  setNavSectionOverride('hero');
 
-    if (lockTimerRef.current !== null) {
-      window.clearTimeout(lockTimerRef.current);
-    }
-    lockTimerRef.current = window.setTimeout(() => {
-      setNavSectionOverride(null);
-      lockTimerRef.current = null;
-    }, prefersReducedMotion ? 120 : 900);
+  if (lockTimerRef.current !== null) {
+    window.clearTimeout(lockTimerRef.current);
+  }
+  lockTimerRef.current = window.setTimeout(() => {
+    setNavSectionOverride(null);
+    lockTimerRef.current = null;
+}, prefersReducedMotion ? 120 : 1150);
 
-    scrollToSection('hero', {
-      prefersReducedMotion,
-      focusTarget: false,
-      updateHash: true,
-    });
+scrollToSection('hero', {
+  prefersReducedMotion,
+  focusTarget: false,
+  updateHash: true,
+});
   }, [prefersReducedMotion]);
 
-  const value = useMemo<UniverseNavigationContextValue>(
-    () => ({
-      activeSection,
-      navigationMode: resolvedNavigationMode,
-      setNavigationMode,
-      hoveredPlanet,
-      setHoveredPlanet,
-      selectedPlanet: resolvedSelectedPlanet,
-      navigateToPlanet,
-      resetSolarOverview,
-      pointerRef,
-      scrollVelocityRef,
-      scrollProgressRef,
-      orbitControlRef,
-    }),
-    [
-      activeSection,
-      hoveredPlanet,
-      navigateToPlanet,
-      resetSolarOverview,
-      resolvedNavigationMode,
-      resolvedSelectedPlanet,
-    ],
-  );
+const value = useMemo<UniverseNavigationContextValue>(
+  () => ({
+    activeSection,
+    navigationMode: resolvedNavigationMode,
+    setNavigationMode,
+    hoveredPlanet,
+    setHoveredPlanet,
+    selectedPlanet: resolvedSelectedPlanet,
+    navigateToPlanet,
+    resetSolarOverview,
+    pointerRef,
+    scrollVelocityRef,
+    scrollProgressRef,
+    orbitControlRef,
+  }),
+  [
+    activeSection,
+    hoveredPlanet,
+    navigateToPlanet,
+    resetSolarOverview,
+    resolvedNavigationMode,
+    resolvedSelectedPlanet,
+  ],
+);
 
-  return (
-    <UniverseNavigationContext.Provider value={value}>
-      {children}
-    </UniverseNavigationContext.Provider>
-  );
+return (
+  <UniverseNavigationContext.Provider value={value}>
+    {children}
+  </UniverseNavigationContext.Provider>
+);
 }
 
 export function useUniverseNavigation(): UniverseNavigationContextValue {

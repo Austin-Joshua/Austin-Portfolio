@@ -46,9 +46,9 @@ export function AchievementsSection({
       title="Achievements"
       description="Verified hackathon award constellation and technical credentials from official project records and résumé."
     >
-      <div className="pointer-events-auto space-y-8">
+      <div className="pointer-events-none space-y-8 md:space-y-10">
         {validItems.length === 0 ? (
-          <GlassCard padding="lg" variant="elevated">
+          <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">
             <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
               RECOGNITION // STATUS
             </p>
@@ -57,13 +57,13 @@ export function AchievementsSection({
             </p>
           </GlassCard>
         ) : (
-          <div className="relative space-y-6">
+          <div className="pointer-events-none relative space-y-7">
             {/* Constellation connecting beam */}
             <svg
               aria-hidden="true"
               viewBox="0 0 900 56"
               preserveAspectRatio="none"
-              className="hidden lg:block w-full h-12 opacity-65"
+              className="hidden lg:block w-full h-12 opacity-65 pointer-events-none"
               fill="none"
             >
               <polyline
@@ -79,7 +79,7 @@ export function AchievementsSection({
             </svg>
 
             {/* Milestone Constellation Star Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-6">
               {validItems.map((item, idx) => {
                 const accent: AchievementAccent = item.accent ?? 'gold';
                 const starColor = ACCENT_COLOR_MAP[accent];
@@ -94,18 +94,18 @@ export function AchievementsSection({
                     viewport={{ once: true, amount: 0.12 }}
                     whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="glass-surface relative flex flex-col justify-between gap-4 p-6 transition-colors duration-200 hover:border-[var(--planet-achievements)]/60"
+                    className="pointer-events-auto glass-surface relative flex flex-col justify-between gap-5 p-6 md:p-8 transition-colors duration-200 hover:border-[var(--planet-achievements)]/60"
                     style={{
                       borderTop: `2px solid ${starColor}`,
                     }}
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <div className="flex items-center justify-between gap-2">
                         <span
-                          className="inline-flex items-center gap-1.5 type-meta font-semibold"
+                          className="inline-flex items-center gap-1.5 type-meta text-xs sm:text-sm font-semibold"
                           style={{ color: starColor }}
                         >
-                          <Star className="size-3.5 fill-current" aria-hidden="true" />
+                          <Star className="size-4 fill-current" aria-hidden="true" />
                           <span>{item.date}</span>
                         </span>
                       </div>
@@ -114,12 +114,12 @@ export function AchievementsSection({
                         {item.title}
                       </h3>
 
-                      <p className="type-meta text-[var(--text-muted)]">
+                      <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
                         {item.issuer}
                       </p>
 
                       {hasNonEmptyText(item.context) && (
-                        <p className="type-body text-sm text-[var(--text-secondary)]">
+                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
                           {item.context}
                         </p>
                       )}
@@ -130,10 +130,10 @@ export function AchievementsSection({
                         href={item.verificationUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
                         <span>Verify Repository</span>
-                        <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+                        <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
                       </a>
                     )}
                   </m.article>
@@ -144,20 +144,20 @@ export function AchievementsSection({
         )}
 
         {/* Verified Credentials & Campus Leadership Orbit Strip */}
-        <div className="glass-surface p-5 md:p-6 space-y-4">
-          <p className="type-meta uppercase tracking-[0.12em] text-[var(--planet-achievements)]">
+        <div className="pointer-events-auto glass-surface p-6 md:p-8 space-y-5">
+          <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-achievements)]">
             CERTIFICATIONS &amp; CAMPUS MILESTONES
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {VERIFIED_CERTIFICATIONS.map((cert) => (
               <div
                 key={cert.title}
-                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/70 px-3.5 py-2.5"
+                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/80 px-4 py-3.5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--planet-achievements)]/45"
               >
-                <p className="text-sm font-medium text-[var(--text-primary)]">
+                <p className="text-base font-medium text-[var(--text-primary)]">
                   {cert.title}
                 </p>
-                <p className="type-meta text-[11px] text-[var(--text-muted)]">
+                <p className="type-meta text-xs text-[var(--text-muted)] mt-1">
                   {cert.issuer}
                 </p>
               </div>

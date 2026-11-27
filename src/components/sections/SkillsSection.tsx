@@ -156,12 +156,12 @@ export function SkillsSection({
       title="Skills"
       description="Explore verified technologies as orbiting molecular clusters. Select or hover any atomic node to reveal its project bonds."
     >
-      <div className="pointer-events-auto space-y-8">
+      <div className="pointer-events-none space-y-8 md:space-y-10">
         <LayoutGroup id={`${baseId}-tabs`}>
           <div
             role="tablist"
             aria-label="Skill categories"
-            className="flex flex-wrap gap-2 border-b border-[var(--border-subtle)] pb-4"
+            className="pointer-events-auto inline-flex flex-wrap gap-2.5 border-b border-[var(--border-subtle)] pb-4 max-w-full"
           >
             {tabs.map((tab, index) => {
               const isSelected = tab.id === resolvedActiveTab;
@@ -181,8 +181,8 @@ export function SkillsSection({
                   onClick={() => setActiveTabId(tab.id)}
                   onKeyDown={(event) => handleTabKeyDown(event, index)}
                   className={[
-                    'relative isolate inline-flex min-h-[44px] items-center px-4 py-2 rounded-[var(--radius-control)]',
-                    'font-mono text-xs font-medium cursor-pointer border transition-colors duration-200',
+                    'relative isolate inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
+                    'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-colors duration-200',
                     'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
                     isSelected
                       ? 'border-[var(--planet-skills)] text-[#020307] font-semibold'
@@ -213,7 +213,7 @@ export function SkillsSection({
           role="tabpanel"
           aria-labelledby={activeTabDomId}
           data-testid="skills-molecular-clusters"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="pointer-events-none grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7"
         >
           {visibleCategories.map((category, catIdx) => {
             const accent = CLUSTER_ACCENTS[catIdx % CLUSTER_ACCENTS.length];
@@ -227,13 +227,13 @@ export function SkillsSection({
                 whileInView={canUseInView ? { x: 0 } : undefined}
                 viewport={{ once: true, amount: 0.12 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="relative glass-surface p-5 md:p-6 overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-[var(--border-glass-strong)]"
+                className="pointer-events-auto relative glass-surface p-6 md:p-8 overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-[var(--border-glass-strong)]"
               >
                 {/* Molecular ring SVG bonding atom coordinates to central category nucleus */}
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 360 120"
-                  className="pointer-events-none absolute top-0 right-0 h-28 w-72 opacity-30"
+                  className="pointer-events-none absolute top-0 right-0 h-32 w-80 opacity-30"
                   fill="none"
                 >
                   <circle cx="290" cy="54" r="38" stroke={accent} strokeDasharray="3 6" />
@@ -251,22 +251,30 @@ export function SkillsSection({
                   })}
                 </svg>
 
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-center gap-2.5 pr-20">
+                <div className="relative z-10 space-y-5">
+                  <div className="flex items-start gap-3 pr-16">
                     <span
                       aria-hidden="true"
-                      className="size-3 rounded-full shrink-0"
+                      className="mt-2 size-3.5 rounded-full shrink-0"
                       style={{
                         backgroundColor: accent,
-                        boxShadow: `0 0 12px ${accent}`,
+                        boxShadow: `0 0 14px ${accent}`,
                       }}
                     />
-                    <div>
-                      <h3 className="type-h3 text-[var(--text-primary)]">
-                        {category.label}
-                      </h3>
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <h3 className="type-h3 text-[var(--text-primary)]">
+                          {category.label}
+                        </h3>
+                        <span
+                          className="font-mono text-[11px] uppercase tracking-[0.1em] rounded-full px-2.5 py-0.5 border"
+                          style={{ color: accent, borderColor: `${accent}55` }}
+                        >
+                          {itemCount} {itemCount === 1 ? 'node' : 'nodes'}
+                        </span>
+                      </div>
                       {hasNonEmptyText(category.description) && (
-                        <p className="type-body text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
+                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
                           {category.description}
                         </p>
                       )}
@@ -274,7 +282,7 @@ export function SkillsSection({
                   </div>
 
                   {category.items.length > 0 ? (
-                    <div className="flex flex-wrap gap-2.5 pt-2">
+                    <div className="flex flex-wrap gap-3 pt-1">
                       {category.items.map((skill) => {
                         const isSkillSelected = skill.id === selectedSkillId;
                         const isBondedToHovered =
@@ -296,21 +304,21 @@ export function SkillsSection({
                             whileHover={prefersReducedMotion ? undefined : { scale: 1.07, y: -2 }}
                             whileTap={prefersReducedMotion ? undefined : { scale: 0.94 }}
                             className={[
-                              'group relative inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2',
-                              'rounded-full font-mono text-xs cursor-pointer border transition-colors duration-200',
+                              'group relative inline-flex min-h-[44px] items-center gap-2.5 px-4 py-2',
+                              'rounded-full font-mono text-xs sm:text-sm cursor-pointer border transition-colors duration-200',
                               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                               isSkillSelected
                                 ? 'bg-white/15 text-[var(--text-primary)] font-semibold'
                                 : isBondedToHovered
                                   ? 'bg-white/10 text-[var(--text-primary)]'
-                                  : 'bg-[var(--surface-card)]/85 text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+                                  : 'bg-[var(--surface-card)]/90 text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
                             ].join(' ')}
                             style={{
                               borderColor:
                                 isSkillSelected || isBondedToHovered
                                   ? accent
                                   : 'var(--border-subtle)',
-                              boxShadow: isSkillSelected ? `0 0 16px ${accent}66` : undefined,
+                              boxShadow: isSkillSelected ? `0 0 18px ${accent}66` : undefined,
                             }}
                           >
                             <span
@@ -322,7 +330,7 @@ export function SkillsSection({
                               style={{ backgroundColor: accent }}
                             />
                             <span>{skill.name}</span>
-                            <span className="text-[10px] text-[var(--text-muted)]">
+                            <span className="text-[11px] text-[var(--text-muted)]">
                               · {linkedCount}
                             </span>
                           </m.button>
@@ -344,9 +352,9 @@ export function SkillsSection({
         {selectedSkill && (
           <GlassCard
             variant="strong"
-            padding="md"
+            padding="lg"
             data-testid="skill-cross-reference"
-            className="space-y-3 border-[var(--planet-skills)]/50"
+            className="pointer-events-auto space-y-4 border-[var(--planet-skills)]/50"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="type-meta uppercase text-[var(--planet-skills)]">

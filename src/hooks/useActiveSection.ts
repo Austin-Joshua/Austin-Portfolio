@@ -119,15 +119,22 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
         }
 
         const doc = document.documentElement;
+        const lastId = stableSectionIds[stableSectionIds.length - 1];
+        const lastEl = lastId ? document.getElementById(lastId) : null;
+        const lastRect = lastEl?.getBoundingClientRect();
+        const isLastPrimary =
+          Boolean(lastRect) &&
+          (lastRect?.height ?? 0) > 0 &&
+          (lastRect?.top ?? Infinity) <= window.innerHeight * 0.42;
         if (
+          lastId &&
+          window.scrollY > 36 &&
           doc.scrollHeight > window.innerHeight + 120 &&
-          window.scrollY + window.innerHeight >= doc.scrollHeight - 48
+          (window.scrollY + window.innerHeight >= doc.scrollHeight - 110 ||
+            isLastPrimary)
         ) {
-          const lastId = stableSectionIds[stableSectionIds.length - 1];
-          if (lastId) {
-            setActiveSection((prev) => (prev === lastId ? prev : lastId));
-            return;
-          }
+          setActiveSection((prev) => (prev === lastId ? prev : lastId));
+          return;
         }
 
         const nextActive = pickMostActiveSection(stableSectionIds, observedStates);
@@ -147,11 +154,21 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
       const scrollHeight = doc.scrollHeight;
       const innerHeight = window.innerHeight;
       if (scrollHeight > innerHeight + 120) {
+        const lastId = stableSectionIds[stableSectionIds.length - 1];
+        const lastEl = lastId ? document.getElementById(lastId) : null;
+        const lastRect = lastEl?.getBoundingClientRect();
+        const isLastPrimary =
+          Boolean(lastRect) &&
+          (lastRect?.height ?? 0) > 0 &&
+          (lastRect?.top ?? Infinity) <= innerHeight * 0.42;
         if (window.scrollY <= 36) {
           setActiveSection(defaultSection);
-        } else if (window.scrollY + innerHeight >= scrollHeight - 40) {
-          const lastId = stableSectionIds[stableSectionIds.length - 1];
-          if (lastId) setActiveSection(lastId);
+        } else if (
+          lastId &&
+          (window.scrollY + innerHeight >= scrollHeight - 110 ||
+            isLastPrimary)
+        ) {
+          setActiveSection(lastId);
         }
       }
     };

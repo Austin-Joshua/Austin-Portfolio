@@ -19,17 +19,30 @@ vi.mock('@/three/SolarSystemScene', () => ({
   ),
 }));
 
+const mockConnect = vi.fn();
+const mockDisconnect = vi.fn();
+const mockEvents = vi.fn();
+
 vi.mock('@react-three/fiber', () => ({
   useThree: () => ({ invalidate: vi.fn(), camera: { position: { lerp: vi.fn() }, lookAt: vi.fn() } }),
   useFrame: vi.fn(),
   extend: vi.fn(),
+  events: mockEvents,
   createRoot: (canvas: HTMLCanvasElement) => ({
     configure: (config: {
-      onCreated?: (state: { gl: { domElement: HTMLCanvasElement } }) => void;
+      onCreated?: (state: {
+        gl: { domElement: HTMLCanvasElement };
+        events?: { connect?: (el: HTMLElement) => void; disconnect?: () => void };
+        setEvents?: (cfg: unknown) => void;
+      }) => void;
       frameloop?: string;
     }) => {
       mockConfigure(config);
-      config.onCreated?.({ gl: { domElement: canvas } });
+      config.onCreated?.({
+        gl: { domElement: canvas },
+        events: { connect: mockConnect, disconnect: mockDisconnect },
+        setEvents: vi.fn(),
+      });
       return Promise.resolve();
     },
     render: (node: unknown) => {
@@ -51,6 +64,8 @@ describe('Persistent 3D Cosmic Universe & Fallback', () => {
     mockUnmount.mockClear();
     mockConfigure.mockClear();
     mockRender.mockClear();
+    mockConnect.mockClear();
+    mockDisconnect.mockClear();
     if (originalVisibilityState) {
       Object.defineProperty(document, 'visibilityState', originalVisibilityState);
     }
@@ -126,7 +141,12 @@ describe('Persistent 3D Cosmic Universe & Fallback', () => {
     });
     expect(canvasWrapper).toHaveAttribute('data-frameloop', 'always');
     expect(mockConfigure).toHaveBeenCalled();
-    expect(mockRender).toHaveBeenCalled();
+    const configuredArg = mockConfigure.mock.calls[0]?.[0] as { events?: unknown } | undefined;
+    expect(configuredArg?.events).toBe(mockEvents);
+    expect(mockConnect).toHaveBeenCalledWith(canvasWrapper);
+    await waitFor(() => {
+      expect(mockRender).toHaveBeenCalled();
+    });
 
     // Backgrounded tab pauses frameloop to demand
     Object.defineProperty(document, 'visibilityState', {

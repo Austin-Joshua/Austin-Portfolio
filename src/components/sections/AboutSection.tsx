@@ -105,7 +105,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       <div
         ref={contentScopeRef}
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
-        className="pointer-events-auto space-y-8"
+        className="pointer-events-none space-y-8 md:space-y-10"
       >
         {/* Cyan-accented orbital trajectory divider */}
         <div
@@ -119,19 +119,26 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
           }}
         />
 
-        <div className="swiss-grid items-stretch gap-y-8">
-          {/* Left column: Narrative & Core Engineering Focus (Zero duplicate portrait) */}
+        <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
+          {/* Left column: Reconstructed Narrative Lead & Core Engineering Focus (Zero duplicate portrait) */}
           <div
             ref={leftColRef}
-            className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6"
+            className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6 pointer-events-auto"
           >
             {validParagraphs.length > 0 ? (
-              <GlassCard padding="lg" variant="default" className="space-y-5 h-full flex flex-col justify-between">
-                <div className="space-y-4">
+              <GlassCard padding="lg" variant="default" className="p-6 sm:p-8 lg:p-9 space-y-6 h-full flex flex-col justify-between">
+                <div className="space-y-5">
+                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-about)]">
+                    ENGINEERING PROFILE
+                  </p>
                   {validParagraphs.map((paragraph, idx) => (
                     <p
                       key={`about-paragraph-${idx}`}
-                      className="type-body text-[var(--text-secondary)] max-w-[65ch]"
+                      className={
+                        idx === 0
+                          ? 'text-lg sm:text-xl lg:text-2xl font-medium leading-relaxed text-[var(--text-primary)] max-w-[62ch]'
+                          : 'type-body text-base md:text-lg leading-relaxed text-[var(--text-secondary)] max-w-[65ch]'
+                      }
                     >
                       {paragraph}
                     </p>
@@ -139,16 +146,16 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                 </div>
 
                 {/* Verified Engineering Focus Telemetry Strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-[var(--border-subtle)] pt-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[var(--border-subtle)] pt-6">
                   {VERIFIED_FOCUS_AREAS.map((area) => (
                     <div
                       key={area.label}
-                      className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/65 px-3.5 py-3"
+                      className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/75 p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--planet-about)]/55"
                     >
-                      <p className="type-meta text-[11px] uppercase tracking-[0.08em] text-[var(--planet-about)] mb-1">
+                      <p className="type-meta text-xs uppercase tracking-[0.1em] text-[var(--planet-about)] mb-1.5">
                         {area.label}
                       </p>
-                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                         {area.detail}
                       </p>
                     </div>
@@ -167,8 +174,8 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
             )}
           </div>
 
-          {/* Right column: Balanced Editorial Telemetry & Academic Orbit Dossier (no duplicate portrait) */}
-          <div className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col">
+          {/* Right column: Reconstructed Orbital Dossier (no duplicate portrait) */}
+          <div className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col pointer-events-auto">
             <div
               ref={stationParallaxRef}
               data-testid="about-station-parallax"
@@ -177,13 +184,13 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               <GlassCard
                 padding="lg"
                 variant="strong"
-                className="relative overflow-hidden h-full flex flex-col justify-between gap-5 border-[var(--planet-about)]/30"
+                className="relative overflow-hidden h-full p-6 sm:p-8 flex flex-col justify-between gap-6 border-[var(--planet-about)]/35"
               >
                 {/* Restrained orbital trajectory motif */}
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 240 240"
-                  className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 opacity-20"
+                  className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 opacity-25"
                   fill="none"
                 >
                   <circle
@@ -198,58 +205,58 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                   <circle cx="206" cy="120" r="4" fill="#38BDF8" />
                 </svg>
 
-                <div className="relative z-10 space-y-4">
-                  <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-about)]">
+                <div className="relative z-10 space-y-5">
+                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-about)]">
                     TERRA CYAN // ORBITAL DOSSIER
                   </p>
 
-                  <div className="space-y-3.5">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <GraduationCap className="size-4" aria-hidden="true" />
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3.5">
+                      <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <GraduationCap className="size-5" aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
                           Degree Program
                         </p>
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                        <p className="text-base font-semibold text-[var(--text-primary)]">
                           B.E. Computer Science &amp; Engineering (2024–2028)
                         </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
+                        <p className="text-sm text-[var(--text-secondary)]">
                           Rajalakshmi Institute of Technology, Chennai
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 border-t border-[var(--border-subtle)]/70 pt-3.5">
-                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <Compass className="size-4" aria-hidden="true" />
+                    <div className="flex items-start gap-3.5 border-t border-[var(--border-subtle)]/70 pt-4">
+                      <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <Compass className="size-5" aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
                           Leadership &amp; Coordination
                         </p>
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                        <p className="text-base font-semibold text-[var(--text-primary)]">
                           President, Infinitus Mathematics Club (2026–2027)
                         </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
+                        <p className="text-sm text-[var(--text-secondary)]">
                           Overall Non-Technical Coordinator · TECHritz
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 border-t border-[var(--border-subtle)]/70 pt-3.5">
-                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <Cpu className="size-4" aria-hidden="true" />
+                    <div className="flex items-start gap-3.5 border-t border-[var(--border-subtle)]/70 pt-4">
+                      <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
+                        <Cpu className="size-5" aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
                           Competition Record
                         </p>
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                        <p className="text-base font-semibold text-[var(--text-primary)]">
                           3 Hackathon Awards (National &amp; International)
                         </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
+                        <p className="text-sm text-[var(--text-secondary)]">
                           AgriFlux · CIVIQ · ResQ Meal
                         </p>
                       </div>
@@ -258,11 +265,11 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                 </div>
 
                 {hasResume && profile.resume && (
-                  <div className="relative z-10 border-t border-[var(--border-subtle)]/80 pt-4">
+                  <div className="relative z-10 border-t border-[var(--border-subtle)]/80 pt-5">
                     <a
                       href={profile.resume.url}
                       download="Austin_Joshua_Resume.pdf"
-                      className="inline-flex min-h-[44px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/15 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="inline-flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/40 bg-[var(--planet-about)]/12 px-5 py-3 text-sm sm:text-base font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>{profile.resume.label} (PDF)</span>
                       <ArrowUpRight className="size-4 text-[var(--planet-about)] shrink-0" aria-hidden="true" />
