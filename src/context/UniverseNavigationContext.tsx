@@ -31,6 +31,11 @@ export interface UniversePointerVector {
   y: number;
 }
 
+export interface PlanetActivity {
+  readonly planetId: PlanetId;
+  readonly label: string;
+}
+
 export interface UniverseNavigationContextValue {
   activeSection: SectionId;
   navigationMode: UniverseNavigationMode;
@@ -45,6 +50,10 @@ export interface UniverseNavigationContextValue {
   scrollProgressRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
   isGyroActiveRef: RefObject<boolean>;
+  planetPulseRef: RefObject<Record<PlanetId, number>>;
+  liveOrbitTimeRef: RefObject<number>;
+  planetActivity: PlanetActivity | null;
+  pulsePlanet: (planetId: PlanetId, intensity?: number, activityLabel?: string) => void;
 }
 
 const UniverseNavigationContext = createContext<
@@ -82,6 +91,7 @@ export function UniverseNavigationProvider({
     useState<UniverseNavigationMode>('explore');
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetId | null>(null);
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetId | null>('sun');
+  const [planetActivity, setPlanetActivity] = useState<PlanetActivity | null>(null);
   const lockTimerRef = useRef<number | null>(null);
 
   const activeSection: SectionId = navSectionOverride ?? observedSection;
@@ -128,6 +138,55 @@ export function UniverseNavigationProvider({
   const scrollVelocityRef = useRef<number>(0);
   const scrollProgressRef = useRef<number>(0);
   const isGyroActiveRef = useRef<boolean>(false);
+  const liveOrbitTimeRef = useRef<number>(0);
+  const planetPulseRef = useRef<Record<PlanetId, number>>({
+    sun: 0,
+    about: 0,
+    skills: 0,
+    projects: 0,
+    experience: 0,
+    achievements: 0,
+    contact: 0,
+  });
+  const prevSectionRef = useRef<SectionId>(activeSection);
+
+  const pulsePlanet = useCallback(
+    (planetId: PlanetId, intensity = 0.85, activityLabel?: string) => {
+      const boostOffsetMs = Math.max(-220, Math.min(240, (intensity - 0.85) * 260));
+      planetPulseRef.current[planetId] = performance.now() + boostOffsetMs;
+      if (planetId !== 'sun' && intensity >= 0.8 && activityLabel) {
+        setNavSectionOverride((prev) => (prev === planetId ? prev : planetId));
+        scheduleOverrideClear(prefersReducedMotion ? 150 : 1400);
+      }
+      if (activityLabel !== undefined) {
+        if (activityLabel === '') {
+          setPlanetActivity((prev) =>
+            prev?.planetId === planetId ? null : prev,
+          );
+        } else {
+          setPlanetActivity((prev) =>
+            prev?.planetId === planetId && prev.label === activityLabel
+              ? prev
+              : { planetId, label: activityLabel },
+          );
+        }
+      }
+    },
+    [prefersReducedMotion, scheduleOverrideClear],
+  );
+
+  // Sync section transitions cleanly in both upward and downward scroll directions
+  useEffect(() => {
+    if (prevSectionRef.current === activeSection) return;
+    prevSectionRef.current = activeSection;
+    const targetPlanet: PlanetId = activeSection === 'hero' ? 'sun' : activeSection;
+    planetPulseRef.current[targetPlanet] = performance.now();
+    setHoveredPlanet(null);
+    setPlanetActivity((prev) =>
+      prev && prev.planetId !== targetPlanet ? null : prev,
+    );
+  }, [activeSection]);
+
   const orbitControlRef = useRef<OrbitControlVector>({
     yaw: 0,
     pitch: 0,
@@ -200,6 +259,7 @@ export function UniverseNavigationProvider({
   const navigateToPlanet = useCallback(
     (planet: PlanetId) => {
       playPlanetSound(planet);
+      planetPulseRef.current[planet] = performance.now() + 90;
       const targetSection: SectionId = planet === 'sun' ? 'hero' : planet;
       setSelectedPlanet(planet);
       setHoveredPlanet(null);
@@ -218,12 +278,14 @@ export function UniverseNavigationProvider({
 
   const resetSolarOverview = useCallback(() => {
     playPlanetSound('sun');
+    planetPulseRef.current.sun = performance.now() + 90;
     orbitControlRef.current.yaw = 0;
     orbitControlRef.current.pitch = 0;
     orbitControlRef.current.zoom = 1;
     setNavigationMode('explore');
     setSelectedPlanet('sun');
     setHoveredPlanet(null);
+    setPlanetActivity(null);
     setNavSectionOverride('hero');
     scheduleOverrideClear(prefersReducedMotion ? 120 : 1150);
 
@@ -249,11 +311,17 @@ export function UniverseNavigationProvider({
       scrollProgressRef,
       orbitControlRef,
       isGyroActiveRef,
+      planetPulseRef,
+      liveOrbitTimeRef,
+      planetActivity,
+      pulsePlanet,
     }),
     [
       activeSection,
       hoveredPlanet,
       navigateToPlanet,
+      planetActivity,
+      pulsePlanet,
       resetSolarOverview,
       resolvedNavigationMode,
       resolvedSelectedPlanet,

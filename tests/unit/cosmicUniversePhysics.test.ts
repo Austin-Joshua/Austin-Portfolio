@@ -1,10 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { createPlanetTextures } from '@/three/planetTextures';
 import {
   computeDepthParallax,
   stepHyperspaceFrame,
 } from '@/three/starfieldPhysics';
+import {
+  getPlanetWorldPosition,
+  SOLAR_SYSTEM_PLANETS,
+} from '@/three/universeConfig';
 
 describe('Starfield hyperspace velocity & pointer parallax physics', () => {
   it('accelerates travel smoothly with scroll velocity and damps back toward gentle drift', () => {
@@ -65,5 +70,36 @@ describe('Starfield hyperspace velocity & pointer parallax physics', () => {
     expect(buf.readUInt32BE(16)).toBe(512);
     expect(buf.readUInt32BE(20)).toBe(512);
     expect(buf[25]).toBe(6);
+  });
+
+  it('advances orbital planet positions smoothly across elapsed time and synthesizes PBR planet maps', () => {
+    const aboutPlanet = SOLAR_SYSTEM_PLANETS.find((p) => p.id === 'about')!;
+    const p0 = getPlanetWorldPosition(aboutPlanet, 0, 1);
+    const p1 = getPlanetWorldPosition(aboutPlanet, 4, 1);
+    expect(p1[0]).not.toBeCloseTo(p0[0], 2);
+
+    const mockContext = {
+      createImageData: (w: number, h: number) => ({
+        data: new Uint8ClampedArray(w * h * 4),
+      }),
+      putImageData: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+    const spy = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(mockContext);
+
+    try {
+      const textures = createPlanetTextures(aboutPlanet);
+      expect(textures.map).toBeDefined();
+      expect(textures.bumpMap).toBeDefined();
+      expect(textures.roughnessMap).toBeDefined();
+      expect(textures.cloudMap).toBeDefined();
+      textures.map.dispose();
+      textures.bumpMap.dispose();
+      textures.roughnessMap?.dispose();
+      textures.cloudMap?.dispose();
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

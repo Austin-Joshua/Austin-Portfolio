@@ -73,6 +73,8 @@ export interface UniverseCanvasProps {
   scrollVelocityRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
   isGyroActiveRef?: RefObject<boolean>;
+  planetPulseRef?: RefObject<Record<PlanetId, number>>;
+  liveOrbitTimeRef?: RefObject<number>;
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
 }
@@ -88,6 +90,8 @@ export function UniverseCanvas({
   scrollVelocityRef,
   orbitControlRef,
   isGyroActiveRef,
+  planetPulseRef,
+  liveOrbitTimeRef,
   onHoverPlanet,
   onSelectPlanet,
 }: UniverseCanvasProps) {
@@ -327,6 +331,8 @@ export function UniverseCanvas({
         scrollVelocityRef={scrollVelocityRef}
         orbitControlRef={orbitControlRef}
         isGyroActiveRef={isGyroActiveRef}
+        planetPulseRef={planetPulseRef}
+        liveOrbitTimeRef={liveOrbitTimeRef}
         onHoverPlanet={onHoverPlanet}
         onSelectPlanet={onSelectPlanet}
       />,
@@ -344,6 +350,8 @@ export function UniverseCanvas({
     scrollVelocityRef,
     orbitControlRef,
     isGyroActiveRef,
+    planetPulseRef,
+    liveOrbitTimeRef,
     onHoverPlanet,
     onSelectPlanet,
   ]);

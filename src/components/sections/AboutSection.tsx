@@ -4,6 +4,7 @@ import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SideReveal } from '@/components/ui/SideReveal';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { profileData } from '@/data/profile';
 import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
 import type { ProfileData } from '@/types/portfolio';
@@ -22,6 +23,7 @@ const VERIFIED_FOCUS_AREAS = [
 
 export function AboutSection({ profile = profileData }: AboutSectionProps) {
   const { prefersReducedMotion } = useOptionalMotionPreference();
+  const universeNav = useOptionalUniverseNavigation();
   const contentScopeRef = useRef<HTMLDivElement>(null);
   const hairlineRef = useRef<HTMLDivElement>(null);
   const stationParallaxRef = useRef<HTMLDivElement>(null);
@@ -130,6 +132,9 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                   {VERIFIED_FOCUS_AREAS.map((area) => (
                     <div
                       key={area.label}
+                      onMouseEnter={() =>
+                        universeNav?.pulsePlanet('about', 0.65, area.label)
+                      }
                       className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/75 p-4 transition-colors duration-150 hover:border-[var(--planet-about)]/50"
                     >
                       <p className="type-meta text-xs text-[var(--planet-about)] mb-1.5">
@@ -215,7 +220,10 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                     <a
                       href={profile.resume.url}
                       download="Austin_Joshua_Resume.pdf"
-                      onClick={() => playClick()}
+                      onClick={() => {
+                        playClick();
+                        universeNav?.pulsePlanet('about', 0.95, 'Resume PDF');
+                      }}
                       className="inline-flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/40 bg-[var(--planet-about)]/12 px-5 py-3 text-sm sm:text-base font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>{profile.resume.label} (PDF)</span>

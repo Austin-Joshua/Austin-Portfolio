@@ -1,9 +1,13 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import { App } from '@/App';
 import { MotionPreferenceProvider } from '@/context/MotionPreferenceContext';
-import { UniverseNavigationProvider } from '@/context/UniverseNavigationContext';
+import {
+  UniverseNavigationProvider,
+  useUniverseNavigation,
+} from '@/context/UniverseNavigationContext';
+import { SolarSystemHud } from '@/components/ui/SolarSystemHud';
 import * as webglHook from '@/hooks/useWebGLSupport';
 import { UniverseFallback } from '@/three/UniverseFallback';
 import { UniverseLayer } from '@/three/UniverseLayer';
@@ -179,27 +183,66 @@ describe('Persistent 3D Cosmic Universe & Fallback', () => {
     );
   });
 
-  it('keeps Hero typography, primary CTAs, planet HUD, and landmarks accessible with UniverseLayer active', async () => {
-    vi.spyOn(webglHook, 'useWebGLSupport').mockReturnValue({
-      supported: false,
-      version: null,
-    });
+  it(
+    'keeps Hero typography, primary CTAs, and landmarks accessible with UniverseLayer active without bottom Hero HUD strip',
+    async () => {
+      vi.spyOn(webglHook, 'useWebGLSupport').mockReturnValue({
+        supported: false,
+        version: null,
+      });
 
-    const { container } = render(
+      const { container } = render(
+        <MotionPreferenceProvider>
+          <App />
+        </MotionPreferenceProvider>,
+      );
+
+      expect(screen.getByTestId('universe-fallback')).toHaveAttribute(
+        'aria-hidden',
+        'true',
+      );
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Austin Joshua' }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'View Projects' })).toBeInTheDocument();
+      expect(screen.queryByTestId('solar-system-hud')).not.toBeInTheDocument();
+      expect(await axe(container)).toHaveNoViolations();
+    },
+    15_000,
+  );
+
+  it('links section content pulses with live planet telemetry HUD', () => {
+    function SectionPulseDriver() {
+      const { navigateToPlanet, pulsePlanet } = useUniverseNavigation();
+      return (
+        <div>
+          <button type="button" onClick={() => navigateToPlanet('skills')}>
+            Go Skills
+          </button>
+          <button
+            type="button"
+            onClick={() => pulsePlanet('skills', 1, 'TypeScript')}
+          >
+            Focus TypeScript
+          </button>
+          <SolarSystemHud />
+        </div>
+      );
+    }
+
+    render(
       <MotionPreferenceProvider>
-        <App />
+        <UniverseNavigationProvider>
+          <SectionPulseDriver />
+        </UniverseNavigationProvider>
       </MotionPreferenceProvider>,
     );
 
-    expect(screen.getByTestId('universe-fallback')).toHaveAttribute(
-      'aria-hidden',
-      'true',
-    );
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Austin Joshua' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View Projects' })).toBeInTheDocument();
-    expect(screen.getByTestId('solar-system-hud')).toBeInTheDocument();
-    expect(await axe(container)).toHaveNoViolations();
+    fireEvent.click(screen.getByRole('button', { name: 'Go Skills' }));
+    const telemetry = screen.getByTestId('live-planet-telemetry');
+    expect(telemetry).toHaveTextContent('Skills');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus TypeScript' }));
+    expect(telemetry).toHaveTextContent('TypeScript');
   });
 });

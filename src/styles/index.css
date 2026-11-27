@@ -118,6 +118,7 @@
   html {
     scroll-padding-top: var(--nav-offset);
     overflow-x: clip;
+    overflow-anchor: none;
   }
 
   @media (max-width: 767px) {

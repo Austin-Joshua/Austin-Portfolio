@@ -203,10 +203,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Ultra-minimal Orbital Planet Waypoint Dots */}
-      <div className="pointer-events-none relative z-10 mt-1 md:mt-0.5 flex justify-center">
-        <SolarSystemHud />
-      </div>
+      <SolarSystemHud />
     </SectionShell>
   );
 }

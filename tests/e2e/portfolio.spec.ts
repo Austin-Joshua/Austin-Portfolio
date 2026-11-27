@@ -219,12 +219,9 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     const bodyText = await page.locator('body').innerText();
     expect(bodyText).not.toMatch(/\bTBD\b|Lorem ipsum/i);
 
-    // Solar System HUD navigation + reset + Atomic Skills cross-ref + 5 Project Worlds
-    const hud = page.getByTestId('solar-system-hud');
-    await expect(hud).toBeVisible();
-    await page.getByTestId('planet-nav-skills').hover();
-    await expect(hud).toContainText('Aether Violet · Molecular Core');
-    await page.getByTestId('planet-nav-skills').click();
+    // Navbar destination navigation + Atomic Skills cross-ref + 5 Project Worlds
+    await expect(page.getByTestId('solar-system-hud')).toHaveCount(0);
+    await page.locator('header a[href="/skills"]').click();
     await expect(page).toHaveURL(/\/skills$/);
 
     await page.getByTestId('skill-atom-typescript').click();
@@ -232,7 +229,6 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(page.getByTestId('skill-cross-reference')).toContainText('AgriFlux');
 
     // Scroll to bottom shows Scroll-to-Top button which returns smoothly to root /
-    await page.getByTestId('planet-nav-contact').evaluate((el) => el.scrollIntoView());
     await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
     const scrollTopBtn = page.getByTestId('scroll-to-top-button');
     await expect(scrollTopBtn).toBeVisible();
@@ -774,5 +770,51 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.locator('#about').scrollIntoViewIfNeeded();
     await expect(aboutReveal).toHaveCSS('opacity', '1');
     await expect(contactReveal).toHaveCSS('opacity', '0');
+  });
+
+  test('keeps planet revolutions live and links scrolling up/down and section interactions with orbital telemetry', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/', { waitUntil: 'load' });
+    await waitForIntroToFinish(page);
+    await page.waitForTimeout(150);
+
+    await expect(page.getByTestId('solar-system-hud')).toHaveCount(0);
+
+    // Scroll down into Skills -> live orbital telemetry dock switches to Skills planet
+    await page.evaluate(() =>
+      document.getElementById('skills')?.scrollIntoView({ behavior: 'instant', block: 'start' }),
+    );
+    const telemetry = page.getByTestId('live-planet-telemetry');
+    await expect(telemetry).toBeVisible();
+    await expect(telemetry).toContainText('Skills');
+
+    // Verify live orbital angle advances over time (revolution stays active in guided section view)
+    const angleBefore = await telemetry.textContent();
+    await expect(async () => {
+      const angleAfter = await telemetry.textContent();
+      expect(angleAfter).not.toBe(angleBefore);
+    }).toPass({ timeout: 4000 });
+
+    // Clicking interactive content inside Skills links directly to planet telemetry
+    await page.locator('#skills').getByRole('button', { name: /TypeScript/i }).click();
+    await expect(telemetry).toContainText('TypeScript');
+
+    // Scroll down into Projects -> telemetry switches to Projects and links filter state
+    await page.evaluate(() =>
+      document.getElementById('projects')?.scrollIntoView({ behavior: 'instant', block: 'start' }),
+    );
+    await expect(telemetry).toContainText('Projects');
+    const aiFilterBtn = page.locator('#projects').getByRole('button', { name: 'AI & ML' });
+    await expect(aiFilterBtn).toBeVisible();
+    await aiFilterBtn.click();
+    await expect(telemetry).toContainText('AI & ML');
+
+    // Scroll back UP cleanly -> re-activates About and then returns to Hero top without bottom bar
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await expect(telemetry).toContainText('About');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(telemetry).toHaveCount(0);
   });
 });

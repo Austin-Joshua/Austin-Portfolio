@@ -123,6 +123,7 @@ export function SkillsSection({
     playClick();
     const nextId = selectedSkillId === skill.id ? null : skill.id;
     setSelectedSkillId(nextId);
+    universeNav?.pulsePlanet('skills', 1.0, nextId ? skill.name : '');
 
     if (!nextId) {
       setAnnouncement(`Cleared ${skill.name} project filter.`);
@@ -180,6 +181,11 @@ export function SkillsSection({
                     onClick={() => {
                       playClick();
                       setActiveTabId(tab.id);
+                      universeNav?.pulsePlanet(
+                        'skills',
+                        0.72,
+                        tab.id === ALL_TAB_ID ? '' : tab.label,
+                      );
                     }}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     className={[
@@ -268,7 +274,10 @@ export function SkillsSection({
                             type="button"
                             data-testid={`skill-atom-${skill.id}`}
                             aria-pressed={isSkillSelected}
-                            onMouseEnter={() => setHoveredSkillId(skill.id)}
+                            onMouseEnter={() => {
+                              setHoveredSkillId(skill.id);
+                              universeNav?.pulsePlanet('skills', 0.45, skill.name);
+                            }}
                             onMouseLeave={() => setHoveredSkillId(null)}
                             onClick={() => handleToggleSkill(skill)}
                             className={[

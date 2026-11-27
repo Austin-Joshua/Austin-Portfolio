@@ -172,6 +172,9 @@ export function ExperienceSection({
                     return (
                       <div
                         key={item.label}
+                        onMouseEnter={() =>
+                          universeNav?.pulsePlanet('experience', 0.65, item.value)
+                        }
                         className="flex items-start gap-3.5 rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/70 p-4"
                       >
                         <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-experience)]/35 bg-[var(--planet-experience)]/10 text-[var(--planet-experience)]">
@@ -216,7 +219,13 @@ export function ExperienceSection({
                 );
 
                 return (
-                  <li key={entry.id} className="swiss-grid items-start pointer-events-none">
+                  <li
+                    key={entry.id}
+                    onMouseEnter={() =>
+                      universeNav?.pulsePlanet('experience', 0.72, entry.organization)
+                    }
+                    className="swiss-grid items-start pointer-events-none"
+                  >
                     <SideReveal
                       direction="left"
                       className="col-span-4 md:col-span-3 space-y-1 md:pt-6 pointer-events-auto"

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { SideReveal } from '@/components/ui/SideReveal';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import type { SectionId } from '@/data/sections';
 import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
+import { playPlanetSound } from '@/utils/soundEffects';
 
 export interface SectionShellProps {
   id: SectionId | (string & {});
@@ -27,23 +29,47 @@ export function SectionShell({
   className = '',
   children,
 }: SectionShellProps) {
+  const universeNav = useOptionalUniverseNavigation();
   const headingId = `${id}-heading`;
   const resolvedLabelledBy = title ? headingId : labelledbyId;
   const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
+  const activeBadge =
+    planet && universeNav?.planetActivity?.planetId === planet.id
+      ? universeNav.planetActivity.label
+      : null;
 
   const headerContent = title ? (
     <SideReveal direction="left" className="pointer-events-none mb-8 md:mb-10">
       <div className="pointer-events-auto w-fit max-w-[78ch]">
         {planet && (
-          <div className="inline-flex items-center gap-2.5 mb-2.5">
-            <span
-              aria-hidden="true"
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: planet.color }}
-            />
-            <p className="type-meta text-xs sm:text-sm" style={{ color: planet.color }}>
-              {planet.cosmicTitle}
-            </p>
+          <div className="mb-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                playPlanetSound(planet.id);
+                universeNav?.pulsePlanet(planet.id, 1.1);
+              }}
+              onMouseEnter={() => universeNav?.pulsePlanet(planet.id, 0.55)}
+              aria-label={`Pulse ${planet.label} sphere`}
+              className="inline-flex min-h-[32px] items-center gap-2.5 rounded-full px-2 -ml-2 py-1 cursor-pointer transition-colors duration-150 hover:bg-white/6 active:scale-95 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
+            >
+              <span
+                aria-hidden="true"
+                className="size-2.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: planet.color,
+                  boxShadow: `0 0 8px ${planet.color}`,
+                }}
+              />
+              <span className="type-meta text-xs sm:text-sm" style={{ color: planet.color }}>
+                {planet.cosmicTitle}
+              </span>
+              {activeBadge && (
+                <span className="font-mono text-[11px] text-[var(--text-muted)]">
+                  · {activeBadge}
+                </span>
+              )}
+            </button>
           </div>
         )}
         {title &&

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
 import { SideReveal } from '@/components/ui/SideReveal';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { contactData } from '@/data/contact';
 import { useClipboard } from '@/hooks/useClipboard';
 import { statusBadgeVariants } from '@/motion/variants';
@@ -44,6 +45,7 @@ function selectTextNode(element: HTMLElement | null): void {
 }
 
 export function ContactSection({ contact = contactData }: ContactSectionProps) {
+  const universeNav = useOptionalUniverseNavigation();
   const { status, announcement, copy } = useClipboard();
   const emailRef = useRef<HTMLAnchorElement>(null);
 
@@ -63,8 +65,10 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
     const copied = await copy(validEmail);
     if (copied) {
       playSuccess();
+      universeNav?.pulsePlanet('contact', 1.05, 'Email Copied');
     } else {
       playClick();
+      universeNav?.pulsePlanet('contact', 0.8, 'Email Selected');
       selectTextNode(emailRef.current);
     }
   };

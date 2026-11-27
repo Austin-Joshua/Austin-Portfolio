@@ -47,7 +47,7 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('mounts persistent cosmic UniverseLayer across App and renders SolarSystemHud + Hero portrait stage', () => {
+  it('mounts persistent cosmic UniverseLayer across App and renders Hero portrait stage without duplicate bottom planet bar', () => {
     renderWithProviders(<App />);
 
     const heroSection = document.getElementById('hero');
@@ -61,12 +61,7 @@ describe('AJ Cosmic Universe — Final Integration Audit', () => {
     expect(heroSection).toContainElement(stage);
     expect(stage).toContainElement(screen.getByTestId('hero-portrait-figure'));
 
-    const hud = screen.getByTestId('solar-system-hud');
-    expect(heroSection).toContainElement(hud);
-    expect(within(hud).getByTestId('planet-nav-sun')).toBeInTheDocument();
-    for (const id of ['about', 'skills', 'projects', 'experience', 'achievements', 'contact']) {
-      expect(within(hud).getByTestId(`planet-nav-${id}`)).toBeInTheDocument();
-    }
+    expect(screen.queryByTestId('solar-system-hud')).not.toBeInTheDocument();
   });
 
   it('serves genuine transparent RGBA cutout PNG and preserves source photo outside public/', () => {

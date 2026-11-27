@@ -9,6 +9,7 @@ import { ProjectDetailModal } from '@/components/ui/ProjectDetailModal';
 import { SideReveal } from '@/components/ui/SideReveal';
 import { TagChip } from '@/components/ui/TagChip';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { projectsData } from '@/data/projects';
 import { useProjectUrlState } from '@/hooks/useProjectUrlState';
 import { FILTER_LAYOUT_TRANSITION, REDUCED_TRANSITION } from '@/motion/variants';
@@ -49,6 +50,7 @@ export function ProjectsSection({
   const [announcement, setAnnouncement] = useState<string>('');
   const sectionBodyRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useOptionalMotionPreference();
+  const universeNav = useOptionalUniverseNavigation();
 
   const validProjects = useMemo(
     () =>
@@ -137,6 +139,11 @@ export function ProjectsSection({
   const handleSelectCategory = (option: ProjectCategoryOption) => {
     playClick();
     setActiveCategory(option.id);
+    universeNav?.pulsePlanet(
+      'projects',
+      0.8,
+      option.id === ALL_PROJECT_CATEGORY ? '' : option.label,
+    );
     const nextFiltered = filterProjectsByCategory(validProjects, option.id);
     setAnnouncement(formatProjectCountAnnouncement(nextFiltered.length, option.label));
   };
@@ -144,6 +151,7 @@ export function ProjectsSection({
   const handleResetFilters = () => {
     playClick();
     setActiveCategory(ALL_PROJECT_CATEGORY);
+    universeNav?.pulsePlanet('projects', 0.65, '');
     setAnnouncement(formatProjectCountAnnouncement(validProjects.length, 'All'));
   };
 
@@ -268,6 +276,7 @@ export function ProjectsSection({
                         className="inline-flex min-h-[44px] md:min-h-[36px] min-w-[44px] items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-glass)] bg-transparent px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] select-none whitespace-nowrap cursor-pointer transition-[background-color,border-color,color] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--surface-card)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                         onClick={() => {
                           playProjectWorldSound(project.slug);
+                          universeNav?.pulsePlanet('projects', 1.1, project.title);
                           openProject(project.slug);
                         }}
                         aria-label={`Inspect Details — ${project.title}`}

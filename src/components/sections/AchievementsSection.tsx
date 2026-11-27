@@ -2,6 +2,7 @@ import { ArrowUpRight, Star } from 'lucide-react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SideReveal } from '@/components/ui/SideReveal';
+import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { achievementsData } from '@/data/achievements';
 import type { AchievementAccent, AchievementItem } from '@/types/portfolio';
 import { hasNonEmptyText, isValidHttpUrl } from '@/utils/dataGuards';
@@ -29,6 +30,7 @@ const VERIFIED_CERTIFICATIONS = [
 export function AchievementsSection({
   items = achievementsData,
 }: AchievementsSectionProps) {
+  const universeNav = useOptionalUniverseNavigation();
   const validItems = items.filter(
     (item) =>
       hasNonEmptyText(item.id) &&
@@ -106,7 +108,10 @@ export function AchievementsSection({
                         href={item.verificationUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={() => playClick()}
+                        onClick={() => {
+                          playClick();
+                          universeNav?.pulsePlanet('achievements', 1.0, item.title);
+                        }}
                         className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--planet-achievements)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                       >
                         <span>Verify Repository</span>

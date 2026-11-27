@@ -9,6 +9,7 @@ import {
   ShaderMaterial,
   type Group,
   type Mesh,
+  type MeshBasicMaterial,
   type MeshStandardMaterial,
 } from 'three';
 import {
@@ -34,6 +35,7 @@ export interface SolarSystemPlanetsProps {
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
   elapsedTimeRef: RefObject<number>;
+  planetPulseRef?: RefObject<Record<PlanetId, number>>;
 }
 
 /**
@@ -97,6 +99,7 @@ function OrbitingPlanet({
   onHoverPlanet,
   onSelectPlanet,
   elapsedTimeRef,
+  planetPulseRef,
 }: {
   planet: PlanetDefinition;
   orbitScale: number;
@@ -107,11 +110,15 @@ function OrbitingPlanet({
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
   elapsedTimeRef: RefObject<number>;
+  planetPulseRef?: RefObject<Record<PlanetId, number>>;
 }) {
   const groupRef = useRef<Group>(null);
   const sphereRef = useRef<Mesh>(null);
+  const cloudRef = useRef<Mesh>(null);
   const haloMeshRef = useRef<Mesh>(null);
   const matRef = useRef<MeshStandardMaterial>(null);
+  const reticleRef = useRef<Mesh>(null);
+  const reticleMatRef = useRef<MeshBasicMaterial>(null);
   const ringRef = useRef<Mesh>(null);
   const moonGroupRef = useRef<Group>(null);
   const hoverDepthRef = useRef(0);
@@ -128,7 +135,7 @@ function OrbitingPlanet({
     [planet.hasRing, planet.color, planet.rimColor],
   );
   const atmosphereMaterial = useMemo(
-    () => createAtmosphericHaloMaterial(planet.rimColor, 1.16, 0.24),
+    () => createAtmosphericHaloMaterial(planet.rimColor, 1.18, 0.24),
     [planet.rimColor],
   );
 
@@ -136,49 +143,86 @@ function OrbitingPlanet({
     return () => {
       planetTextures.map.dispose();
       planetTextures.bumpMap.dispose();
+      planetTextures.roughnessMap?.dispose();
+      planetTextures.cloudMap?.dispose();
       ringTexture?.dispose();
       atmosphereMaterial.dispose();
       if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
     };
   }, [planetTextures, ringTexture, atmosphereMaterial]);
 
+  const isHighlighted = isHovered || isSelected;
+
   useFrame((_, delta) => {
     const dt = prefersReducedMotion ? 0 : Math.min(delta, 0.05);
     const t = elapsedTimeRef.current ?? 0;
+    const stamped = planetPulseRef?.current?.[planet.id] ?? 0;
+    const ageMs = stamped > 0 ? performance.now() - stamped : Infinity;
+    const rawPulse =
+      prefersReducedMotion || stamped <= 0 || ageMs > 2600
+        ? 0
+        : ageMs <= 0
+          ? 1.15
+          : Math.exp(-ageMs / 420);
 
     if (groupRef.current) {
       const [x, y, z] = getPlanetWorldPosition(planet, t, orbitScale);
       groupRef.current.position.set(x, y, z);
 
-      const targetScale = isHovered ? 1.09 : isSelected ? 1.04 : 1.0;
+      const targetScale =
+        (isHovered ? 1.1 : isSelected ? 1.045 : 1.0) + rawPulse * 0.05;
       const curScale = groupRef.current.scale.x;
-      const nextScale = curScale + (targetScale - curScale) * (prefersReducedMotion ? 1 : 0.14);
+      const nextScale =
+        curScale + (targetScale - curScale) * (prefersReducedMotion ? 1 : 0.14);
       groupRef.current.scale.setScalar(nextScale);
     }
 
     if (sphereRef.current && !prefersReducedMotion) {
-      sphereRef.current.rotation.y += dt * (isHovered ? 0.34 : 0.16);
+      sphereRef.current.rotation.y +=
+        dt * (isHovered ? 0.36 : 0.16 + rawPulse * 0.28);
+    }
+
+    if (cloudRef.current && !prefersReducedMotion) {
+      cloudRef.current.rotation.y +=
+        dt * (isHovered ? 0.44 : 0.21 + rawPulse * 0.32);
     }
 
     if (moonGroupRef.current && !prefersReducedMotion) {
-      moonGroupRef.current.rotation.y += dt * 0.45;
+      moonGroupRef.current.rotation.y += dt * (isHighlighted ? 0.62 : 0.44);
     }
 
     if (ringRef.current && !prefersReducedMotion) {
-      ringRef.current.rotation.z += dt * 0.06;
+      ringRef.current.rotation.z += dt * (0.06 + rawPulse * 0.08);
+    }
+
+    if (reticleRef.current && !prefersReducedMotion) {
+      reticleRef.current.rotation.z -= dt * (0.28 + rawPulse * 0.5);
+    }
+
+    if (reticleMatRef.current) {
+      const targetReticleOpacity = isHovered
+        ? 0.72
+        : Math.min(0.68, (isSelected ? 0.24 : 0) + rawPulse * 0.56);
+      reticleMatRef.current.opacity +=
+        (targetReticleOpacity - reticleMatRef.current.opacity) *
+        (prefersReducedMotion ? 1 : 0.16);
     }
 
     const haloMat = haloMeshRef.current?.material as ShaderMaterial | undefined;
     const haloUniform = haloMat?.uniforms?.uIntensity;
     if (haloUniform) {
-      const targetHalo = isHovered ? 0.44 : isSelected ? 0.32 : 0.2;
-      haloUniform.value += (targetHalo - haloUniform.value) * (prefersReducedMotion ? 1 : 0.16);
+      const targetHalo =
+        (isHovered ? 0.48 : isSelected ? 0.34 : 0.21) + rawPulse * 0.26;
+      haloUniform.value +=
+        (targetHalo - haloUniform.value) * (prefersReducedMotion ? 1 : 0.16);
     }
 
     if (matRef.current) {
-      const targetEmissive = isHovered ? 0.16 : isSelected ? 0.09 : 0.03;
+      const targetEmissive =
+        (isHovered ? 0.17 : isSelected ? 0.095 : 0.032) + rawPulse * 0.18;
       matRef.current.emissiveIntensity +=
-        (targetEmissive - matRef.current.emissiveIntensity) * (prefersReducedMotion ? 1 : 0.16);
+        (targetEmissive - matRef.current.emissiveIntensity) *
+        (prefersReducedMotion ? 1 : 0.16);
     }
   });
 
@@ -188,10 +232,11 @@ function OrbitingPlanet({
     planet.bandStyle === 'molecular';
   const r = planet.radius;
   const orbitR = planet.orbitRadius * orbitScale;
-  const isHighlighted = isHovered || isSelected;
-  const sphereSegs = qualityTier.tier === 'desktop-high' ? 40 : 28;
-  const bumpScale = isGasGiant ? 0.014 : 0.042;
-  const roughness = isGasGiant ? 0.64 : 0.88;
+  const sphereSegs = qualityTier.tier === 'desktop-high' ? 44 : 30;
+  const bumpScale = isGasGiant ? 0.016 : 0.048;
+  const roughness =
+    planet.bandStyle === 'oceanic' ? 0.94 : isGasGiant ? 0.66 : 0.92;
+  const axialTilt = (planet.inclination || 0.06) * 1.45 + 0.09;
 
   const showMoons = qualityTier.tier !== 'mobile-conserving';
   const moons = useMemo(() => {
@@ -244,19 +289,71 @@ function OrbitingPlanet({
 
       {/* Orbiting Celestial Body */}
       <group ref={groupRef}>
-        <mesh ref={sphereRef}>
-          <sphereGeometry args={[r, sphereSegs, sphereSegs]} />
-          <meshStandardMaterial
-            ref={matRef}
-            map={planetTextures.map}
-            bumpMap={planetTextures.bumpMap}
-            bumpScale={bumpScale}
-            roughness={roughness}
-            metalness={0.04}
-            emissive={new Color(planet.color)}
-            emissiveIntensity={0.03}
-          />
-        </mesh>
+        <group rotation={[axialTilt, 0, axialTilt * 0.35]}>
+          <mesh ref={sphereRef}>
+            <sphereGeometry args={[r, sphereSegs, sphereSegs]} />
+            <meshStandardMaterial
+              ref={matRef}
+              map={planetTextures.map}
+              bumpMap={planetTextures.bumpMap}
+              bumpScale={bumpScale}
+              roughnessMap={planetTextures.roughnessMap}
+              roughness={roughness}
+              metalness={planet.bandStyle === 'orbital' ? 0.12 : 0.04}
+              emissive={new Color(planet.color)}
+              emissiveIntensity={0.03}
+            />
+          </mesh>
+
+          {/* Drifting concentric cloud atmosphere shell */}
+          {planetTextures.cloudMap && (
+            <mesh ref={cloudRef} scale={1.032}>
+              <sphereGeometry args={[r, sphereSegs, sphereSegs]} />
+              <meshStandardMaterial
+                map={planetTextures.cloudMap}
+                transparent
+                opacity={isHovered ? 0.88 : 0.72}
+                roughness={0.86}
+                metalness={0}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+
+          {/* Saturnian multi-band planetary rings */}
+          {ringTexture && (
+            <mesh
+              ref={ringRef}
+              rotation={[Math.PI / 2.35, 0.26, 0]}
+              onPointerOver={handleOver}
+              onPointerOut={handleOut}
+              onClick={handleClick}
+            >
+              <ringGeometry args={[r * 1.38, r * 2.18, 72]} />
+              <meshStandardMaterial
+                map={ringTexture}
+                transparent
+                side={DoubleSide}
+                roughness={0.85}
+                metalness={0.04}
+                opacity={isHighlighted ? 0.88 : 0.64}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+
+          {/* Interactive Equatorial Orbital Lock / Pulse Reticle */}
+          <mesh ref={reticleRef} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[r * (planet.hasRing ? 2.34 : 1.46), 0.011, 8, 96]} />
+            <meshBasicMaterial
+              ref={reticleMatRef}
+              color={planet.rimColor}
+              transparent
+              opacity={0}
+              depthWrite={false}
+            />
+          </mesh>
+        </group>
 
         {/* Generous invisible pointer collider so hovering/clicking a planet pauses and redirects reliably */}
         <mesh
@@ -269,51 +366,39 @@ function OrbitingPlanet({
         </mesh>
 
         {/* Soft seamless Fresnel atmospheric limb glow (zero hard outer edge) */}
-        <mesh ref={haloMeshRef} scale={1.16} material={atmosphereMaterial}>
+        <mesh ref={haloMeshRef} scale={1.18} material={atmosphereMaterial}>
           <sphereGeometry args={[r, 32, 32]} />
         </mesh>
 
-        {/* Saturnian multi-band planetary rings */}
-        {ringTexture && (
-          <mesh
-            ref={ringRef}
-            rotation={[Math.PI / 2.35, 0.26, 0]}
-            onPointerOver={handleOver}
-            onPointerOut={handleOut}
-            onClick={handleClick}
-          >
-            <ringGeometry args={[r * 1.38, r * 2.18, 72]} />
-            <meshStandardMaterial
-              map={ringTexture}
-              transparent
-              side={DoubleSide}
-              roughness={0.85}
-              metalness={0.04}
-              opacity={isHighlighted ? 0.85 : 0.62}
-              depthWrite={false}
-            />
-          </mesh>
-        )}
-
-        {/* Orbiting rocky satellites */}
+        {/* Orbiting rocky satellites with inclined orbital hairlines */}
         {moons.length > 0 && (
           <group ref={moonGroupRef}>
-            {moons.map((moon) => (
-              <mesh
-                key={moon.id}
-                position={[
-                  Math.cos(moon.angle) * moon.orbit,
-                  Math.sin(moon.angle) * moon.orbit * moon.tilt,
-                  Math.sin(moon.angle) * moon.orbit,
-                ]}
-              >
-                <sphereGeometry args={[moon.size, 14, 14]} />
-                <meshStandardMaterial
-                  color="#9AA6B8"
-                  roughness={0.9}
-                  metalness={0.04}
-                />
-              </mesh>
+            {moons.map((moon, mIdx) => (
+              <group key={moon.id} rotation={[moon.tilt, 0, mIdx * 0.28]}>
+                <mesh rotation={[Math.PI / 2, 0, 0]}>
+                  <torusGeometry args={[moon.orbit, 0.004, 6, 56]} />
+                  <meshBasicMaterial
+                    color={isHighlighted ? planet.rimColor : COSMIC_PALETTE.orbitTrack}
+                    transparent
+                    opacity={isHighlighted ? 0.34 : 0.14}
+                    depthWrite={false}
+                  />
+                </mesh>
+                <mesh
+                  position={[
+                    Math.cos(moon.angle) * moon.orbit,
+                    0,
+                    Math.sin(moon.angle) * moon.orbit,
+                  ]}
+                >
+                  <sphereGeometry args={[moon.size, 16, 16]} />
+                  <meshStandardMaterial
+                    color={mIdx % 2 === 0 ? '#BCC6D8' : '#96A4B8'}
+                    roughness={0.86}
+                    metalness={0.05}
+                  />
+                </mesh>
+              </group>
             ))}
           </group>
         )}
@@ -331,6 +416,7 @@ export function SolarSystemPlanets({
   onHoverPlanet,
   onSelectPlanet,
   elapsedTimeRef,
+  planetPulseRef,
 }: SolarSystemPlanetsProps) {
   const sunRef = useRef<Mesh>(null);
   const sunHaloRef = useRef<Mesh>(null);
@@ -351,13 +437,21 @@ export function SolarSystemPlanets({
 
   useFrame((_, delta) => {
     const dt = prefersReducedMotion ? 0 : Math.min(delta, 0.05);
+    const stamped = planetPulseRef?.current?.sun ?? 0;
+    const ageMs = stamped > 0 ? performance.now() - stamped : Infinity;
+    const sunPulse =
+      prefersReducedMotion || stamped <= 0 || ageMs > 2600
+        ? 0
+        : ageMs <= 0
+          ? 1.15
+          : Math.exp(-ageMs / 420);
     if (sunRef.current && !prefersReducedMotion) {
-      sunRef.current.rotation.y += dt * 0.08;
+      sunRef.current.rotation.y += dt * (0.08 + sunPulse * 0.16);
     }
     const haloMat = sunHaloRef.current?.material as ShaderMaterial | undefined;
     const haloUniform = haloMat?.uniforms?.uIntensity;
     if (haloUniform) {
-      const targetIntensity = isSunActive ? 0.68 : 0.48;
+      const targetIntensity = (isSunActive ? 0.68 : 0.48) + sunPulse * 0.22;
       haloUniform.value += (targetIntensity - haloUniform.value) * (prefersReducedMotion ? 1 : 0.12);
     }
   });
@@ -435,6 +529,7 @@ export function SolarSystemPlanets({
           onHoverPlanet={onHoverPlanet}
           onSelectPlanet={onSelectPlanet}
           elapsedTimeRef={elapsedTimeRef}
+          planetPulseRef={planetPulseRef}
         />
       ))}
     </group>

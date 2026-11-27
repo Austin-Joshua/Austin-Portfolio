@@ -24,6 +24,8 @@ export interface SolarSystemSceneProps {
   scrollVelocityRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
   isGyroActiveRef?: RefObject<boolean>;
+  planetPulseRef?: RefObject<Record<PlanetId, number>>;
+  liveOrbitTimeRef?: RefObject<number>;
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
 }
@@ -39,11 +41,13 @@ export function SolarSystemScene({
   scrollVelocityRef,
   orbitControlRef,
   isGyroActiveRef,
+  planetPulseRef,
+  liveOrbitTimeRef,
   onHoverPlanet,
   onSelectPlanet,
 }: SolarSystemSceneProps) {
   const elapsedTimeRef = useRef<number>(0);
-  const orbitRateRef = useRef<number>(navigationMode === 'guided' ? 0 : 1);
+  const orbitRateRef = useRef<number>(navigationMode === 'guided' ? 0.58 : 1);
   const hoveredBodyRef = useRef<PlanetId | null>(hoveredPlanet);
 
   useEffect(() => {
@@ -52,14 +56,19 @@ export function SolarSystemScene({
 
   useFrame((_, delta) => {
     if (prefersReducedMotion) return;
-    // Immediately freeze orbits on hover so the body stays locked under the pointer for clicking
+    // Freeze orbits on body hover so interactive clicking never slips under the pointer
     if (hoveredBodyRef.current !== null) {
       orbitRateRef.current = 0;
       return;
     }
-    const targetRate = navigationMode === 'guided' ? 0 : 1;
+    const baseRate = navigationMode === 'guided' ? 0.58 : 1;
+    const scrollBoost = Math.min(0.65, Math.abs(scrollVelocityRef.current ?? 0) * 0.16);
+    const targetRate = baseRate + scrollBoost;
     orbitRateRef.current += (targetRate - orbitRateRef.current) * Math.min(1, delta * 9);
     elapsedTimeRef.current += Math.min(delta, 0.05) * orbitRateRef.current;
+    if (liveOrbitTimeRef?.current !== undefined) {
+      liveOrbitTimeRef.current = elapsedTimeRef.current;
+    }
   });
 
   const handleSyncHoverPlanet = (id: PlanetId | null) => {
@@ -103,6 +112,7 @@ export function SolarSystemScene({
         onHoverPlanet={handleSyncHoverPlanet}
         onSelectPlanet={onSelectPlanet}
         elapsedTimeRef={elapsedTimeRef}
+        planetPulseRef={planetPulseRef}
       />
 
       <CosmicCameraRig
@@ -118,6 +128,8 @@ export function SolarSystemScene({
         orbitControlRef={orbitControlRef}
         isGyroActiveRef={isGyroActiveRef}
         elapsedTimeRef={elapsedTimeRef}
+        scrollVelocityRef={scrollVelocityRef}
+        planetPulseRef={planetPulseRef}
       />
     </>
   );

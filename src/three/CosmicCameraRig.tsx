@@ -28,6 +28,8 @@ export interface CosmicCameraRigProps {
   orbitControlRef: RefObject<OrbitControlVector>;
   isGyroActiveRef?: RefObject<boolean>;
   elapsedTimeRef: RefObject<number>;
+  scrollVelocityRef?: RefObject<number>;
+  planetPulseRef?: RefObject<Record<PlanetId, number>>;
 }
 
 /**
@@ -47,6 +49,8 @@ export function CosmicCameraRig({
   orbitControlRef,
   isGyroActiveRef,
   elapsedTimeRef,
+  scrollVelocityRef,
+  planetPulseRef,
 }: CosmicCameraRigProps) {
   const { camera } = useThree();
   const targetLookAtRef = useRef<Vector3>(new Vector3(0, 0, 0));
@@ -86,19 +90,32 @@ export function CosmicCameraRig({
     }
     const ptr = frozenPtrRef.current;
 
+    const rawVel = prefersReducedMotion ? 0 : (scrollVelocityRef?.current ?? 0);
+    const scrollVel = Math.max(-2.6, Math.min(2.6, rawVel));
+    const readPulse = (planetId: PlanetId): number => {
+      if (prefersReducedMotion) return 0;
+      const stamped = planetPulseRef?.current?.[planetId] ?? 0;
+      if (stamped <= 0) return 0;
+      const ageMs = performance.now() - stamped;
+      if (ageMs > 2600) return 0;
+      return ageMs <= 0 ? 1.15 : Math.exp(-ageMs / 420);
+    };
+
     if (isExploreOverview) {
       const orbit = orbitControlRef.current ?? { yaw: 0, pitch: 0, zoom: 1 };
       const isDesktop = qualityTier.tier === 'desktop-high';
+      const pulse = readPulse('sun');
       // Center the solar core symmetrically behind Austin's Hero silhouette so planets frame both left & right
       const heroLookX = 0;
       const baseRadius =
-        (isDesktop ? 17.6 : 20.5) / Math.max(0.75, Math.min(1.4, orbit.zoom));
+        ((isDesktop ? 17.6 : 20.5) * (1 - pulse * 0.04)) /
+        Math.max(0.75, Math.min(1.4, orbit.zoom));
       const yaw = orbit.yaw + ptr.x * 0.16;
-      const pitch = 0.34 + orbit.pitch - ptr.y * 0.08;
+      const pitch = 0.34 + orbit.pitch - ptr.y * 0.08 - scrollVel * 0.025;
 
       const camX = heroLookX + Math.sin(yaw) * baseRadius;
       const camY = Math.sin(pitch) * baseRadius * 0.72 + 1.1;
-      const camZ = Math.cos(yaw) * Math.cos(pitch) * baseRadius;
+      const camZ = Math.cos(yaw) * Math.cos(pitch) * baseRadius - scrollVel * 0.52;
 
       targetCamPosRef.current.set(camX, camY, camZ);
       targetLookAtRef.current.set(heroLookX, isDesktop ? -0.35 : -0.1, 0);
@@ -112,6 +129,7 @@ export function CosmicCameraRig({
 
       const planet = getPlanetDefinition(focusSection);
       const [px, py, pz] = getPlanetWorldPosition(planet, t, orbitScale);
+      const pulse = readPulse(planet.id);
 
       // Approach each planet tangentially from slightly sunward so the central Sun stays
       // behind/aside the camera rather than flaring behind UI headings, illuminating a rich crescent
@@ -126,16 +144,20 @@ export function CosmicCameraRig({
       const preferredDist = planet.hasRing
         ? Math.max(5.2, planet.radius * 8.4)
         : Math.max(4.4, planet.radius * 7.0);
-      const camDist = Math.min(maxSunClearDist, isDesktop ? preferredDist : preferredDist * 1.08);
+      const scrollDolly = 1 - Math.sign(scrollVel) * Math.min(0.08, Math.abs(scrollVel) * 0.032);
+      const camDist =
+        Math.min(maxSunClearDist, isDesktop ? preferredDist : preferredDist * 1.08) *
+        (1 - pulse * 0.085) *
+        scrollDolly;
       const sideBias = isDesktop ? 1.65 : 0.95;
 
       // Nearly sunward + slight tangent keeps the central Sun behind the camera shoulder
-      // so guided sections never show a giant bright star behind left-aligned white headings
-      const offsetVecX = tx * 0.28 - rx * 0.96;
-      const offsetVecZ = tz * 0.28 - rz * 0.96;
+      // Plus subtle directional scroll chase response down & up
+      const offsetVecX = tx * (0.28 + scrollVel * 0.06) - rx * 0.96;
+      const offsetVecZ = tz * (0.28 + scrollVel * 0.06) - rz * 0.96;
 
       const camX = px + offsetVecX * camDist + ptr.x * 0.35;
-      const camY = py + (isDesktop ? 1.05 : 1.35) - ptr.y * 0.22;
+      const camY = py + (isDesktop ? 1.05 : 1.35) - ptr.y * 0.22 - scrollVel * 0.14;
       const camZ = pz + offsetVecZ * camDist;
 
       // Project planet toward the right flank of viewport so left headings and center cards stay clear
@@ -162,7 +184,14 @@ export function CosmicCameraRig({
       return;
     }
 
-    if (hoveredBodyRef?.current !== undefined ? hoveredBodyRef.current !== null && !isTransitioningRef.current : hoveredPlanet !== null && !isTransitioningRef.current) {
+    const isActivelyScrolling = Math.abs(scrollVel) >= 0.06;
+    const hoverLocked =
+      !isTransitioningRef.current &&
+      !isActivelyScrolling &&
+      (hoveredBodyRef?.current !== undefined
+        ? hoveredBodyRef.current !== null
+        : hoveredPlanet !== null);
+    if (hoverLocked) {
       return;
     }
 

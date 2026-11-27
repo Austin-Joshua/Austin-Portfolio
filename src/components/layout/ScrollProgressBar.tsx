@@ -50,7 +50,13 @@ export function ScrollProgressBar({ scrollProgressRef }: ScrollProgressBarProps)
 
         if (typeof ResizeObserver !== 'undefined') {
           resizeObserver = new ResizeObserver(() => {
-            ScrollTrigger.refresh();
+            // Recompute progress directly on resize without calling ScrollTrigger.refresh(),
+            // avoiding temporary scrollTo(0) measurements that collide with smooth scrolling.
+            const maxScroll = Math.max(
+              0,
+              document.documentElement.scrollHeight - window.innerHeight,
+            );
+            updateIndicator(maxScroll > 0 ? window.scrollY / maxScroll : 0);
           });
           resizeObserver.observe(document.documentElement);
         }

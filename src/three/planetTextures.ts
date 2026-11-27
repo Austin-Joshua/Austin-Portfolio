@@ -4,14 +4,8 @@ import type { PlanetDefinition } from '@/three/universeConfig';
 export interface PlanetTexturePair {
   map: CanvasTexture;
   bumpMap: CanvasTexture;
-}
-
-function seededRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
+  roughnessMap?: CanvasTexture;
+  cloudMap?: CanvasTexture;
 }
 
 function parseHexRgb(hex: string): [number, number, number] {
@@ -20,103 +14,139 @@ function parseHexRgb(hex: string): [number, number, number] {
     clean.length === 3
       ? clean
           .split('')
-          .map((c) => `${c}${c}`)
+          .map((c) => c + c)
           .join('')
       : clean;
-  const num = parseInt(full, 16);
-  if (Number.isNaN(num)) return [140, 160, 190];
+  const num = Number.parseInt(full, 16);
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function clampByte(n: number): number {
+  return n < 0 ? 0 : n > 255 ? 255 : Math.round(n);
+}
+
+function clamp01(n: number): number {
+  return n < 0 ? 0 : n > 1 ? 1 : n;
 }
 
 function mixRgb(
   a: [number, number, number],
   b: [number, number, number],
-  t: number,
+  t: number
 ): [number, number, number] {
-  const k = Math.max(0, Math.min(1, t));
+  const k = clamp01(t);
   return [
-    Math.round(a[0] + (b[0] - a[0]) * k),
-    Math.round(a[1] + (b[1] - a[1]) * k),
-    Math.round(a[2] + (b[2] - a[2]) * k),
+    a[0] + (b[0] - a[0]) * k,
+    a[1] + (b[1] - a[1]) * k,
+    a[2] + (b[2] - a[2]) * k,
   ];
 }
 
-function hash3(ix: number, iy: number, iz: number, seed: number): number {
-  let n =
-    Math.imul(ix, 374761393) +
-    Math.imul(iy, 668265263) +
-    Math.imul(iz, 2147483647) +
-    Math.imul(seed, 1274126177);
-  n = (n ^ (n >>> 13)) >>> 0;
-  n = Math.imul(n, 1274126177) >>> 0;
-  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
-}
-
-function smooth(t: number): number {
+function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = clamp01((x - edge0) / (edge1 - edge0));
   return t * t * (3 - 2 * t);
 }
 
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
+// Fast 3D hash value noise on the unit sphere so equirectangular planets never seam
+function hash3(ix: number, iy: number, iz: number, seed: number): number {
+  let n = ix * 374761393 + iy * 668265263 + iz * 2147483647 + seed * 1597334677;
+  n = (n ^ (n >> 13)) * 1274126177;
+  return ((n ^ (n >> 16)) >>> 0) / 4294967295;
 }
 
-/**
- * 3D value noise sampled on unit sphere coordinates so equirectangular
- * textures wrap horizontally without any visible vertical seam.
- */
-function noise3(x: number, y: number, z: number, seed: number): number {
+function noise3D(x: number, y: number, z: number, seed: number): number {
   const ix = Math.floor(x);
   const iy = Math.floor(y);
   const iz = Math.floor(z);
-  const fx = smooth(x - ix);
-  const fy = smooth(y - iy);
-  const fz = smooth(z - iz);
+  const fx = x - ix;
+  const fy = y - iy;
+  const fz = z - iz;
+  const ux = fx * fx * (3 - 2 * fx);
+  const uy = fy * fy * (3 - 2 * fy);
+  const uz = fz * fz * (3 - 2 * fz);
 
-  const n000 = hash3(ix, iy, iz, seed);
-  const n100 = hash3(ix + 1, iy, iz, seed);
-  const n010 = hash3(ix, iy + 1, iz, seed);
-  const n110 = hash3(ix + 1, iy + 1, iz, seed);
-  const n001 = hash3(ix, iy, iz + 1, seed);
-  const n101 = hash3(ix + 1, iy, iz + 1, seed);
-  const n011 = hash3(ix, iy + 1, iz + 1, seed);
-  const n111 = hash3(ix + 1, iy + 1, iz + 1, seed);
+  const c000 = hash3(ix, iy, iz, seed);
+  const c100 = hash3(ix + 1, iy, iz, seed);
+  const c010 = hash3(ix, iy + 1, iz, seed);
+  const c110 = hash3(ix + 1, iy + 1, iz, seed);
+  const c001 = hash3(ix, iy, iz + 1, seed);
+  const c101 = hash3(ix + 1, iy, iz + 1, seed);
+  const c011 = hash3(ix, iy + 1, iz + 1, seed);
+  const c111 = hash3(ix + 1, iy + 1, iz + 1, seed);
 
-  const nx00 = lerp(n000, n100, fx);
-  const nx10 = lerp(n010, n110, fx);
-  const nx01 = lerp(n001, n101, fx);
-  const nx11 = lerp(n011, n111, fx);
+  const x00 = c000 + (c100 - c000) * ux;
+  const x10 = c010 + (c110 - c010) * ux;
+  const x01 = c001 + (c101 - c001) * ux;
+  const x11 = c011 + (c111 - c011) * ux;
 
-  return lerp(lerp(nx00, nx10, fy), lerp(nx01, nx11, fy), fz);
+  const y0 = x00 + (x10 - x00) * uy;
+  const y1 = x01 + (x11 - x01) * uy;
+
+  return y0 + (y1 - y0) * uz;
 }
 
 function fbmSphere(
   nx: number,
   ny: number,
   nz: number,
-  freq: number,
-  octaves: number,
+  scale: number,
   seed: number,
+  octaves = 4
 ): number {
   let sum = 0;
   let amp = 0.5;
+  let freq = scale;
   let norm = 0;
-  let f = freq;
   for (let i = 0; i < octaves; i += 1) {
-    sum += noise3(nx * f, ny * f, nz * f, seed + i * 97) * amp;
+    sum += noise3D(nx * freq, ny * freq, nz * freq, seed + i * 31) * amp;
     norm += amp;
     amp *= 0.5;
-    f *= 2.04;
+    freq *= 2.05;
   }
   return sum / norm;
 }
 
+function ridgedSphere(
+  nx: number,
+  ny: number,
+  nz: number,
+  scale: number,
+  seed: number,
+  octaves = 3
+): number {
+  let sum = 0;
+  let amp = 0.5;
+  let freq = scale;
+  let norm = 0;
+  for (let i = 0; i < octaves; i += 1) {
+    const n = noise3D(nx * freq, ny * freq, nz * freq, seed + i * 53);
+    const ridge = 1 - Math.abs(n * 2 - 1);
+    sum += ridge * ridge * amp;
+    norm += amp;
+    amp *= 0.5;
+    freq *= 2.15;
+  }
+  return sum / norm;
+}
+
+function configureTexture(canvas: HTMLCanvasElement, wrap = true): CanvasTexture {
+  const tex = new CanvasTexture(canvas);
+  if (wrap) {
+    tex.wrapS = RepeatWrapping;
+    tex.wrapT = RepeatWrapping;
+  }
+  tex.minFilter = LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 /**
- * Generates an astrophysical photosphere map for the central solar core
- * with granulation convection cells, sunspots, and warm limb depth.
+ * Generates an equirectangular solar plasma & granulation photosphere texture
+ * with convection cells, magnetic sunspot clusters, and coronal filaments.
  */
 export function createSolarTexture(): CanvasTexture {
-  const width = 256;
-  const height = 128;
+  const width = 320;
+  const height = 160;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -125,312 +155,330 @@ export function createSolarTexture(): CanvasTexture {
 
   const img = ctx.createImageData(width, height);
   const data = img.data;
-  const hotCore: [number, number, number] = [255, 240, 198];
-  const plasmaMid: [number, number, number] = [248, 174, 68];
-  const deepSpot: [number, number, number] = [148, 62, 18];
+  const hotCore: [number, number, number] = [255, 246, 214];
+  const plasmaMid: [number, number, number] = [250, 182, 74];
+  const emberEdge: [number, number, number] = [194, 88, 22];
+  const sunspotDark: [number, number, number] = [108, 36, 10];
 
-  for (let py = 0; py < height; py += 1) {
-    const v = (py + 0.5) / height;
+  for (let y = 0; y < height; y += 1) {
+    const v = (y + 0.5) / height;
     const phi = v * Math.PI;
     const sinPhi = Math.sin(phi);
-    const cosPhi = Math.cos(phi);
+    const ny = Math.cos(phi);
 
-    for (let px = 0; px < width; px += 1) {
-      const u = px / width;
+    for (let x = 0; x < width; x += 1) {
+      const u = (x + 0.5) / width;
       const theta = u * Math.PI * 2;
-      const sx = sinPhi * Math.cos(theta);
-      const sy = cosPhi;
-      const sz = sinPhi * Math.sin(theta);
+      const nx = sinPhi * Math.cos(theta);
+      const nz = sinPhi * Math.sin(theta);
 
-      const cell = fbmSphere(sx, sy, sz, 6.5, 4, 17);
-      const fine = fbmSphere(sx, sy, sz, 15.0, 2, 71);
-      const spotNoise = fbmSphere(sx, sy, sz, 3.1, 3, 211);
-      const sunspot = spotNoise < 0.34 ? (0.34 - spotNoise) * 2.8 : 0;
+      const cells = fbmSphere(nx, ny, nz, 8.2, 41, 4);
+      const filaments = ridgedSphere(nx, ny, nz, 4.4, 99, 3);
+      const fine = fbmSphere(nx, ny, nz, 18.0, 211, 2);
+      const sunspotZone = Math.exp(-Math.pow((Math.abs(ny) - 0.24) / 0.19, 2));
+      const spotMask = smoothstep(0.7, 0.81, fbmSphere(nx, ny, nz, 5.2, 307, 3)) * sunspotZone;
 
-      const heat = Math.max(0, Math.min(1, cell * 0.72 + fine * 0.28 - sunspot * 0.78));
-      const color =
-        heat > 0.58
-          ? mixRgb(plasmaMid, hotCore, (heat - 0.58) / 0.42)
-          : mixRgb(deepSpot, plasmaMid, heat / 0.58);
+      let rgb = mixRgb(emberEdge, plasmaMid, smoothstep(0.28, 0.72, cells));
+      rgb = mixRgb(rgb, hotCore, smoothstep(0.56, 0.86, cells * 0.52 + filaments * 0.42 + fine * 0.16));
+      rgb = mixRgb(rgb, sunspotDark, spotMask * 0.84);
 
-      const idx = (py * width + px) * 4;
-      data[idx] = color[0];
-      data[idx + 1] = color[1];
-      data[idx + 2] = color[2];
+      const idx = (y * width + x) * 4;
+      data[idx] = clampByte(rgb[0]);
+      data[idx + 1] = clampByte(rgb[1]);
+      data[idx + 2] = clampByte(rgb[2]);
       data[idx + 3] = 255;
     }
   }
 
   ctx.putImageData(img, 0, 0);
-  const tex = new CanvasTexture(canvas);
-  tex.wrapS = RepeatWrapping;
-  tex.wrapT = RepeatWrapping;
-  tex.minFilter = LinearFilter;
-  tex.needsUpdate = true;
-  return tex;
+  return configureTexture(canvas);
 }
 
 /**
- * Synthesizes natural geological albedo and height bump maps per planet archetype:
- * oceanic cratered worlds, turbulent gas-giant vortex bands, ice worlds, and rocky basalt.
+ * Generates seamless equirectangular albedo, topographic bump, specular roughness,
+ * and optional drifting cloud-shell CanvasTextures for each planet archetype.
  */
 export function createPlanetTextures(planet: PlanetDefinition): PlanetTexturePair {
-  const width = 256;
-  const height = 128;
+  const width = 320;
+  const height = 160;
   const albedoCanvas = document.createElement('canvas');
   albedoCanvas.width = width;
   albedoCanvas.height = height;
   const bumpCanvas = document.createElement('canvas');
   bumpCanvas.width = width;
   bumpCanvas.height = height;
+  const roughCanvas = document.createElement('canvas');
+  roughCanvas.width = width;
+  roughCanvas.height = height;
+
+  const hasCloudShell =
+    planet.bandStyle === 'oceanic' ||
+    planet.bandStyle === 'orbital' ||
+    planet.bandStyle === 'jovian' ||
+    planet.bandStyle === 'sovereign' ||
+    planet.bandStyle === 'molecular';
+
+  const cloudCanvas = hasCloudShell ? document.createElement('canvas') : null;
+  if (cloudCanvas) {
+    cloudCanvas.width = width;
+    cloudCanvas.height = height;
+  }
 
   const aCtx = albedoCanvas.getContext('2d');
   const bCtx = bumpCanvas.getContext('2d');
-  if (!aCtx || !bCtx) {
-    return { map: new CanvasTexture(albedoCanvas), bumpMap: new CanvasTexture(bumpCanvas) };
+  const rCtx = roughCanvas.getContext('2d');
+  const cCtx = cloudCanvas ? cloudCanvas.getContext('2d') : null;
+
+  if (!aCtx || !bCtx || !rCtx) {
+    return {
+      map: new CanvasTexture(albedoCanvas),
+      bumpMap: new CanvasTexture(bumpCanvas),
+    };
   }
 
   const albedoImg = aCtx.createImageData(width, height);
   const bumpImg = bCtx.createImageData(width, height);
+  const roughImg = rCtx.createImageData(width, height);
+  const cloudImg = cCtx ? cCtx.createImageData(width, height) : null;
+
   const aData = albedoImg.data;
   const bData = bumpImg.data;
+  const rData = roughImg.data;
+  const cData = cloudImg ? cloudImg.data : null;
 
-  const seed = Math.round(planet.initialAngle * 1000 + planet.orbitRadius * 37);
-  const rand = seededRandom(seed);
+  const base = parseHexRgb(planet.color);
+  const deep = parseHexRgb(planet.deepColor);
+  const rim = parseHexRgb(planet.rimColor);
+  const seed = Math.round(planet.initialAngle * 100 + planet.orbitRadius * 37);
 
-  // Tamed natural pigment palette blending planetary signature with mineral rock/atmosphere tones
-  const baseHue = parseHexRgb(planet.color);
-  const deepHue = parseHexRgb(planet.deepColor);
-  const rimHue = parseHexRgb(planet.rimColor);
-  const rockSlate: [number, number, number] = [56, 63, 78];
-  const cloudMist: [number, number, number] = mixRgb([214, 222, 234], rimHue, 0.35);
-
-  const isRockyTerrain = planet.bandStyle === 'oceanic' || planet.bandStyle === 'orbital' || planet.bandStyle === 'beacon';
-  const isGasGiant = planet.bandStyle === 'jovian' || planet.bandStyle === 'sovereign';
-
-  // Deterministic crater centers on unit sphere for rocky worlds
-  const craterCount = isRockyTerrain ? 16 : 0;
-  const craters = Array.from({ length: craterCount }, () => {
-    const u = rand();
-    const v = rand();
-    const theta = u * Math.PI * 2;
-    const zPos = v * 1.6 - 0.8;
-    const radXY = Math.sqrt(Math.max(0.01, 1 - zPos * zPos));
-    return {
-      x: radXY * Math.cos(theta),
-      y: zPos,
-      z: radXY * Math.sin(theta),
-      radius: 0.14 + rand() * 0.24,
-      depth: 0.35 + rand() * 0.45,
-    };
-  });
-
-  // Storm eye position for gas giants
-  const stormTheta = rand() * Math.PI * 2;
-  const stormY = (rand() - 0.5) * 0.5;
-  const stormScaleXY = Math.sqrt(Math.max(0.1, 1 - stormY * stormY));
-  const stormX = stormScaleXY * Math.cos(stormTheta);
-  const stormZ = stormScaleXY * Math.sin(stormTheta);
-
-  for (let py = 0; py < height; py += 1) {
-    const v = (py + 0.5) / height;
+  for (let y = 0; y < height; y += 1) {
+    const v = (y + 0.5) / height;
     const phi = v * Math.PI;
     const sinPhi = Math.sin(phi);
-    const cosPhi = Math.cos(phi);
-    const lat = 1 - Math.abs(cosPhi); // 1 near equator, 0 near poles
+    const ny = Math.cos(phi);
+    const latAbs = Math.abs(ny);
 
-    for (let px = 0; px < width; px += 1) {
-      const u = px / width;
+    for (let x = 0; x < width; x += 1) {
+      const u = (x + 0.5) / width;
       const theta = u * Math.PI * 2;
-      const sx = sinPhi * Math.cos(theta);
-      const sy = cosPhi;
-      const sz = sinPhi * Math.sin(theta);
+      const nx = sinPhi * Math.cos(theta);
+      const nz = sinPhi * Math.sin(theta);
 
-      let rgb: [number, number, number] = deepHue;
-      let bumpVal = 0.5;
+      let rgb: [number, number, number] = base;
+      let heightVal = 0.5;
+      let roughnessVal = 0.72;
+      let cloudAlpha = 0;
 
-      if (isRockyTerrain) {
-        const continent = fbmSphere(sx, sy, sz, 2.5, 4, seed);
-        const ridge = Math.abs(fbmSphere(sx, sy, sz, 6.8, 3, seed + 19) - 0.5) * 2;
-        const fineGrain = fbmSphere(sx, sy, sz, 14.0, 2, seed + 47);
+      if (planet.bandStyle === 'oceanic') {
+        const cont = fbmSphere(nx, ny, nz, 2.75, seed, 4);
+        const ridge = ridgedSphere(nx, ny, nz, 5.4, seed + 17, 3);
+        const detail = fbmSphere(nx, ny, nz, 12.0, seed + 43, 3);
+        const altitude = cont * 0.76 + detail * 0.24;
+        const landMask = smoothstep(0.49, 0.56, altitude);
+        const shallowMask = smoothstep(0.39, 0.5, altitude);
 
-        let craterDelta = 0;
-        for (let c = 0; c < craters.length; c += 1) {
-          const cr = craters[c];
-          const dx = sx - cr.x;
-          const dy = sy - cr.y;
-          const dz = sz - cr.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / cr.radius;
-          if (dist < 1.35) {
-            if (dist < 0.82) {
-              craterDelta -= (1 - (dist / 0.82) ** 2) * cr.depth;
-            } else {
-              const rimT = 1 - Math.abs(dist - 1.0) / 0.35;
-              craterDelta += Math.max(0, rimT) * cr.depth * 0.42;
-            }
-          }
-        }
+        const abyssOcean = mixRgb(deep, [12, 34, 78], 0.58);
+        const shelfOcean = mixRgb(base, [64, 188, 224], 0.44);
+        const oceanColor = mixRgb(abyssOcean, shelfOcean, shallowMask);
 
-        const elev = Math.max(
-          0,
-          Math.min(1, continent * 0.72 + (1 - ridge) * 0.16 + fineGrain * 0.12 + craterDelta * 0.35),
-        );
+        const lowland: [number, number, number] = [44, 108, 86];
+        const highland: [number, number, number] = [148, 128, 92];
+        const peakSnow: [number, number, number] = [214, 228, 240];
+        const terrainFactor = smoothstep(0.54, 0.82, altitude + ridge * 0.26);
+        let landColor = mixRgb(lowland, highland, terrainFactor);
+        landColor = mixRgb(landColor, peakSnow, smoothstep(0.76, 0.94, altitude + ridge * 0.28));
 
-        const seaLevel = planet.bandStyle === 'beacon' ? 0.36 : 0.49;
-        if (elev < seaLevel) {
-          const depthT = elev / seaLevel;
-          const deepTone = mixRgb(rockSlate, deepHue, 0.72);
-          const shelfTone = mixRgb(deepHue, baseHue, 0.38);
-          rgb = mixRgb(deepTone, shelfTone, depthT);
-          bumpVal = 0.25 + depthT * 0.12;
-        } else {
-          const landT = (elev - seaLevel) / (1 - seaLevel);
-          const highland = mixRgb(baseHue, rockSlate, 0.45);
-          const peak = mixRgb(highland, rimHue, 0.45);
-          rgb = mixRgb(highland, peak, Math.pow(landT, 0.85));
-          bumpVal = 0.46 + landT * 0.54;
-        }
+        rgb = mixRgb(oceanColor, landColor, landMask);
+        const polar = smoothstep(0.76, 0.91, latAbs + detail * 0.14);
+        rgb = mixRgb(rgb, [224, 238, 252], polar * 0.88);
 
-        // Polar frost & faint swirling clouds
-        const cloud = fbmSphere(sx * 1.4 + 0.7, sy * 2.1, sz * 1.4, 3.8, 3, seed + 83);
-        if (cloud > 0.63) {
-          const cloudAlpha = Math.min(0.42, (cloud - 0.63) * 1.5);
-          rgb = mixRgb(rgb, cloudMist, cloudAlpha);
-        }
-        if (lat < 0.15) {
-          const polarFactor = (0.15 - lat) / 0.15;
-          rgb = mixRgb(rgb, cloudMist, polarFactor * 0.42);
-        }
-      } else if (isGasGiant) {
-        // Turbulent sheared zonal flow with non-uniform eddies and a Great Spot vortex
-        const shear = fbmSphere(sx * 1.3, sy * 3.8, sz * 1.3, 3.2, 4, seed);
-        const eddy = fbmSphere(sx, sy * 5.0, sz, 7.6, 3, seed + 31);
-        const warpedLat = sy + (shear - 0.5) * 0.24 + (eddy - 0.5) * 0.08;
+        heightVal = landMask > 0.02 ? 0.34 + (altitude * 0.4 + ridge * 0.36) * landMask : 0.12 + detail * 0.05;
+        // Glossy specular liquid ocean vs matte rocky continents vs crisp icy polar cap
+        roughnessVal = mixRgb([0.24, 0, 0], [0.86, 0, 0], landMask)[0] * (1 - polar * 0.45) + 0.32 * polar;
 
-        const zoneWave =
-          Math.sin(warpedLat * 14.5 + shear * 2.6) * 0.5 +
-          Math.cos(warpedLat * 27.0 - eddy * 1.8) * 0.25;
-        const zoneT = Math.max(0, Math.min(1, 0.5 + zoneWave * 0.62));
+        const swirl = fbmSphere(nx * 1.4, ny + 0.18, nz * 1.4, 4.3, seed + 88, 4);
+        cloudAlpha = smoothstep(0.53, 0.78, swirl + fbmSphere(nx, ny, nz, 10.2, seed + 131, 2) * 0.24) * 0.72;
+      } else if (planet.bandStyle === 'orbital') {
+        // Crystalline amethyst world with impact craters, metallic basins, and glowing mineral veins
+        const strata = fbmSphere(nx, ny, nz, 3.8, seed + 5, 4);
+        const veins = ridgedSphere(nx, ny, nz, 6.2, seed + 29, 3);
+        const craters = Math.pow(1 - fbmSphere(nx, ny, nz, 8.8, seed + 71, 3), 2.1);
 
-        const stormBandDeep = mixRgb(deepHue, rockSlate, 0.38);
-        const beltWarm = mixRgb(baseHue, [218, 204, 186], 0.32);
-        const paleZone = mixRgb(beltWarm, rimHue, 0.4);
+        rgb = mixRgb(deep, base, smoothstep(0.32, 0.72, strata));
+        const basinMask = smoothstep(0.55, 0.82, veins);
+        rgb = mixRgb(rgb, [32, 26, 56], craters * 0.56);
+        rgb = mixRgb(rgb, rim, basinMask * 0.46 + craters * 0.14);
+        rgb = mixRgb(rgb, [218, 206, 255], smoothstep(0.84, 0.96, veins) * 0.52);
 
-        rgb =
-          zoneT < 0.5
-            ? mixRgb(stormBandDeep, beltWarm, zoneT * 2)
-            : mixRgb(beltWarm, paleZone, (zoneT - 0.5) * 2);
+        heightVal = clamp01(0.48 + strata * 0.3 + veins * 0.22 - craters * 0.44);
+        roughnessVal = clamp01(0.84 - basinMask * 0.48 - smoothstep(0.75, 0.94, strata) * 0.2);
 
-        // Anticyclonic storm vortex
-        const dx = sx - stormX;
-        const dy = (sy - stormY) * 1.65;
-        const dz = sz - stormZ;
-        const stormDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (stormDist < 0.32) {
-          const vT = 1 - stormDist / 0.32;
-          const eyeColor = mixRgb(deepHue, [232, 162, 118], 0.55);
-          rgb = mixRgb(rgb, eyeColor, vT * 0.68);
-        }
+        const highCirrus = fbmSphere(nx, ny * 1.35, nz, 5.2, seed + 109, 3);
+        cloudAlpha = smoothstep(0.61, 0.84, highCirrus) * 0.34;
+      } else if (planet.bandStyle === 'beacon') {
+        // Ember super-earth with basaltic plates, impact craters, and glowing magma rifts
+        const plate = fbmSphere(nx, ny, nz, 3.2, seed + 13, 4);
+        const fault = ridgedSphere(nx, ny, nz, 4.9, seed + 49, 3);
+        const craters = Math.pow(1 - fbmSphere(nx, ny, nz, 9.6, seed + 61, 3), 2.4);
 
-        bumpVal = 0.44 + zoneT * 0.18 + (eddy - 0.5) * 0.12;
+        const lavaMask = smoothstep(0.78, 0.94, fault + plate * 0.12);
+        rgb = mixRgb(deep, base, smoothstep(0.3, 0.76, plate));
+        rgb = mixRgb(rgb, [34, 18, 12], craters * 0.65);
+        rgb = mixRgb(rgb, [255, 198, 118], lavaMask * 0.85);
+        rgb = mixRgb(rgb, rim, smoothstep(0.64, 0.88, fault) * 0.34);
+
+        heightVal = clamp01(0.56 + plate * 0.26 - craters * 0.48 - lavaMask * 0.24);
+        roughnessVal = clamp01(0.88 - lavaMask * 0.45);
+      } else if (planet.bandStyle === 'jovian') {
+        // Turbulent viridian gas giant with zonal jet streams & persistent anticyclonic vortex eye
+        const shear = fbmSphere(nx, ny, nz, 4.6, seed + 23, 4) * 0.14;
+        const fineShear = fbmSphere(nx, ny, nz, 12.0, seed + 67, 3) * 0.05;
+        const bandCoord = (ny + shear + fineShear) * 8.6;
+        const band = 0.5 + 0.5 * Math.sin(bandCoord * Math.PI);
+        const jetEdge = Math.pow(Math.abs(Math.sin(bandCoord * Math.PI * 1.5)), 0.7);
+
+        // Anticyclone storm oval centered near southern mid-latitude
+        const stormDist = Math.hypot((u - 0.52) * 3.1, (v - 0.62) * 5.8);
+        const stormEye = smoothstep(0.64, 0.08, stormDist);
+        const stormWall = smoothstep(0.75, 0.42, stormDist) * (1 - smoothstep(0.42, 0.18, stormDist));
+
+        rgb = mixRgb(deep, base, band);
+        rgb = mixRgb(rgb, rim, smoothstep(0.58, 0.94, band * jetEdge) * 0.58);
+        rgb = mixRgb(rgb, [20, 62, 54], smoothstep(0.25, 0.05, band) * 0.28);
+        rgb = mixRgb(rgb, [224, 246, 232], stormWall * 0.65);
+        rgb = mixRgb(rgb, [166, 244, 206], stormEye * 0.78);
+
+        heightVal = 0.38 + band * 0.26 + stormEye * 0.28 + fineShear * 2.2;
+        roughnessVal = 0.58 - stormEye * 0.16 + (1 - band) * 0.14;
+
+        const ammonia = fbmSphere(nx * 1.2, ny * 2.4, nz * 1.2, 6.2, seed + 149, 3);
+        cloudAlpha = smoothstep(0.48, 0.8, ammonia + band * 0.22) * 0.42;
+      } else if (planet.bandStyle === 'sovereign') {
+        // Gilded Saturnian world with champagne-gold jet belts & polar amber crown
+        const warp = fbmSphere(nx, ny, nz, 5.2, seed + 37, 4) * 0.11;
+        const micro = fbmSphere(nx, ny, nz, 13.5, seed + 83, 2) * 0.04;
+        const bandCoord = (ny + warp + micro) * 10.2;
+        const belt = 0.5 + 0.5 * Math.cos(bandCoord * Math.PI);
+        const polarCrown = smoothstep(0.74, 0.95, latAbs + warp * 0.5);
+
+        rgb = mixRgb(deep, base, smoothstep(0.18, 0.84, belt));
+        rgb = mixRgb(rgb, rim, smoothstep(0.6, 0.95, belt) * 0.62);
+        rgb = mixRgb(rgb, [196, 178, 128], polarCrown * 0.48);
+
+        heightVal = 0.44 + belt * 0.24 + micro * 2.5;
+        roughnessVal = 0.6 - belt * 0.15;
+
+        const haze = fbmSphere(nx, ny * 2.2, nz, 7.0, seed + 173, 3);
+        cloudAlpha = smoothstep(0.55, 0.85, haze) * 0.32;
       } else {
-        // Ice giant ('molecular'): serene methane atmosphere + soft cirrus streaks
-        const swirl = fbmSphere(sx, sy * 2.4, sz, 3.4, 4, seed);
-        const cirrus = fbmSphere(sx * 0.9, sy * 4.5, sz * 0.9, 6.2, 3, seed + 61);
-        const bandT = Math.max(
-          0,
-          Math.min(1, 0.5 + Math.sin((sy + (swirl - 0.5) * 0.18) * 9.5) * 0.35),
-        );
+        // Rose-quartz ice dwarf with nitrogen frost plains, cryo-canyons, and crater highlights
+        const frost = fbmSphere(nx, ny, nz, 3.9, seed + 71, 4);
+        const canyon = ridgedSphere(nx, ny, nz, 6.4, seed + 97, 3);
+        const pits = Math.pow(1 - fbmSphere(nx, ny, nz, 10.5, seed + 127, 2), 2.2);
 
-        const iceDeep = mixRgb(deepHue, [26, 30, 56], 0.45);
-        const iceMid = mixRgb(baseHue, [145, 162, 210], 0.28);
-        rgb = mixRgb(iceDeep, iceMid, bandT);
-        if (cirrus > 0.59) {
-          rgb = mixRgb(rgb, cloudMist, Math.min(0.45, (cirrus - 0.59) * 1.4));
-        }
-        bumpVal = 0.46 + swirl * 0.14;
+        const glacierMask = smoothstep(0.52, 0.82, frost);
+        rgb = mixRgb(deep, base, smoothstep(0.28, 0.72, frost));
+        rgb = mixRgb(rgb, [46, 20, 34], smoothstep(0.74, 0.92, canyon) * 0.55);
+        rgb = mixRgb(rgb, rim, glacierMask * 0.46 + pits * 0.24);
+        rgb = mixRgb(rgb, [248, 226, 238], smoothstep(0.78, 0.95, latAbs + frost * 0.16) * 0.62);
+
+        heightVal = clamp01(0.45 + frost * 0.32 - canyon * 0.34 - pits * 0.24);
+        roughnessVal = clamp01(0.76 - glacierMask * 0.44);
+
+        const iceVeil = fbmSphere(nx, ny * 1.4, nz, 4.8, seed + 193, 3);
+        cloudAlpha = smoothstep(0.58, 0.86, iceVeil) * 0.3;
       }
 
-      const idx = (py * width + px) * 4;
-      aData[idx] = rgb[0];
-      aData[idx + 1] = rgb[1];
-      aData[idx + 2] = rgb[2];
+      const idx = (y * width + x) * 4;
+      aData[idx] = clampByte(rgb[0]);
+      aData[idx + 1] = clampByte(rgb[1]);
+      aData[idx + 2] = clampByte(rgb[2]);
       aData[idx + 3] = 255;
 
-      const bByte = Math.round(Math.max(0, Math.min(255, bumpVal * 255)));
-      bData[idx] = bByte;
-      bData[idx + 1] = bByte;
-      bData[idx + 2] = bByte;
+      const bumpByte = clampByte(heightVal * 255);
+      bData[idx] = bumpByte;
+      bData[idx + 1] = bumpByte;
+      bData[idx + 2] = bumpByte;
       bData[idx + 3] = 255;
+
+      const roughByte = clampByte(roughnessVal * 255);
+      rData[idx] = roughByte;
+      rData[idx + 1] = roughByte;
+      rData[idx + 2] = roughByte;
+      rData[idx + 3] = 255;
+
+      if (cData) {
+        const cloudTone = mixRgb(rim, [252, 254, 255], 0.72);
+        cData[idx] = clampByte(cloudTone[0]);
+        cData[idx + 1] = clampByte(cloudTone[1]);
+        cData[idx + 2] = clampByte(cloudTone[2]);
+        cData[idx + 3] = clampByte(cloudAlpha * 255);
+      }
     }
   }
 
   aCtx.putImageData(albedoImg, 0, 0);
   bCtx.putImageData(bumpImg, 0, 0);
+  rCtx.putImageData(roughImg, 0, 0);
 
-  const map = new CanvasTexture(albedoCanvas);
-  map.wrapS = RepeatWrapping;
-  map.wrapT = RepeatWrapping;
-  map.minFilter = LinearFilter;
-  map.needsUpdate = true;
+  const pair: PlanetTexturePair = {
+    map: configureTexture(albedoCanvas),
+    bumpMap: configureTexture(bumpCanvas),
+    roughnessMap: configureTexture(roughCanvas),
+  };
 
-  const bumpMap = new CanvasTexture(bumpCanvas);
-  bumpMap.wrapS = RepeatWrapping;
-  bumpMap.wrapT = RepeatWrapping;
-  bumpMap.minFilter = LinearFilter;
-  bumpMap.needsUpdate = true;
+  if (cloudCanvas && cCtx && cloudImg) {
+    cCtx.putImageData(cloudImg, 0, 0);
+    pair.cloudMap = configureTexture(cloudCanvas);
+  }
 
-  return { map, bumpMap };
+  return pair;
 }
 
 /**
- * Generates an astronomical ring texture (Saturnian radial dust bands + Cassini gap)
- * using radial pixels so `ringGeometry` maps smoothly with soft inner/outer feather.
+ * Generates multi-band planetary rings (Saturnian Cassini & Encke gap structure)
+ * mapped radially from inner to outer radius using UV.x -> alpha + tint.
  */
 export function createPlanetaryRingTexture(
   primaryHex: string,
-  rimHex: string,
+  rimHex: string
 ): CanvasTexture {
-  const size = 256;
+  const width = 512;
+  const height = 16;
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = 32;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) return new CanvasTexture(canvas);
 
   const primary = parseHexRgb(primaryHex);
   const rim = parseHexRgb(rimHex);
-  const dustTone = mixRgb(primary, [212, 206, 198], 0.58);
-  const brightTone = mixRgb(rim, [234, 236, 240], 0.5);
+  const dustTone = mixRgb(primary, [218, 210, 198], 0.54);
+  const brightTone = mixRgb(rim, [244, 246, 250], 0.56);
 
-  const img = ctx.createImageData(size, 32);
+  const img = ctx.createImageData(width, height);
   const data = img.data;
 
-  for (let x = 0; x < size; x += 1) {
-    const t = x / (size - 1);
-    const fineBand = Math.sin(t * 72) * 0.5 + 0.5;
-    const outerFade = Math.sin(Math.min(1, Math.max(0, t)) * Math.PI);
-    // Subtle Cassini gap around t = 0.64..0.71
-    const gap = Math.abs(t - 0.675) < 0.045 ? 0.16 : 1.0;
-    const innerThin = t < 0.2 ? t / 0.2 : 1.0;
-    const alpha = Math.max(
-      0,
-      Math.min(1, Math.pow(outerFade, 0.7) * gap * innerThin * (0.34 + fineBand * 0.36)),
-    );
+  for (let x = 0; x < width; x += 1) {
+    const r = x / (width - 1);
+    const cassiniGap = Math.abs(r - 0.62) < 0.042 ? 0.1 : 1;
+    const enckeGap = Math.abs(r - 0.84) < 0.016 ? 0.2 : 1;
+    const innerEdge = smoothstep(0.02, 0.16, r);
+    const outerEdge = 1 - smoothstep(0.88, 0.99, r);
+    const microRings = 0.56 + 0.44 * Math.sin(r * 74) * Math.cos(r * 29);
+    const fineDust = 0.78 + 0.22 * Math.sin(r * 165);
+    const alpha = clamp01(innerEdge * outerEdge * cassiniGap * enckeGap * microRings * fineDust * 0.88);
+    const tone = mixRgb(dustTone, brightTone, smoothstep(0.32, 0.82, microRings));
 
-    const rgb = mixRgb(dustTone, brightTone, fineBand);
-    for (let y = 0; y < 32; y += 1) {
-      const idx = (y * size + x) * 4;
-      data[idx] = rgb[0];
-      data[idx + 1] = rgb[1];
-      data[idx + 2] = rgb[2];
-      data[idx + 3] = Math.round(alpha * 180);
+    for (let y = 0; y < height; y += 1) {
+      const idx = (y * width + x) * 4;
+      data[idx] = clampByte(tone[0]);
+      data[idx + 1] = clampByte(tone[1]);
+      data[idx + 2] = clampByte(tone[2]);
+      data[idx + 3] = clampByte(alpha * 255);
     }
   }
 
   ctx.putImageData(img, 0, 0);
-  const tex = new CanvasTexture(canvas);
-  tex.minFilter = LinearFilter;
-  tex.needsUpdate = true;
-  return tex;
+  return configureTexture(canvas, false);
 }

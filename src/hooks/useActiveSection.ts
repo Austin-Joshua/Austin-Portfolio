@@ -103,6 +103,65 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
     }
 
     const observedStates = new Map<string, ObservedSectionState>();
+    let lastKnownY = window.scrollY;
+    let rafSyncId = 0;
+
+    const resolveSectionFromViewport = (isScrollingUp: boolean): string | null => {
+      const doc = document.documentElement;
+      const scrollHeight = doc.scrollHeight;
+      const innerHeight = window.innerHeight;
+      const currentY = window.scrollY;
+
+      const hasLayout = targets.some((el) => el.getBoundingClientRect().height > 0);
+      if (!hasLayout) return null;
+
+      if (scrollHeight > innerHeight + 120) {
+        const lastId = stableSectionIds[stableSectionIds.length - 1];
+        const lastEl = lastId ? document.getElementById(lastId) : null;
+        const lastRect = lastEl?.getBoundingClientRect();
+        const isLastPrimary =
+          Boolean(lastRect) &&
+          (lastRect?.height ?? 0) > 0 &&
+          (lastRect?.top ?? Infinity) <= innerHeight * 0.42;
+
+        if (currentY <= 80) {
+          return defaultSection;
+        }
+        if (
+          lastId &&
+          !isScrollingUp &&
+          (currentY + innerHeight >= scrollHeight - 110 || isLastPrimary)
+        ) {
+          return lastId;
+        }
+      }
+
+      const probeY = innerHeight * (isScrollingUp ? 0.34 : 0.4);
+      let bestId: string | null = null;
+      let bestDist = Infinity;
+
+      for (const id of stableSectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.height <= 0) continue;
+
+        if (rect.top <= probeY && rect.bottom >= probeY) {
+          bestId = id;
+          break;
+        }
+        const dist = Math.min(
+          Math.abs(rect.top - probeY),
+          Math.abs(rect.bottom - probeY),
+        );
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestId = id;
+        }
+      }
+
+      return bestId;
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -119,22 +178,11 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
           });
         }
 
-        const doc = document.documentElement;
-        const lastId = stableSectionIds[stableSectionIds.length - 1];
-        const lastEl = lastId ? document.getElementById(lastId) : null;
-        const lastRect = lastEl?.getBoundingClientRect();
-        const isLastPrimary =
-          Boolean(lastRect) &&
-          (lastRect?.height ?? 0) > 0 &&
-          (lastRect?.top ?? Infinity) <= window.innerHeight * 0.42;
-        if (
-          lastId &&
-          window.scrollY > 36 &&
-          doc.scrollHeight > window.innerHeight + 120 &&
-          (window.scrollY + window.innerHeight >= doc.scrollHeight - 110 ||
-            isLastPrimary)
-        ) {
-          setActiveSection((prev) => (prev === lastId ? prev : lastId));
+        const currentY = window.scrollY;
+        const isScrollingUp = currentY < lastKnownY;
+        const measuredActive = resolveSectionFromViewport(isScrollingUp);
+        if (measuredActive !== null) {
+          setActiveSection((prev) => (prev === measuredActive ? prev : measuredActive));
           return;
         }
 
@@ -150,27 +198,23 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
       observer.observe(element);
     }
 
+    const syncScrollDirectionSection = () => {
+      rafSyncId = 0;
+      const currentY = window.scrollY;
+      const isScrollingUp = currentY < lastKnownY;
+      lastKnownY = currentY;
+
+      const measuredActive = resolveSectionFromViewport(isScrollingUp);
+      if (measuredActive !== null) {
+        setActiveSection((prev) => (prev === measuredActive ? prev : measuredActive));
+      }
+    };
+
     const handleEdgeScroll = () => {
-      const doc = document.documentElement;
-      const scrollHeight = doc.scrollHeight;
-      const innerHeight = window.innerHeight;
-      if (scrollHeight > innerHeight + 120) {
-        const lastId = stableSectionIds[stableSectionIds.length - 1];
-        const lastEl = lastId ? document.getElementById(lastId) : null;
-        const lastRect = lastEl?.getBoundingClientRect();
-        const isLastPrimary =
-          Boolean(lastRect) &&
-          (lastRect?.height ?? 0) > 0 &&
-          (lastRect?.top ?? Infinity) <= innerHeight * 0.42;
-        if (window.scrollY <= 36) {
-          setActiveSection(defaultSection);
-        } else if (
-          lastId &&
-          (window.scrollY + innerHeight >= scrollHeight - 110 ||
-            isLastPrimary)
-        ) {
-          setActiveSection(lastId);
-        }
+      if (rafSyncId === 0 && typeof window.requestAnimationFrame === 'function') {
+        rafSyncId = window.requestAnimationFrame(syncScrollDirectionSection);
+      } else if (rafSyncId === 0) {
+        syncScrollDirectionSection();
       }
     };
 
@@ -178,6 +222,9 @@ export function useActiveSection(options: UseActiveSectionOptions = {}): string 
 
     return () => {
       observer.disconnect();
+      if (rafSyncId !== 0 && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(rafSyncId);
+      }
       window.removeEventListener('scroll', handleEdgeScroll);
     };
   }, [stableSectionIds, rootMargin, threshold, defaultSection]);
