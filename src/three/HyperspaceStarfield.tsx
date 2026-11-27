@@ -22,6 +22,7 @@ export interface HyperspaceStarfieldProps {
   prefersReducedMotion: boolean;
   pointerRef: RefObject<UniversePointerVector>;
   scrollVelocityRef: RefObject<number>;
+  isGyroActiveRef?: RefObject<boolean>;
   hoveredPlanet: PlanetId | null;
 }
 
@@ -136,6 +137,7 @@ export function HyperspaceStarfield({
   prefersReducedMotion,
   pointerRef,
   scrollVelocityRef,
+  isGyroActiveRef,
   hoveredPlanet,
 }: HyperspaceStarfieldProps) {
   const farPointsRef = useRef<Points>(null);
@@ -235,7 +237,9 @@ export function HyperspaceStarfield({
       return;
     }
 
-    // Damped pointer parallax (near stars respond stronger than far stars)
+    // Damped pointer / gyroscope parallax (near stars respond stronger than far stars)
+    const parallaxActive =
+      qualityTier.enablePointerParallax || Boolean(isGyroActiveRef?.current);
     const ptr = pointerRef.current ?? { x: 0, y: 0 };
     const pAlpha = 1 - Math.exp(-step.cappedDelta * 4.5);
     dampedPointerRef.current.x += (ptr.x - dampedPointerRef.current.x) * pAlpha;
@@ -245,13 +249,13 @@ export function HyperspaceStarfield({
       dampedPointerRef.current.x,
       dampedPointerRef.current.y,
       0.55,
-      qualityTier.enablePointerParallax,
+      parallaxActive,
     );
     const nearOffset = computeDepthParallax(
       dampedPointerRef.current.x,
       dampedPointerRef.current.y,
       1.65,
-      qualityTier.enablePointerParallax,
+      parallaxActive,
     );
 
     if (farPointsRef.current) {

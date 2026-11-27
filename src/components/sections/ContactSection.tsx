@@ -77,12 +77,14 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
     >
       <div className="pointer-events-none space-y-8">
         {hasAvailability && contact.availabilityNote && (
-          <div className="pointer-events-auto inline-flex items-center gap-3 rounded-full border border-[var(--planet-contact)]/35 bg-[var(--surface-glass)] px-4 py-2 backdrop-blur-md">
-            <Radio className="size-4 text-[var(--planet-contact)] shrink-0" aria-hidden="true" />
-            <p className="type-meta text-xs sm:text-sm text-[var(--planet-contact)]">
-              {contact.availabilityNote}
-            </p>
-          </div>
+          <SideReveal direction="left">
+            <div className="pointer-events-auto inline-flex items-center gap-3 rounded-full border border-[var(--planet-contact)]/35 bg-[var(--surface-glass)] px-4 py-2 backdrop-blur-md">
+              <Radio className="size-4 text-[var(--planet-contact)] shrink-0" aria-hidden="true" />
+              <p className="type-meta text-xs sm:text-sm text-[var(--planet-contact)]">
+                {contact.availabilityNote}
+              </p>
+            </div>
+          </SideReveal>
         )}
 
         {validEmail || validSocialLinks.length > 0 ? (

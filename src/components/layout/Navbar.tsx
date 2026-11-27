@@ -10,7 +10,6 @@ import {
 import type { MouseEvent, RefObject } from 'react';
 import { DesktopSectionRail } from '@/components/layout/DesktopSectionRail';
 import { ScrollProgressBar } from '@/components/layout/ScrollProgressBar';
-import { SoundToggle } from '@/components/ui/SoundToggle';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { PRIMARY_NAV_SECTIONS, type SectionId } from '@/data/sections';
@@ -57,7 +56,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
     <>
       <header className="relative z-40 pointer-events-none pt-[max(0.75rem,env(safe-area-inset-top))] pb-1 md:fixed md:inset-x-0 md:top-3 md:pt-0 md:pb-0">
         <div className="container-portfolio">
-          {/* Desktop sticky pill (AJ Logo ONLY + minimal section links + sound icon toggle) */}
+          {/* Desktop sticky pill (AJ Logo ONLY + minimal section links) */}
           <div className="hidden md:flex relative glass-surface pointer-events-auto flex-nowrap w-full min-h-[58px] items-center justify-between gap-x-4 px-5 lg:px-7">
             <a
               href={getSectionRoute('hero')}
@@ -70,7 +69,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                 alt="AJ"
                 width={38}
                 height={38}
-                className="h-9 w-9 rounded-full object-contain drop-shadow-[0_0_10px_rgba(255,179,71,0.22)] transition-[filter] duration-200 group-hover:drop-shadow-[0_0_16px_rgba(255,179,71,0.45)]"
+                className="h-9 w-9 rounded-full object-contain drop-shadow-[0_0_10px_rgba(255,179,71,0.22)] transition-[filter] duration-300 ease-out group-hover:drop-shadow-[0_0_18px_rgba(255,179,71,0.52)]"
               />
             </a>
 
@@ -118,15 +117,11 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
               })}
             </nav>
 
-            <div className="flex items-center shrink-0">
-              <SoundToggle />
-            </div>
-
             <ScrollProgressBar scrollProgressRef={scrollProgressRef} />
           </div>
 
-          {/* Mobile minimal floating AJ emblem badge + Sound toggle */}
-          <div className="flex md:hidden items-center justify-between">
+          {/* Mobile minimal floating AJ emblem badge */}
+          <div className="flex md:hidden items-center justify-start">
             <a
               href={getSectionRoute('hero')}
               onClick={(event) => handleAnchorClick(event, 'hero')}
@@ -141,8 +136,6 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                 className="h-8 w-8 rounded-full object-contain"
               />
             </a>
-
-            <SoundToggle />
           </div>
         </div>
       </header>

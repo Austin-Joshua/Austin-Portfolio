@@ -196,16 +196,8 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     );
     expect(sectionBorderWidths.every((w) => w === 0)).toBe(true);
 
-    // Sound toggle persists user preference
-    const soundBtn = page.getByTestId('sound-toggle-button').first();
-    await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
-    await soundBtn.click();
-    await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
-    await expect(
-      page.evaluate(() => window.localStorage.getItem('aj_cosmic_sound_enabled')),
-    ).resolves.toBe('false');
-    await soundBtn.click();
-    await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
+    // Header stays minimal without speaker toggle button
+    await expect(page.getByTestId('sound-toggle-button')).toHaveCount(0);
 
     // Return to Hero top for Gyroscope verification
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
@@ -710,7 +702,7 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
       });
 
       expect(topCheck.overflowX, `Overflow at ${width}px`).toBeLessThanOrEqual(0);
-      expect(topCheck.controlsCount, `Mobile top logo + sound controls at ${width}px`).toBe(2);
+      expect(topCheck.controlsCount, `Mobile top AJ logo control only at ${width}px`).toBe(1);
       expect(topCheck.controlsInBounds, `Utility bounds & >=44px target at ${width}px`).toBe(true);
       expect(topCheck.anyOverlapAtTop, `Hero overlap at top ${width}px`).toBe(false);
 

@@ -1,5 +1,5 @@
 import { Compass, Download, FolderGit2, Mail } from 'lucide-react';
-import { useState, type MouseEvent, type PointerEvent } from 'react';
+import { useEffect, useState, type MouseEvent, type PointerEvent } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { HeroPortraitReveal } from '@/components/ui/HeroPortraitReveal';
 import { SolarSystemHud } from '@/components/ui/SolarSystemHud';
@@ -9,6 +9,7 @@ import { profileData } from '@/data/profile';
 import { getSectionRoute } from '@/routes/routes';
 import type { ProfileData } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
+import { computeGyroTilt, subscribeDeviceOrientation } from '@/utils/gyroParallax';
 import { navigateToSection } from '@/utils/scrollNavigation';
 import { playClick } from '@/utils/soundEffects';
 
@@ -20,6 +21,18 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
   const { prefersReducedMotion } = useMotionPreference();
   const universeNav = useOptionalUniverseNavigation();
   const [parallax, setParallax] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    return subscribeDeviceOrientation((event) => {
+      if (event.beta == null && event.gamma == null) return;
+      const g = computeGyroTilt(event.gamma, event.beta, 14);
+      setParallax({
+        x: Math.max(-1, Math.min(1, g.px * 2)),
+        y: Math.max(-1, Math.min(1, g.py * 2)),
+      });
+    });
+  }, [prefersReducedMotion]);
 
   const handleJump = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -57,7 +70,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
       labelledbyId="hero-heading"
       headingLevel={1}
       withDivider={false}
-      className="relative flex flex-col justify-between overflow-x-clip pt-14 pb-20 sm:pt-16 sm:pb-24 md:pt-20 md:pb-4 min-h-[calc(100dvh-4rem)] md:min-h-[100dvh]"
+      className="relative flex flex-col justify-between overflow-x-clip !pt-12 !pb-[4.75rem] sm:!pt-14 sm:!pb-24 md:!pt-[4.75rem] md:!pb-1 min-h-[calc(100dvh-4rem)] md:min-h-[100dvh]"
     >
       {/* Atmospheric solar corona radial aura */}
       <div
@@ -68,19 +81,19 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
         }}
       />
 
-      {/* Centered Monumental Stage (Name sized cleanly behind Full-Height Portrait + Credentials spread Left & Right) */}
+      {/* Centered Monumental Stage (Name behind Full-Height Portrait reaching the bottom + Credentials spread Left & Right) */}
       <div
         onPointerMove={handlePointerMove}
         onPointerLeave={() => setParallax({ x: 0, y: 0 })}
-        className="pointer-events-none relative z-10 my-auto w-full flex flex-col items-center justify-center gap-2.5 sm:gap-4 lg:gap-0"
+        className="pointer-events-none relative z-10 my-auto md:my-0 md:flex-1 w-full flex flex-col items-center justify-center md:justify-end gap-2 sm:gap-3 lg:gap-0"
       >
         <div
           data-testid="hero-3d-stage"
-          className="pointer-events-none relative mx-auto flex h-[clamp(205px,33dvh,290px)] sm:h-[clamp(260px,42dvh,400px)] lg:h-[clamp(440px,69dvh,690px)] w-full max-w-[92rem] items-end justify-center"
+          className="pointer-events-none relative mx-auto flex h-[clamp(245px,38dvh,340px)] sm:h-[clamp(290px,43dvh,420px)] md:h-[calc(100dvh-8.5rem)] md:min-h-[430px] md:max-h-[900px] w-full max-w-[92rem] items-end justify-center"
         >
-          {/* Reduced, Well-Proportioned 3D Name layered directly behind Austin's full-height portrait */}
+          {/* Monumental 3D Name layered directly behind Austin's full-height portrait */}
           <div
-            className="pointer-events-none absolute inset-x-0 top-[2%] sm:top-[4%] z-0 flex flex-col items-center justify-center text-center select-none overflow-visible"
+            className="pointer-events-none absolute inset-x-0 top-[0%] sm:top-[1%] z-0 flex flex-col items-center justify-center text-center select-none overflow-visible"
             style={{
               transform: prefersReducedMotion
                 ? undefined
@@ -90,17 +103,17 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
           >
             <h1
               id="hero-heading"
-              className="font-display text-[clamp(2.1rem,8.4vw,6.2rem)] md:text-[clamp(3rem,7.2vw,6.4rem)] font-bold uppercase tracking-[0.06em] sm:tracking-[0.08em] lg:tracking-[0.1em] leading-[0.84] text-[#eef3fb]/92 select-none"
+              className="font-display text-[clamp(3rem,14.5vw,5.25rem)] sm:text-[clamp(4rem,12.5vw,8rem)] lg:text-[clamp(5.75rem,min(12.6vw,21.5dvh),12.5rem)] font-bold uppercase tracking-[0.04em] sm:tracking-[0.05em] lg:tracking-[0.06em] leading-[0.82] text-[#eef3fb]/92 select-none"
               style={{
                 textShadow:
-                  '0 2px 0 rgba(190,202,222,0.5), 0 5px 0 rgba(132,146,172,0.42), 0 10px 0 rgba(74,86,108,0.34), 0 22px 46px rgba(2,3,7,0.94)',
+                  '0 2px 0 rgba(190,202,222,0.5), 0 5px 0 rgba(132,146,172,0.42), 0 12px 0 rgba(74,86,108,0.34), 0 28px 56px rgba(2,3,7,0.96)',
               }}
             >
               {firstName} <br /> {lastName}
             </h1>
           </div>
 
-          {/* Larger 3D Shadow->Colour Gyro-Parallax Portrait extending to stage bottom border */}
+          {/* Larger 3D Shadow->Colour Gyro-Parallax Portrait extending to bottom */}
           <div className="pointer-events-none relative z-10 h-full flex items-end justify-center">
             <HeroPortraitReveal
               portrait={profile.portrait}
@@ -111,28 +124,28 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
         </div>
 
         {/* Left & Right Flanked Credentials on Desktop (Stacked centered cleanly on mobile/tablet) */}
-        <div className="pointer-events-none relative z-20 w-full max-w-[92rem] flex flex-col items-center text-center gap-3 sm:gap-4 px-2 lg:pointer-events-none lg:static">
+        <div className="pointer-events-none relative z-20 w-full max-w-[92rem] flex flex-col items-center text-center gap-2 sm:gap-3.5 px-2 lg:pointer-events-none lg:static">
           {/* Left Credential Column */}
-          <div className="pointer-events-auto flex flex-col items-center text-center gap-1.5 sm:gap-2 max-w-[44ch] lg:max-w-[21.5rem] lg:items-start lg:text-left lg:absolute lg:left-4 lg:bottom-10">
+          <div className="pointer-events-auto flex flex-col items-center text-center gap-1 sm:gap-2 max-w-[44ch] lg:max-w-[16.5rem] xl:max-w-[22.5rem] 2xl:max-w-[24.5rem] lg:items-start lg:text-left lg:absolute lg:left-2 xl:left-4 lg:bottom-5 xl:bottom-8">
             {hasRole && profile.roleLabel && (
-              <p className="eyebrow-label !mb-0 !text-[11px] sm:!text-xs lg:!text-[13px] !tracking-[0.14em] !text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
+              <p className="eyebrow-label !mb-0 !text-[10.5px] sm:!text-xs lg:!text-[11px] xl:!text-[13px] !tracking-[0.12em] xl:!tracking-[0.14em] !text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
                 {profile.roleLabel}
               </p>
             )}
 
             {hasTagline && profile.heroTagline && (
-              <p className="type-lead text-sm sm:text-base lg:text-[1.0625rem] leading-relaxed text-[var(--text-secondary)] [text-shadow:0_2px_16px_rgba(2,3,7,0.92)]">
+              <p className="type-lead text-[13.5px] sm:text-base lg:text-[13.5px] xl:text-base 2xl:text-[1.0625rem] leading-snug sm:leading-relaxed text-[var(--text-secondary)] [text-shadow:0_2px_16px_rgba(2,3,7,0.92)]">
                 {profile.heroTagline}
               </p>
             )}
 
-            <p className="type-meta text-[11px] sm:text-xs text-[var(--text-muted)]">
+            <p className="type-meta text-[10.5px] sm:text-xs lg:text-[11px] xl:text-xs text-[var(--text-muted)]">
               B.E. CSE (2024–2028) · Rajalakshmi Institute of Technology, Chennai
             </p>
           </div>
 
-            {/* Right Credential Column & Minimal Circular Actions */}
-          <div className="pointer-events-auto flex flex-col items-center text-center gap-2.5 sm:gap-3 max-w-[40ch] lg:max-w-[20.5rem] lg:items-end lg:text-right lg:absolute lg:right-4 lg:bottom-10">
+          {/* Right Credential Column & Minimal Circular Actions */}
+          <div className="pointer-events-auto flex flex-col items-center text-center gap-2 sm:gap-3 max-w-[40ch] lg:max-w-[16.5rem] xl:max-w-[23.5rem] lg:items-end lg:text-right lg:absolute lg:right-2 xl:right-4 lg:bottom-5 xl:bottom-8">
             <div className="space-y-1 hidden sm:block">
               <p className="type-meta text-[11px] font-medium text-[var(--accent-primary)]">
                 5 Shipped Systems · 3 Hackathon Awards
@@ -142,7 +155,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
               </p>
             </div>
 
-            <div className="flex items-center justify-center lg:justify-end gap-3 sm:gap-3.5 pt-1">
+            <div className="flex items-center justify-center lg:justify-end gap-3 sm:gap-3.5 pt-0.5 sm:pt-1">
               <a
                 href={getSectionRoute('projects')}
                 onClick={(event) => handleJump(event, 'projects')}
@@ -191,7 +204,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
       </div>
 
       {/* Ultra-minimal Orbital Planet Waypoint Dots */}
-      <div className="pointer-events-none relative z-10 mt-1.5 md:mt-2 flex justify-center">
+      <div className="pointer-events-none relative z-10 mt-1 md:mt-0.5 flex justify-center">
         <SolarSystemHud />
       </div>
     </SectionShell>

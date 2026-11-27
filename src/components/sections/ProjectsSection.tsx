@@ -98,7 +98,10 @@ export function ProjectsSection({
       <Button
         variant="ghost"
         size="sm"
-        onClick={dismissInvalidSlugNotice}
+        onClick={() => {
+          playClick();
+          dismissInvalidSlugNotice();
+        }}
         aria-label="Dismiss invalid project link notice"
         leftIcon={<X className="size-4" />}
       >

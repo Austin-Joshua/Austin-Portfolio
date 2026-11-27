@@ -1,31 +1,16 @@
 import type { PlanetId } from '@/three/universeConfig';
 
-export const SOUND_STORAGE_KEY = 'aj_cosmic_sound_enabled';
-
 export type HapticKind = 'light' | 'medium' | 'success' | 'warning';
-
-type SoundListener = (enabled: boolean) => void;
-
-const listeners = new Set<SoundListener>();
 
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 
 /**
  * Checks whether Web Audio cosmic sound feedback is active.
- * Defaults to enabled unless muted in storage or `prefers-reduced-motion: reduce` is active.
+ * Enabled when `prefers-reduced-motion: reduce` is not active.
  */
 export function isSoundEnabled(): boolean {
   if (typeof window === 'undefined') return false;
-
-  try {
-    const stored = window.localStorage.getItem(SOUND_STORAGE_KEY);
-    if (stored !== null) {
-      return stored === 'true';
-    }
-  } catch {
-    // Restricted storage fallback
-  }
 
   try {
     if (
@@ -39,49 +24,6 @@ export function isSoundEnabled(): boolean {
   }
 
   return true;
-}
-
-/**
- * Persists audio preference, notifies subscribers, and plays a confirmation click when unmuting.
- */
-export function setSoundEnabled(enabled: boolean): void {
-  if (typeof window === 'undefined') return;
-  const next = Boolean(enabled);
-  try {
-    window.localStorage.setItem(SOUND_STORAGE_KEY, String(next));
-  } catch {
-    // Ignore storage failures
-  }
-  for (const listener of listeners) {
-    try {
-      listener(next);
-    } catch {
-      // Ignore subscriber errors
-    }
-  }
-
-  if (next) {
-    playClick();
-  }
-}
-
-/**
- * Toggles sound state between enabled and muted and returns the new state.
- */
-export function toggleSound(): boolean {
-  const next = !isSoundEnabled();
-  setSoundEnabled(next);
-  return next;
-}
-
-/**
- * Subscribes to sound enable/mute changes and returns an unsubscribe cleanup function.
- */
-export function subscribeSound(callback: SoundListener): () => void {
-  listeners.add(callback);
-  return () => {
-    listeners.delete(callback);
-  };
 }
 
 /**
@@ -129,7 +71,7 @@ function getAudioContext(): { ctx: AudioContext; master: GainNode } | null {
     }
 
     if (audioCtx.state === 'suspended') {
-      audioCtx.resume().catch(() => {});
+      audioCtx.resume().catch(() => { });
     }
 
     return { ctx: audioCtx, master: masterGain };

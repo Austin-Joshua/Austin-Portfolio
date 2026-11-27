@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { scrollToSection } from '@/utils/scrollNavigation';
+import { playPlanetSound } from '@/utils/soundEffects';
 
 /**
  * Floating accessible Scroll-to-Top action that appears only after scrolling
@@ -31,6 +32,7 @@ export function ScrollToTopButton() {
       nav.resetSolarOverview();
       return;
     }
+    playPlanetSound('sun');
     scrollToSection('hero', {
       prefersReducedMotion,
       focusTarget: false,

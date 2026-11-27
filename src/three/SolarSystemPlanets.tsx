@@ -114,6 +114,7 @@ function OrbitingPlanet({
   const matRef = useRef<MeshStandardMaterial>(null);
   const ringRef = useRef<Mesh>(null);
   const moonGroupRef = useRef<Group>(null);
+  const hoverDepthRef = useRef(0);
 
   const planetTextures = useMemo(
     () => createPlanetTextures(planet),
@@ -206,18 +207,25 @@ function OrbitingPlanet({
 
   const handleOver = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
+    hoverDepthRef.current += 1;
     onHoverPlanet(planet.id);
     if (typeof document !== 'undefined') document.body.style.cursor = 'pointer';
   };
 
   const handleOut = () => {
-    onHoverPlanet(null);
-    if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
+    hoverDepthRef.current = Math.max(0, hoverDepthRef.current - 1);
+    if (hoverDepthRef.current === 0) {
+      onHoverPlanet(null);
+      if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
+    }
   };
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (e.delta > 16) return;
+    hoverDepthRef.current = 0;
+    onHoverPlanet(null);
+    if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
     onSelectPlanet(planet.id);
   };
 
@@ -256,7 +264,7 @@ function OrbitingPlanet({
           onPointerOut={handleOut}
           onClick={handleClick}
         >
-          <sphereGeometry args={[r * 1.68, 20, 20]} />
+          <sphereGeometry args={[Math.max(r * 1.78, 0.78), 20, 20]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
 
@@ -368,6 +376,8 @@ export function SolarSystemPlanets({
   const handleSunClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (e.delta > 16) return;
+    onHoverPlanet(null);
+    if (typeof document !== 'undefined') document.body.style.cursor = 'auto';
     onSelectPlanet('sun');
   };
 

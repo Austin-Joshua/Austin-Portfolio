@@ -26,6 +26,7 @@ export interface CosmicCameraRigProps {
   qualityTier: QualityTierConfig;
   pointerRef: RefObject<UniversePointerVector>;
   orbitControlRef: RefObject<OrbitControlVector>;
+  isGyroActiveRef?: RefObject<boolean>;
   elapsedTimeRef: RefObject<number>;
 }
 
@@ -44,6 +45,7 @@ export function CosmicCameraRig({
   qualityTier,
   pointerRef,
   orbitControlRef,
+  isGyroActiveRef,
   elapsedTimeRef,
 }: CosmicCameraRigProps) {
   const { camera } = useThree();
@@ -73,7 +75,10 @@ export function CosmicCameraRig({
       isTransitioningRef.current = true;
     }
 
-    const rawPtr = qualityTier.enablePointerParallax
+    const parallaxActive =
+      !prefersReducedMotion &&
+      (qualityTier.enablePointerParallax || Boolean(isGyroActiveRef?.current));
+    const rawPtr = parallaxActive
       ? pointerRef.current ?? { x: 0, y: 0 }
       : { x: 0, y: 0 };
     if (!isBodyHovered) {

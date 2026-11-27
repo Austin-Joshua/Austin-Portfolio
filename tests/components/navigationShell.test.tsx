@@ -63,13 +63,14 @@ describe('T3.2 Semantic Layout & Navigation Shell', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'About' })).toBeInTheDocument();
   });
 
-  it('renders circular AJ metallic emblem in Navbar without Cosmic Universe text, theme toggle, or download icon', async () => {
+  it('renders circular AJ metallic emblem in Navbar without Cosmic Universe text, theme toggle, download icon, or speaker toggle', async () => {
     const { container } = renderWithProviders(<Navbar />);
     const emblems = screen.getAllByRole('img', { name: 'AJ' });
     expect(emblems.length).toBeGreaterThanOrEqual(1);
     expect(emblems[0]).toHaveAttribute('src', '/assets/brand/aj-emblem.png');
     expect(screen.queryByText(/Cosmic Universe/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Switch to/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sound-toggle-button')).not.toBeInTheDocument();
     expect(document.querySelector('header a[download]')).toBeNull();
     expect(await axe(container)).toHaveNoViolations();
   });

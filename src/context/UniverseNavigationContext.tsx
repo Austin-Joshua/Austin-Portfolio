@@ -44,6 +44,7 @@ export interface UniverseNavigationContextValue {
   scrollVelocityRef: RefObject<number>;
   scrollProgressRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
+  isGyroActiveRef: RefObject<boolean>;
 }
 
 const UniverseNavigationContext = createContext<
@@ -94,23 +95,39 @@ export function UniverseNavigationProvider({
         : selectedPlanet
       : activeSection;
 
-  useEffect(() => {
-    if (navSectionOverride !== null && lockTimerRef.current === null && typeof window !== 'undefined') {
-      lockTimerRef.current = window.setTimeout(() => {
-        setNavSectionOverride(null);
-        lockTimerRef.current = null;
-      }, prefersReducedMotion ? 150 : 600);
-    }
-    return () => {
+  const scheduleOverrideClear = useCallback(
+    (delayMs: number) => {
+      if (typeof window === 'undefined') return;
       if (lockTimerRef.current !== null) {
         window.clearTimeout(lockTimerRef.current);
       }
+      lockTimerRef.current = window.setTimeout(() => {
+        lockTimerRef.current = null;
+        setNavSectionOverride(null);
+      }, delayMs);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (navSectionOverride !== null && lockTimerRef.current === null) {
+      scheduleOverrideClear(prefersReducedMotion ? 150 : 600);
+    }
+  }, [navSectionOverride, prefersReducedMotion, scheduleOverrideClear]);
+
+  useEffect(() => {
+    return () => {
+      if (lockTimerRef.current !== null) {
+        window.clearTimeout(lockTimerRef.current);
+        lockTimerRef.current = null;
+      }
     };
-  }, [navSectionOverride, prefersReducedMotion]);
+  }, []);
 
   const pointerRef = useRef<UniversePointerVector>({ x: 0, y: 0 });
   const scrollVelocityRef = useRef<number>(0);
   const scrollProgressRef = useRef<number>(0);
+  const isGyroActiveRef = useRef<boolean>(false);
   const orbitControlRef = useRef<OrbitControlVector>({
     yaw: 0,
     pitch: 0,
@@ -166,6 +183,7 @@ export function UniverseNavigationProvider({
       ? () => {}
       : subscribeDeviceOrientation((event) => {
           if (event.beta == null && event.gamma == null) return;
+          isGyroActiveRef.current = true;
           const tilt = computeGyroTilt(event.gamma, event.beta, 14);
           pointerRef.current.x = Math.max(-1, Math.min(1, tilt.px * 2));
           pointerRef.current.y = Math.max(-1, Math.min(1, tilt.py * 2));
@@ -187,14 +205,7 @@ export function UniverseNavigationProvider({
       setHoveredPlanet(null);
       setNavigationMode(planet === 'sun' ? 'explore' : 'guided');
       setNavSectionOverride(targetSection);
-
-      if (lockTimerRef.current !== null) {
-        window.clearTimeout(lockTimerRef.current);
-      }
-      lockTimerRef.current = window.setTimeout(() => {
-        setNavSectionOverride(null);
-        lockTimerRef.current = null;
-      }, prefersReducedMotion ? 120 : 1150);
+      scheduleOverrideClear(prefersReducedMotion ? 120 : 1150);
 
       scrollToSection(targetSection, {
         prefersReducedMotion,
@@ -202,7 +213,7 @@ export function UniverseNavigationProvider({
         updateHash: true,
       });
     },
-    [prefersReducedMotion],
+    [prefersReducedMotion, scheduleOverrideClear],
   );
 
   const resetSolarOverview = useCallback(() => {
@@ -214,21 +225,14 @@ export function UniverseNavigationProvider({
     setSelectedPlanet('sun');
     setHoveredPlanet(null);
     setNavSectionOverride('hero');
-
-    if (lockTimerRef.current !== null) {
-      window.clearTimeout(lockTimerRef.current);
-    }
-    lockTimerRef.current = window.setTimeout(() => {
-      setNavSectionOverride(null);
-      lockTimerRef.current = null;
-    }, prefersReducedMotion ? 120 : 1150);
+    scheduleOverrideClear(prefersReducedMotion ? 120 : 1150);
 
     scrollToSection('hero', {
       prefersReducedMotion,
       focusTarget: false,
       updateHash: true,
     });
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, scheduleOverrideClear]);
 
   const value = useMemo<UniverseNavigationContextValue>(
     () => ({
@@ -244,6 +248,7 @@ export function UniverseNavigationProvider({
       scrollVelocityRef,
       scrollProgressRef,
       orbitControlRef,
+      isGyroActiveRef,
     }),
     [
       activeSection,

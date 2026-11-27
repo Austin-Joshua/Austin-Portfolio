@@ -26,6 +26,7 @@ export function UniverseLayer() {
     pointerRef,
     scrollVelocityRef,
     orbitControlRef,
+    isGyroActiveRef,
   } = useUniverseNavigation();
   const [shouldLoadCanvas, setShouldLoadCanvas] = useState(false);
 
@@ -62,6 +63,7 @@ export function UniverseLayer() {
           pointerRef={pointerRef}
           scrollVelocityRef={scrollVelocityRef}
           orbitControlRef={orbitControlRef}
+          isGyroActiveRef={isGyroActiveRef}
           onHoverPlanet={setHoveredPlanet}
           onSelectPlanet={navigateToPlanet}
         />

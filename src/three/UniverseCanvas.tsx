@@ -72,6 +72,7 @@ export interface UniverseCanvasProps {
   pointerRef: RefObject<UniversePointerVector>;
   scrollVelocityRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
+  isGyroActiveRef?: RefObject<boolean>;
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
 }
@@ -86,6 +87,7 @@ export function UniverseCanvas({
   pointerRef,
   scrollVelocityRef,
   orbitControlRef,
+  isGyroActiveRef,
   onHoverPlanet,
   onSelectPlanet,
 }: UniverseCanvasProps) {
@@ -324,6 +326,7 @@ export function UniverseCanvas({
         pointerRef={pointerRef}
         scrollVelocityRef={scrollVelocityRef}
         orbitControlRef={orbitControlRef}
+        isGyroActiveRef={isGyroActiveRef}
         onHoverPlanet={onHoverPlanet}
         onSelectPlanet={onSelectPlanet}
       />,
@@ -340,6 +343,7 @@ export function UniverseCanvas({
     pointerRef,
     scrollVelocityRef,
     orbitControlRef,
+    isGyroActiveRef,
     onHoverPlanet,
     onSelectPlanet,
   ]);

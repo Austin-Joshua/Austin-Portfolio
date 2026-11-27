@@ -6,7 +6,6 @@ import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 export interface SectionShellProps {
   id: SectionId | (string & {});
   index?: string;
-  indexLabel?: string;
   title?: string;
   labelledbyId?: string;
   description?: string;
@@ -19,7 +18,6 @@ export interface SectionShellProps {
 
 export function SectionShell({
   id,
-  indexLabel,
   title,
   labelledbyId,
   description,
@@ -47,11 +45,6 @@ export function SectionShell({
               {planet.cosmicTitle}
             </p>
           </div>
-        )}
-        {!planet && indexLabel && (
-          <p className="type-meta text-xs text-[var(--text-muted)] mb-2.5">
-            {indexLabel}
-          </p>
         )}
         {title &&
           (headingLevel === 1 ? (

@@ -170,7 +170,7 @@ export function HeroPortraitReveal({
           setIsFocusedWithin(false);
         }
       }}
-      className="pointer-events-auto relative z-10 m-0 inline-flex h-full items-end justify-center select-none"
+      className="pointer-events-none relative z-10 m-0 inline-flex h-full items-end justify-center select-none"
     >
       {/* Seamless soft solar halo behind the 3D portrait */}
       <div
@@ -233,7 +233,7 @@ export function HeroPortraitReveal({
             : 'Reveal or pin full-colour portrait preview'
         }
         onClick={handleTogglePin}
-        className="absolute inset-0 z-20 cursor-pointer rounded-[var(--radius-portrait)] bg-transparent border-0 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
+        className="pointer-events-auto absolute inset-y-[4%] inset-x-[18%] z-20 cursor-pointer rounded-[var(--radius-portrait)] bg-transparent border-0 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
       >
         <span className="sr-only">
           {isPinned

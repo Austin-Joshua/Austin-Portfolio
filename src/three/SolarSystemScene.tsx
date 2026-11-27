@@ -23,6 +23,7 @@ export interface SolarSystemSceneProps {
   pointerRef: RefObject<UniversePointerVector>;
   scrollVelocityRef: RefObject<number>;
   orbitControlRef: RefObject<OrbitControlVector>;
+  isGyroActiveRef?: RefObject<boolean>;
   onHoverPlanet: (id: PlanetId | null) => void;
   onSelectPlanet: (id: PlanetId) => void;
 }
@@ -37,6 +38,7 @@ export function SolarSystemScene({
   pointerRef,
   scrollVelocityRef,
   orbitControlRef,
+  isGyroActiveRef,
   onHoverPlanet,
   onSelectPlanet,
 }: SolarSystemSceneProps) {
@@ -88,6 +90,7 @@ export function SolarSystemScene({
         prefersReducedMotion={prefersReducedMotion}
         pointerRef={pointerRef}
         scrollVelocityRef={scrollVelocityRef}
+        isGyroActiveRef={isGyroActiveRef}
         hoveredPlanet={hoveredPlanet}
       />
 
@@ -113,6 +116,7 @@ export function SolarSystemScene({
         qualityTier={qualityTier}
         pointerRef={pointerRef}
         orbitControlRef={orbitControlRef}
+        isGyroActiveRef={isGyroActiveRef}
         elapsedTimeRef={elapsedTimeRef}
       />
     </>

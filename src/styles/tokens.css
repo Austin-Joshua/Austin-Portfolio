@@ -12,7 +12,7 @@
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Fluid typography scale — commanding desktop proportions */
-  --text-hero: min(clamp(3rem, 2.2rem + 4.4vw, 6.25rem), 14.5vw);
+  --text-hero: min(clamp(3.5rem, 2.8rem + 5.2vw, 7.5rem), 16vw);
   --text-h2: min(clamp(2.5rem, 1.85rem + 3.6vw, 5.25rem), 13.5vw);
   --text-h3: clamp(1.45rem, 1.15rem + 0.95vw, 2.15rem);
   --text-lead: clamp(1.125rem, 1.02rem + 0.52vw, 1.425rem);

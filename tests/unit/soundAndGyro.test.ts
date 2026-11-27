@@ -12,10 +12,6 @@ import {
   playPlanetSound,
   playProjectWorldSound,
   playSuccess,
-  setSoundEnabled,
-  SOUND_STORAGE_KEY,
-  subscribeSound,
-  toggleSound,
   triggerHaptic,
 } from '@/utils/soundEffects';
 
@@ -178,26 +174,36 @@ describe('Cosmic Web Audio Sound & Haptic Engine', () => {
     vi.restoreAllMocks();
   });
 
-  it('persists enable/mute state, notifies subscribers, and plays unique planet & project tones', () => {
+  it('suppresses audio under reduced motion and plays unique planet & project tones by default', () => {
     expect(isSoundEnabled()).toBe(true);
 
-    const states: boolean[] = [];
-    const unsubscribe = subscribeSound((enabled) => states.push(enabled));
+    const originalMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    try {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        writable: true,
+        value: vi.fn().mockImplementation((query: string) => ({
+          matches: query.includes('prefers-reduced-motion: reduce'),
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        })),
+      });
+      expect(isSoundEnabled()).toBe(false);
+      playClick();
+      expect(recordedOscs).toHaveLength(0);
+    } finally {
+      if (originalMatchMedia) {
+        Object.defineProperty(window, 'matchMedia', originalMatchMedia);
+      }
+    }
 
-    expect(toggleSound()).toBe(false);
-    expect(window.localStorage.getItem(SOUND_STORAGE_KEY)).toBe('false');
-    expect(isSoundEnabled()).toBe(false);
-
-    // Muted calls emit zero audio tones
+    expect(isSoundEnabled()).toBe(true);
     playClick();
-    expect(recordedOscs).toHaveLength(0);
-
-    // Unmuting emits confirmation click and updates subscribers
-    setSoundEnabled(true);
-    expect(isSoundEnabled()).toBe(true);
-    expect(states).toEqual([false, true]);
-    expect(recordedOscs.length).toBeGreaterThanOrEqual(1);
-    unsubscribe();
+    expect(recordedOscs).toHaveLength(1);
 
     recordedOscs.length = 0;
     const planetIds = [

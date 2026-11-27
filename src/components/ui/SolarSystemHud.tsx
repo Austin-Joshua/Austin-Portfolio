@@ -64,7 +64,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
       <div
         data-testid="solar-system-hud"
         className={[
-          'flex flex-col items-center gap-1.5 transition-opacity duration-200',
+          'flex flex-col items-center gap-0.5 transition-opacity duration-200',
           isExploreHero
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0 focus-within:pointer-events-auto focus-within:opacity-100',
@@ -76,7 +76,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
         <div
           role="group"
           aria-label="Solar System Planet Destinations"
-          className="inline-flex flex-wrap items-center justify-center gap-1"
+          className="inline-flex flex-wrap items-center justify-center gap-0.5 sm:gap-1"
         >
           <button
             type="button"
@@ -89,7 +89,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
             onBlur={() => setHoveredPlanet(null)}
             onClick={() => handleSelect('sun')}
             className={[
-              'inline-flex min-h-[38px] items-center gap-1.5 px-2.5 py-1 rounded-full',
+              'inline-flex min-h-[32px] sm:min-h-[34px] items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full',
               'font-mono text-[11px] cursor-pointer transition-[color,transform] duration-150 active:scale-95',
               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
               activeSection === 'hero'
@@ -124,7 +124,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
                 onBlur={() => setHoveredPlanet(null)}
                 onClick={() => handleSelect(planet.id)}
                 className={[
-                  'inline-flex min-h-[38px] items-center gap-1.5 px-2.5 py-1 rounded-full',
+                  'inline-flex min-h-[32px] sm:min-h-[34px] items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full',
                   'font-mono text-[11px] cursor-pointer transition-[color,transform] duration-150 active:scale-95',
                   'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                   isCurrent || isHovered
@@ -151,7 +151,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
             onClick={resetSolarOverview}
             aria-label="Reset Orbit — Return to Solar System Overview"
             title="Reset Orbit"
-            className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] active:scale-95 cursor-pointer transition-[color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
+            className="inline-flex min-h-[32px] min-w-[32px] sm:min-h-[34px] sm:min-w-[34px] items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] active:scale-95 cursor-pointer transition-[color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
           >
             <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
           </button>
@@ -159,7 +159,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
 
         <p
           aria-live="polite"
-          className="type-meta text-[11px] min-h-[1.125rem] text-[var(--planet-sun)] text-center"
+          className="type-meta text-[11px] leading-tight min-h-[1rem] text-[var(--planet-sun)] text-center"
         >
           {activeHoveredMeta
             ? `${activeHoveredMeta.cosmicTitle} · ${activeHoveredMeta.subtitle}`
