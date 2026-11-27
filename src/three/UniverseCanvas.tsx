@@ -185,6 +185,7 @@ export function UniverseCanvas({
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (
+      hoveredPlanet !== null ||
       prefersReducedMotion ||
       event.pointerType === 'touch' ||
       navigationMode !== 'explore'

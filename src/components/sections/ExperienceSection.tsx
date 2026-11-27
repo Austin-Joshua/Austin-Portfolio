@@ -136,7 +136,7 @@ export function ExperienceSection({
                   <circle cx="430" cy="60" r="4" stroke="#2DD4BF" strokeWidth="1.5" />
                 </svg>
 
-                <div className="relative z-10 space-y-4">
+                <div className="relative z-10 space-y-5">
                   <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-experience)]">
                     ORBITAL TRAJECTORY // STANDING BY
                   </p>
@@ -158,6 +158,25 @@ export function ExperienceSection({
                         </span>
                       ),
                     )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-[var(--border-subtle)]/70">
+                    <div>
+                      <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                        Core Production Stack
+                      </p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] mt-1">
+                        Python · TypeScript · React · Next.js · Go (Gin) · Spring Boot
+                      </p>
+                    </div>
+                    <div>
+                      <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                        Current Readiness
+                      </p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] mt-1">
+                        Chennai, India · Available for Engineering Internships
+                      </p>
+                    </div>
                   </div>
                 </div>
 

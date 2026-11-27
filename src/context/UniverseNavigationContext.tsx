@@ -10,7 +10,7 @@ import {
   type RefObject,
 } from 'react';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
-import type { SectionId } from '@/data/sections';
+import { parseSectionHash, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
 import type { PlanetId } from '@/three/universeConfig';
 import { scrollToSection } from '@/utils/scrollNavigation';
@@ -69,7 +69,11 @@ export function UniverseNavigationProvider({
   const observedSection = toSectionId(useActiveSection());
   const { prefersReducedMotion } = useOptionalMotionPreference();
   const [navSectionOverride, setNavSectionOverride] =
-    useState<SectionId | null>(null);
+    useState<SectionId | null>(() => {
+      if (typeof window === 'undefined') return null;
+      const initialHash = parseSectionHash(window.location.hash);
+      return initialHash && initialHash !== 'hero' ? initialHash : null;
+    });
   const [navigationMode, setNavigationMode] =
     useState<UniverseNavigationMode>('explore');
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetId | null>(null);
@@ -88,12 +92,18 @@ export function UniverseNavigationProvider({
       : activeSection;
 
   useEffect(() => {
+    if (navSectionOverride !== null && lockTimerRef.current === null && typeof window !== 'undefined') {
+      lockTimerRef.current = window.setTimeout(() => {
+        setNavSectionOverride(null);
+        lockTimerRef.current = null;
+      }, prefersReducedMotion ? 150 : 600);
+    }
     return () => {
       if (lockTimerRef.current !== null) {
         window.clearTimeout(lockTimerRef.current);
       }
     };
-  }, []);
+  }, [navSectionOverride, prefersReducedMotion]);
 
   const pointerRef = useRef<UniversePointerVector>({ x: 0, y: 0 });
   const scrollVelocityRef = useRef<number>(0);

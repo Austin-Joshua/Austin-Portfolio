@@ -120,22 +120,22 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     <circle cx="225" cy="130" r="4" fill="#F472B6" />
                   </svg>
 
-                  <div className="relative z-10 space-y-4">
+                  <div className="relative z-10 space-y-5">
                     <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-contact)]">
                       DIRECT SIGNAL // PRIMARY INBOX
                     </p>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       <a
                         ref={emailRef}
                         href={`mailto:${validEmail}`}
-                        className="inline-flex min-h-[44px] items-center gap-3 text-xl sm:text-2xl lg:text-3xl font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-200 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="inline-flex min-h-[44px] items-center gap-3.5 text-xl sm:text-2xl lg:text-[2.15rem] xl:text-[2.45rem] leading-tight font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-200 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
-                        <MailIcon className="size-6 shrink-0 text-[var(--planet-contact)]" />
+                        <MailIcon className="size-7 shrink-0 text-[var(--planet-contact)]" />
                         <span>{validEmail}</span>
                       </a>
 
-                      <div className="flex flex-wrap items-center gap-3 pt-1">
+                      <div className="flex flex-wrap items-center gap-3.5 pt-1">
                         <Button
                           variant="secondary"
                           size="md"
@@ -160,7 +160,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
 
                         <a
                           href={`mailto:${validEmail}`}
-                          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-4 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-5 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                         >
                           <span>Compose Mail</span>
                           <ArrowUpRight className="size-4 text-[var(--planet-contact)]" aria-hidden="true" />
@@ -187,24 +187,15 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     </m.div>
                   </div>
 
-                  <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-[var(--border-subtle)] pt-5">
-                    {[
-                      { label: 'Focus', value: 'Software Engineering' },
-                      { label: 'Domain', value: 'Python & Applied AI/ML' },
-                      { label: 'Base', value: 'Chennai, India' },
-                    ].map((meta) => (
-                      <div
-                        key={meta.label}
-                        className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/70 px-3.5 py-3"
-                      >
-                        <p className="type-meta text-[11px] uppercase text-[var(--planet-contact)]">
-                          {meta.label}
-                        </p>
-                        <p className="text-sm font-medium text-[var(--text-primary)] mt-0.5">
-                          {meta.value}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-5">
+                    <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                      Open to <span className="font-medium text-[var(--text-primary)]">Software Engineering</span>,{' '}
+                      <span className="font-medium text-[var(--text-primary)]">Python Backend</span> &amp;{' '}
+                      <span className="font-medium text-[var(--text-primary)]">Applied AI/ML</span> roles.
+                    </p>
+                    <p className="type-meta text-xs uppercase tracking-[0.14em] text-[var(--planet-contact)]">
+                      Chennai, India
+                    </p>
                   </div>
                 </GlassCard>
               </m.div>
@@ -221,21 +212,21 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
               <GlassCard
                 padding="lg"
                 variant="default"
-                className="relative overflow-hidden w-full p-6 sm:p-8 flex flex-col justify-between gap-6 border-[var(--planet-contact)]/25"
+                className="relative overflow-hidden w-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-7 border-[var(--planet-contact)]/25"
               >
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-contact)]">
                     CELESTIAL RELAY // VERIFIED NODES
                   </p>
                   <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                    Connect directly via verified profiles or download the complete résumé dossier.
+                    Explore verified code repositories, connect directly, or download the résumé dossier.
                   </p>
                 </div>
 
                 <nav
                   aria-label="Verified Contact & Social Links"
                   data-testid="contact-relay-dock"
-                  className="flex flex-wrap items-center justify-around sm:justify-between gap-6 py-4"
+                  className="grid grid-cols-3 gap-4 py-2"
                 >
                   {validSocialLinks.map((link) => {
                     const Icon = PLATFORM_ICONS[link.platform] ?? ArrowUpRight;
@@ -245,13 +236,13 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-2.5 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
+                        className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
                       >
-                        <span className="inline-flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--planet-contact)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-contact)] group-hover:shadow-[0_0_24px_rgba(244,114,182,0.34)]">
-                          <Icon className="size-6" />
+                        <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--planet-contact)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-contact)] group-hover:shadow-[0_0_24px_rgba(244,114,182,0.34)]">
+                          <Icon className="size-6 md:size-7" />
                         </span>
                         <span className="flex flex-col items-center">
-                          <span className="font-display text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-200">
+                          <span className="font-display text-sm md:text-base font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-200">
                             {link.label}
                             <span className="sr-only">{` — Austin Joshua on ${link.label}`}</span>
                           </span>
@@ -269,13 +260,13 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     <a
                       href={profileData.resume.url}
                       download="Austin_Joshua_Resume.pdf"
-                      className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-2.5 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
+                      className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
                     >
-                      <span className="inline-flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-full border border-[var(--planet-sun)]/50 bg-[var(--planet-sun)]/12 text-[var(--planet-sun)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-sun)] group-hover:shadow-[0_0_24px_rgba(255,179,71,0.34)]">
-                        <Download className="size-6" aria-hidden="true" />
+                      <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--planet-sun)]/50 bg-[var(--planet-sun)]/12 text-[var(--planet-sun)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-sun)] group-hover:shadow-[0_0_24px_rgba(255,179,71,0.34)]">
+                        <Download className="size-6 md:size-7" aria-hidden="true" />
                       </span>
                       <span className="flex flex-col items-center">
-                        <span className="font-display text-sm font-semibold text-[var(--planet-sun)]">
+                        <span className="font-display text-sm md:text-base font-semibold text-[var(--planet-sun)]">
                           Résumé
                           <span className="sr-only"> — Download Austin Joshua</span>
                         </span>

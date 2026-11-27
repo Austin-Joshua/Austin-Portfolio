@@ -64,7 +64,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
       labelledbyId="hero-heading"
       headingLevel={1}
       withDivider={false}
-      className="relative flex flex-col justify-between overflow-x-clip pt-2 pb-4 sm:pt-4 sm:pb-6 md:pt-20 md:pb-5 min-h-[calc(100dvh-4.5rem)] md:min-h-[100dvh]"
+      className="relative flex flex-col justify-between overflow-x-clip pt-2 pb-24 sm:pt-4 sm:pb-24 md:pt-20 md:pb-6 min-h-[calc(100dvh-4rem)] md:min-h-[100dvh]"
     >
       {/* Atmospheric solar corona radial aura */}
       <div
@@ -79,15 +79,15 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
       <div
         onPointerMove={handlePointerMove}
         onPointerLeave={() => setParallax({ x: 0, y: 0 })}
-        className="pointer-events-none relative z-10 my-auto flex flex-col items-center justify-center text-center gap-3 sm:gap-4 lg:gap-5"
+        className="pointer-events-none relative z-10 my-auto flex flex-col items-center justify-center text-center gap-2.5 sm:gap-3.5 lg:gap-4"
       >
         <div
           data-testid="hero-3d-stage"
-          className="pointer-events-none relative mx-auto flex h-[clamp(245px,44dvh,430px)] sm:h-[clamp(290px,46dvh,470px)] lg:h-[clamp(330px,50dvh,510px)] w-full max-w-[88rem] items-end justify-center"
+          className="pointer-events-none relative mx-auto flex h-[clamp(215px,36dvh,335px)] sm:h-[clamp(270px,43dvh,435px)] lg:h-[clamp(330px,51dvh,515px)] w-full max-w-[92rem] items-end justify-center"
         >
           {/* Monumental Wide 3D Sculptural Name directly behind Austin's portrait cutout */}
           <div
-            className="pointer-events-none absolute inset-x-0 top-[6%] sm:top-[8%] z-0 flex flex-col items-center justify-center select-none overflow-visible"
+            className="pointer-events-none absolute inset-x-0 top-[4%] sm:top-[6%] z-0 flex flex-col items-center justify-center select-none overflow-visible"
             style={{
               transform: prefersReducedMotion
                 ? undefined
@@ -97,10 +97,10 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
           >
             <h1
               id="hero-heading"
-              className="font-display text-[min(clamp(2.65rem,12.5vw,10.5rem),14.5vw)] font-bold uppercase tracking-[0.06em] sm:tracking-[0.09em] md:tracking-[0.12em] leading-[0.84] text-[#eef3fb]/92 select-none"
+              className="font-display text-[clamp(2.85rem,14.5vw,13.25rem)] md:text-[clamp(5.2rem,15vw,13.75rem)] font-bold uppercase tracking-[0.06em] sm:tracking-[0.09em] lg:tracking-[0.13em] leading-[0.82] text-[#eef3fb]/92 select-none"
               style={{
                 textShadow:
-                  '0 2px 0 rgba(190,202,222,0.5), 0 5px 0 rgba(132,146,172,0.42), 0 10px 0 rgba(74,86,108,0.34), 0 22px 46px rgba(2,3,7,0.94)',
+                  '0 2px 0 rgba(190,202,222,0.52), 0 5px 0 rgba(132,146,172,0.44), 0 11px 0 rgba(74,86,108,0.36), 0 24px 50px rgba(2,3,7,0.94)',
               }}
             >
               {firstName} <br /> {lastName}
@@ -118,9 +118,9 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
         </div>
 
         {/* Enlarged Crisp Identity Readout + Minimal Circular Icon Actions */}
-        <div className="pointer-events-auto relative z-20 flex flex-col items-center gap-2.5 sm:gap-3 max-w-[66ch] px-2">
+        <div className="pointer-events-auto relative z-20 flex flex-col items-center gap-2 sm:gap-2.5 max-w-[78ch] px-2">
           {hasRole && profile.roleLabel && (
-            <p className="eyebrow-label !mb-0 !text-xs sm:!text-sm md:!text-[15px] !tracking-[0.15em] !text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
+            <p className="eyebrow-label !mb-0 !text-[11px] sm:!text-xs md:!text-sm lg:!text-[15px] !tracking-[0.15em] md:whitespace-nowrap !text-[var(--planet-sun)]/95 [text-shadow:0_2px_12px_rgba(2,3,7,0.9)]">
               {profile.roleLabel}
             </p>
           )}

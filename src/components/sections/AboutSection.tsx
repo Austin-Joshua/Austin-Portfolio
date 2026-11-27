@@ -126,8 +126,8 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
             className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6 pointer-events-auto"
           >
             {validParagraphs.length > 0 ? (
-              <GlassCard padding="lg" variant="default" className="p-6 sm:p-8 lg:p-9 space-y-6 h-full flex flex-col justify-between">
-                <div className="space-y-5">
+              <GlassCard padding="lg" variant="default" className="p-6 sm:p-8 lg:p-10 gap-7 h-full flex flex-col justify-between">
+                <div className="space-y-6">
                   <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-about)]">
                     ENGINEERING PROFILE
                   </p>
@@ -136,8 +136,8 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                       key={`about-paragraph-${idx}`}
                       className={
                         idx === 0
-                          ? 'text-lg sm:text-xl lg:text-2xl font-medium leading-relaxed text-[var(--text-primary)] max-w-[62ch]'
-                          : 'type-body text-base md:text-lg leading-relaxed text-[var(--text-secondary)] max-w-[65ch]'
+                          ? 'text-lg sm:text-xl lg:text-[1.45rem] font-medium leading-[1.58] text-[var(--text-primary)] max-w-[60ch]'
+                          : 'type-body text-base md:text-[1.0625rem] leading-[1.7] text-[var(--text-secondary)] max-w-[64ch]'
                       }
                     >
                       {paragraph}

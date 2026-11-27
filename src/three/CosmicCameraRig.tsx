@@ -20,6 +20,7 @@ export interface CosmicCameraRigProps {
   navigationMode: UniverseNavigationMode;
   selectedPlanet: PlanetId | null;
   hoveredPlanet: PlanetId | null;
+  hoveredBodyRef?: RefObject<PlanetId | null>;
   orbitScale: number;
   prefersReducedMotion: boolean;
   qualityTier: QualityTierConfig;
@@ -37,6 +38,7 @@ export function CosmicCameraRig({
   navigationMode,
   selectedPlanet,
   hoveredPlanet,
+  hoveredBodyRef,
   orbitScale,
   prefersReducedMotion,
   qualityTier,
@@ -54,6 +56,7 @@ export function CosmicCameraRig({
   const isTransitioningRef = useRef<boolean>(false);
 
   useFrame((_, delta) => {
+    const isBodyHovered = (hoveredBodyRef?.current ?? hoveredPlanet) !== null;
     const dt = prefersReducedMotion ? 1 : Math.min(delta, 0.05);
     const t = elapsedTimeRef.current ?? 0;
     const isExploreOverview =
@@ -73,7 +76,7 @@ export function CosmicCameraRig({
     const rawPtr = qualityTier.enablePointerParallax
       ? pointerRef.current ?? { x: 0, y: 0 }
       : { x: 0, y: 0 };
-    if (!hoveredPlanet) {
+    if (!isBodyHovered) {
       frozenPtrRef.current = { x: rawPtr.x, y: rawPtr.y };
     }
     const ptr = frozenPtrRef.current;
@@ -154,7 +157,7 @@ export function CosmicCameraRig({
       return;
     }
 
-    if (hoveredPlanet !== null && !isTransitioningRef.current) {
+    if (hoveredBodyRef?.current !== undefined ? hoveredBodyRef.current !== null && !isTransitioningRef.current : hoveredPlanet !== null && !isTransitioningRef.current) {
       return;
     }
 

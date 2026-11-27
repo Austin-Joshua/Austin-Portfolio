@@ -33,19 +33,19 @@ export function SectionShell({
   const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
 
   const headerContent = title ? (
-    <div className="pointer-events-none mb-8 md:mb-10">
-      <div className="pointer-events-auto w-fit max-w-[74ch]">
+    <div className="pointer-events-none mb-10 md:mb-12">
+      <div className="pointer-events-auto w-fit max-w-[78ch]">
         {planet && (
-          <div className="inline-flex items-center gap-2.5 mb-3">
+          <div className="inline-flex items-center gap-3 mb-3.5">
             <span
               aria-hidden="true"
-              className="size-2.5 rounded-full"
+              className="size-3 rounded-full"
               style={{
                 backgroundColor: planet.color,
-                boxShadow: `0 0 12px ${planet.color}`,
+                boxShadow: `0 0 14px ${planet.color}`,
               }}
             />
-            <p className="type-meta uppercase tracking-[0.16em]" style={{ color: planet.color }}>
+            <p className="type-meta uppercase tracking-[0.18em] text-xs sm:text-sm" style={{ color: planet.color }}>
               {planet.cosmicTitle}
             </p>
           </div>
@@ -74,14 +74,14 @@ export function SectionShell({
         {planet && (
           <div
             aria-hidden="true"
-            className="mt-3 h-[2px] w-20 rounded-full"
+            className="mt-3.5 h-[2px] w-28 rounded-full"
             style={{
               background: `linear-gradient(90deg, ${planet.color} 0%, transparent 100%)`,
             }}
           />
         )}
         {description && (
-          <p className="type-lead text-[var(--text-secondary)] max-w-[66ch] mt-3.5 [text-shadow:0_2px_18px_rgba(2,3,7,0.92)]">
+          <p className="type-lead text-[var(--text-secondary)] max-w-[68ch] mt-4 [text-shadow:0_2px_18px_rgba(2,3,7,0.92)]">
             {description}
           </p>
         )}

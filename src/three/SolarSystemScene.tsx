@@ -1,6 +1,6 @@
 import '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
-import { useRef, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import type {
   OrbitControlVector,
   UniverseNavigationMode,
@@ -41,12 +41,17 @@ export function SolarSystemScene({
   onSelectPlanet,
 }: SolarSystemSceneProps) {
   const elapsedTimeRef = useRef<number>(0);
-  const orbitRateRef = useRef<number>(1);
+  const orbitRateRef = useRef<number>(navigationMode === 'guided' ? 0 : 1);
+  const hoveredBodyRef = useRef<PlanetId | null>(hoveredPlanet);
+
+  useEffect(() => {
+    hoveredBodyRef.current = hoveredPlanet;
+  }, [hoveredPlanet]);
 
   useFrame((_, delta) => {
     if (prefersReducedMotion) return;
     // Immediately freeze orbits on hover so the body stays locked under the pointer for clicking
-    if (hoveredPlanet !== null) {
+    if (hoveredBodyRef.current !== null) {
       orbitRateRef.current = 0;
       return;
     }
@@ -54,6 +59,14 @@ export function SolarSystemScene({
     orbitRateRef.current += (targetRate - orbitRateRef.current) * Math.min(1, delta * 9);
     elapsedTimeRef.current += Math.min(delta, 0.05) * orbitRateRef.current;
   });
+
+  const handleSyncHoverPlanet = (id: PlanetId | null) => {
+    hoveredBodyRef.current = id;
+    if (id !== null) {
+      orbitRateRef.current = 0;
+    }
+    onHoverPlanet(id);
+  };
 
   const orbitScale =
     qualityTier.tier === 'mobile-conserving' ? 0.84 : 1.0;
@@ -84,7 +97,7 @@ export function SolarSystemScene({
         hoveredPlanet={hoveredPlanet}
         selectedPlanet={selectedPlanet}
         orbitScale={orbitScale}
-        onHoverPlanet={onHoverPlanet}
+        onHoverPlanet={handleSyncHoverPlanet}
         onSelectPlanet={onSelectPlanet}
         elapsedTimeRef={elapsedTimeRef}
       />
@@ -94,6 +107,7 @@ export function SolarSystemScene({
         navigationMode={navigationMode}
         selectedPlanet={selectedPlanet}
         hoveredPlanet={hoveredPlanet}
+        hoveredBodyRef={hoveredBodyRef}
         orbitScale={orbitScale}
         prefersReducedMotion={prefersReducedMotion}
         qualityTier={qualityTier}

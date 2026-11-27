@@ -217,7 +217,7 @@ function OrbitingPlanet({
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (e.delta > 5) return;
+    if (e.delta > 16) return;
     onSelectPlanet(planet.id);
   };
 
@@ -367,7 +367,7 @@ export function SolarSystemPlanets({
 
   const handleSunClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (e.delta > 5) return;
+    if (e.delta > 16) return;
     onSelectPlanet('sun');
   };
 
