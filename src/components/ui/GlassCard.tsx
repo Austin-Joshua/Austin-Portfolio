@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
 export type GlassCardElement = 'div' | 'article' | 'section' | 'aside' | 'li';
-export type GlassCardVariant = 'default' | 'strong' | 'elevated' | 'cinematic';
+export type GlassCardVariant = 'default' | 'strong' | 'elevated';
 export type GlassCardPadding = 'none' | 'sm' | 'md' | 'lg';
 
 export interface GlassCardProps extends HTMLAttributes<HTMLElement> {
@@ -16,7 +16,6 @@ const VARIANT_CLASSES: Record<GlassCardVariant, string> = {
   default: 'glass-surface',
   strong: 'glass-surface-strong',
   elevated: 'surface-elevated-fallback',
-  cinematic: 'glass-card-cinematic',
 };
 
 const PADDING_CLASSES: Record<GlassCardPadding, string> = {

@@ -40,121 +40,93 @@ export function AchievementsSection({
   return (
     <SectionShell
       id="achievements"
-      index="06"
-      indexLabel="ACHIEVEMENTS"
       title="Achievements"
-      description="Verified hackathon award constellation and technical credentials from official project records and résumé."
+      description="Verified hackathon honors, technical certifications, and event coordination roles."
     >
       <div className="pointer-events-none space-y-8 md:space-y-10">
         {validItems.length === 0 ? (
           <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">
-            <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
-              RECOGNITION // STATUS
+            <p className="type-meta text-xs text-[var(--text-muted)] mb-2">
+              Recognition
             </p>
             <p className="type-body text-[var(--text-secondary)] max-w-[68ch]">
               No achievements added yet.
             </p>
           </GlassCard>
         ) : (
-          <div className="pointer-events-none relative space-y-7">
-            {/* Constellation connecting beam */}
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 900 56"
-              preserveAspectRatio="none"
-              className="hidden lg:block w-full h-12 opacity-65 pointer-events-none"
-              fill="none"
-            >
-              <polyline
-                points="140,28 450,12 760,36"
-                stroke="#FACC15"
-                strokeOpacity="0.45"
-                strokeWidth="1.5"
-                strokeDasharray="4 5"
-              />
-              <circle cx="140" cy="28" r="5" fill="#FACC15" />
-              <circle cx="450" cy="12" r="5" fill="#FB923C" />
-              <circle cx="760" cy="36" r="5" fill="#38BDF8" />
-            </svg>
+          <div className="pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-6">
+            {validItems.map((item, idx) => {
+              const accent: AchievementAccent = item.accent ?? 'gold';
+              const starColor = ACCENT_COLOR_MAP[accent];
+              const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
 
-            {/* Milestone Constellation Star Cards */}
-            <div className="pointer-events-none grid grid-cols-1 md:grid-cols-3 gap-6">
-              {validItems.map((item, idx) => {
-                const accent: AchievementAccent = item.accent ?? 'gold';
-                const starColor = ACCENT_COLOR_MAP[accent];
-                const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
-
-                return (
-                  <SideReveal
-                    key={item.id}
-                    direction={idx % 2 === 0 ? 'left' : 'right'}
-                    className="pointer-events-auto flex"
+              return (
+                <SideReveal
+                  key={item.id}
+                  direction={idx % 2 === 0 ? 'left' : 'right'}
+                  className="pointer-events-auto flex"
+                >
+                  <article
+                    className="glass-surface relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-colors duration-150 hover:border-[var(--planet-achievements)]/60"
+                    style={{
+                      borderTop: `2px solid ${starColor}`,
+                    }}
                   >
-                    <article
-                      className="glass-surface relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-[border-color,transform] duration-200 hover:-translate-y-1 hover:border-[var(--planet-achievements)]/60"
-                      style={{
-                        borderTop: `2px solid ${starColor}`,
-                      }}
-                    >
-                      <div className="space-y-3.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span
-                            className="inline-flex items-center gap-1.5 type-meta text-xs sm:text-sm font-semibold"
-                            style={{ color: starColor }}
-                          >
-                            <Star className="size-4 fill-current" aria-hidden="true" />
-                            <span>{item.date}</span>
-                          </span>
-                        </div>
+                    <div className="space-y-3">
+                      <span
+                        className="inline-flex items-center gap-1.5 type-meta text-xs font-semibold"
+                        style={{ color: starColor }}
+                      >
+                        <Star className="size-4 fill-current" aria-hidden="true" />
+                        <span>{item.date}</span>
+                      </span>
 
-                        <h3 className="type-h3 text-[var(--text-primary)]">
-                          {item.title}
-                        </h3>
+                      <h3 className="type-h3 text-[var(--text-primary)]">
+                        {item.title}
+                      </h3>
 
-                        <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
-                          {item.issuer}
+                      <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
+                        {item.issuer}
+                      </p>
+
+                      {hasNonEmptyText(item.context) && (
+                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                          {item.context}
                         </p>
-
-                        {hasNonEmptyText(item.context) && (
-                          <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                            {item.context}
-                          </p>
-                        )}
-                      </div>
-
-                      {hasVerificationLink && item.verificationUrl && (
-                        <a
-                          href={item.verificationUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => playClick()}
-                          className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
-                        >
-                          <span>Verify Repository</span>
-                          <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
-                        </a>
                       )}
-                    </article>
-                  </SideReveal>
-                );
-              })}
-            </div>
+                    </div>
+
+                    {hasVerificationLink && item.verificationUrl && (
+                      <a
+                        href={item.verificationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => playClick()}
+                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      >
+                        <span>Verify Repository</span>
+                        <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                      </a>
+                    )}
+                  </article>
+                </SideReveal>
+              );
+            })}
           </div>
         )}
 
-        {/* Verified Credentials & Campus Leadership Orbit Strip */}
         <SideReveal
           direction="left"
           className="pointer-events-auto glass-surface p-6 md:p-8 space-y-5"
         >
-          <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-achievements)]">
-            CERTIFICATIONS &amp; CAMPUS MILESTONES
+          <p className="type-meta text-xs font-medium text-[var(--planet-achievements)]">
+            Certifications &amp; workshops
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {VERIFIED_CERTIFICATIONS.map((cert) => (
               <div
                 key={cert.title}
-                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/80 px-4 py-3.5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--planet-achievements)]/45"
+                className="rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-card)]/80 px-4 py-3.5 transition-colors duration-150 hover:border-[var(--planet-achievements)]/45"
               >
                 <p className="text-base font-medium text-[var(--text-primary)]">
                   {cert.title}

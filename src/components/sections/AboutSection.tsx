@@ -1,4 +1,4 @@
-import { ArrowUpRight, Compass, Cpu, GraduationCap } from 'lucide-react';
+import { ArrowUpRight, Compass, GraduationCap } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -45,7 +45,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
           { scaleX: 0.35 },
           {
             scaleX: 1,
-            duration: 0.65,
+            duration: 0.5,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: scope,
@@ -80,35 +80,37 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   }, [prefersReducedMotion]);
 
   return (
-    <SectionShell id="about" index="02" indexLabel="ABOUT" title="About">
+    <SectionShell id="about" title="About">
       <div
         ref={contentScopeRef}
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
-        className="pointer-events-none space-y-8 md:space-y-10"
+        className="pointer-events-none space-y-8"
       >
-        {/* Subtle Cyan-accented orbital accent */}
         <div
           ref={hairlineRef}
           aria-hidden="true"
           data-testid="about-hairline"
-          className="h-[2px] w-36 origin-left rounded-full opacity-55"
+          className="h-[2px] w-32 origin-left rounded-full opacity-55"
           style={{
             background:
-              'linear-gradient(90deg, var(--planet-about) 0%, rgba(56,189,248,0.18) 65%, transparent 100%)',
+              'linear-gradient(90deg, var(--planet-about) 0%, transparent 100%)',
           }}
         />
 
         <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
-          {/* Left column: Reconstructed Narrative Lead & Core Engineering Focus (Zero duplicate portrait) */}
           <SideReveal
             direction="left"
             className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6 pointer-events-auto"
           >
             {validParagraphs.length > 0 ? (
-              <GlassCard padding="lg" variant="default" className="p-6 sm:p-8 lg:p-10 gap-7 h-full flex flex-col justify-between">
-                <div className="space-y-6">
-                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-about)]">
-                    ENGINEERING PROFILE
+              <GlassCard
+                padding="lg"
+                variant="default"
+                className="p-6 sm:p-8 lg:p-10 gap-7 h-full flex flex-col justify-between"
+              >
+                <div className="space-y-5">
+                  <p className="type-meta text-xs font-medium text-[var(--planet-about)]">
+                    Background
                   </p>
                   {validParagraphs.map((paragraph, idx) => (
                     <p
@@ -124,14 +126,13 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                   ))}
                 </div>
 
-                {/* Verified Engineering Focus Telemetry Strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[var(--border-subtle)] pt-6">
                   {VERIFIED_FOCUS_AREAS.map((area) => (
                     <div
                       key={area.label}
-                      className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/75 p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[var(--planet-about)]/55"
+                      className="rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/75 p-4 transition-colors duration-150 hover:border-[var(--planet-about)]/50"
                     >
-                      <p className="type-meta text-xs uppercase tracking-[0.1em] text-[var(--planet-about)] mb-1.5">
+                      <p className="type-meta text-xs text-[var(--planet-about)] mb-1.5">
                         {area.label}
                       </p>
                       <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
@@ -143,8 +144,8 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               </GlassCard>
             ) : (
               <GlassCard padding="lg" variant="elevated">
-                <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
-                  ABOUT // PENDING_VERIFICATION
+                <p className="type-meta text-xs text-[var(--text-muted)] mb-2">
+                  Profile pending
                 </p>
                 <p className="type-body text-[var(--text-secondary)] max-w-[65ch]">
                   {profile.aboutPendingNotice}
@@ -153,7 +154,6 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
             )}
           </SideReveal>
 
-          {/* Right column: Reconstructed Orbital Dossier (no duplicate portrait) */}
           <SideReveal
             direction="right"
             className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col pointer-events-auto"
@@ -166,40 +166,21 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
               <GlassCard
                 padding="lg"
                 variant="strong"
-                className="relative overflow-hidden h-full p-6 sm:p-8 flex flex-col justify-between gap-6 border-[var(--planet-about)]/35"
+                className="relative h-full p-6 sm:p-8 flex flex-col justify-between gap-6 border-[var(--planet-about)]/35"
               >
-                {/* Restrained orbital trajectory motif */}
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 240 240"
-                  className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 opacity-25"
-                  fill="none"
-                >
-                  <circle
-                    cx="120"
-                    cy="120"
-                    r="86"
-                    stroke="#38BDF8"
-                    strokeWidth="1"
-                    strokeDasharray="4 6"
-                  />
-                  <circle cx="120" cy="120" r="54" stroke="#DCE4F0" strokeOpacity="0.45" strokeWidth="1" />
-                  <circle cx="206" cy="120" r="4" fill="#38BDF8" />
-                </svg>
-
-                <div className="relative z-10 space-y-5">
-                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-about)]">
-                    TERRA CYAN // ORBITAL DOSSIER
+                <div className="space-y-6">
+                  <p className="type-meta text-xs font-medium text-[var(--planet-about)]">
+                    Education &amp; leadership
                   </p>
 
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="flex items-start gap-3.5">
                       <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <GraduationCap className="size-5" aria-hidden="true" />
+                        <GraduationCap className="size-[18px]" aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
-                          Degree Program
+                        <p className="type-meta text-xs text-[var(--text-muted)]">
+                          Degree program
                         </p>
                         <p className="text-base font-semibold text-[var(--text-primary)]">
                           B.E. Computer Science &amp; Engineering (2024–2028)
@@ -212,11 +193,11 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
 
                     <div className="flex items-start gap-3.5 border-t border-[var(--border-subtle)]/70 pt-4">
                       <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <Compass className="size-5" aria-hidden="true" />
+                        <Compass className="size-[18px]" aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
-                          Leadership &amp; Coordination
+                        <p className="type-meta text-xs text-[var(--text-muted)]">
+                          Campus leadership
                         </p>
                         <p className="text-base font-semibold text-[var(--text-primary)]">
                           President, Infinitus Mathematics Club (2026–2027)
@@ -226,33 +207,16 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-start gap-3.5 border-t border-[var(--border-subtle)]/70 pt-4">
-                      <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-about)]/35 bg-[var(--planet-about)]/10 text-[var(--planet-about)]">
-                        <Cpu className="size-5" aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="type-meta text-xs uppercase text-[var(--text-muted)]">
-                          Competition Record
-                        </p>
-                        <p className="text-base font-semibold text-[var(--text-primary)]">
-                          3 Hackathon Awards (National &amp; International)
-                        </p>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          AgriFlux · CIVIQ · ResQ Meal
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
                 {hasResume && profile.resume && (
-                  <div className="relative z-10 border-t border-[var(--border-subtle)]/80 pt-5">
+                  <div className="border-t border-[var(--border-subtle)]/80 pt-5">
                     <a
                       href={profile.resume.url}
                       download="Austin_Joshua_Resume.pdf"
                       onClick={() => playClick()}
-                      className="inline-flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/40 bg-[var(--planet-about)]/12 px-5 py-3 text-sm sm:text-base font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                      className="inline-flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/40 bg-[var(--planet-about)]/12 px-5 py-3 text-sm sm:text-base font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>{profile.resume.label} (PDF)</span>
                       <ArrowUpRight className="size-4 text-[var(--planet-about)] shrink-0" aria-hidden="true" />

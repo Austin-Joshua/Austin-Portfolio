@@ -90,7 +90,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
             onClick={() => handleSelect('sun')}
             className={[
               'inline-flex min-h-[38px] items-center gap-1.5 px-2.5 py-1 rounded-full',
-              'font-mono text-[11px] cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95',
+              'font-mono text-[11px] cursor-pointer transition-[color,transform] duration-150 active:scale-95',
               'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
               activeSection === 'hero'
                 ? 'text-[var(--planet-sun)] font-semibold'
@@ -125,7 +125,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
                 onClick={() => handleSelect(planet.id)}
                 className={[
                   'inline-flex min-h-[38px] items-center gap-1.5 px-2.5 py-1 rounded-full',
-                  'font-mono text-[11px] cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95',
+                  'font-mono text-[11px] cursor-pointer transition-[color,transform] duration-150 active:scale-95',
                   'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]',
                   isCurrent || isHovered
                     ? 'text-[var(--text-primary)] font-semibold'
@@ -151,7 +151,7 @@ export function SolarSystemHud({ className = '' }: SolarSystemHudProps) {
             onClick={resetSolarOverview}
             aria-label="Reset Orbit — Return to Solar System Overview"
             title="Reset Orbit"
-            className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:rotate-[-30deg] cursor-pointer transition-all duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
+            className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] active:scale-95 cursor-pointer transition-[color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
           >
             <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
           </button>

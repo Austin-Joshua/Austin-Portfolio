@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, Copy, Download, Radio } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Radio } from 'lucide-react';
 import { m } from 'motion/react';
 import { useRef } from 'react';
 import { GitHubIcon, LinkedInIcon, MailIcon } from '@/components/icons/SocialIcons';
@@ -8,7 +8,6 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
 import { SideReveal } from '@/components/ui/SideReveal';
 import { contactData } from '@/data/contact';
-import { profileData } from '@/data/profile';
 import { useClipboard } from '@/hooks/useClipboard';
 import { statusBadgeVariants } from '@/motion/variants';
 import type { ContactData } from '@/types/portfolio';
@@ -16,7 +15,6 @@ import {
   hasNonEmptyText,
   isValidEmailAddress,
   isValidHttpUrl,
-  isValidLocalOrHttpAssetUrl,
 } from '@/utils/dataGuards';
 import { playClick, playSuccess } from '@/utils/soundEffects';
 
@@ -60,10 +58,6 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
   const hasHeadline = hasNonEmptyText(contact.headline);
   const hasAvailability = hasNonEmptyText(contact.availabilityNote);
 
-  const hasResume =
-    profileData.resume !== null &&
-    isValidLocalOrHttpAssetUrl(profileData.resume.url);
-
   const handleCopyEmail = async () => {
     if (!validEmail) return;
     const copied = await copy(validEmail);
@@ -78,8 +72,6 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
   return (
     <SectionShell
       id="contact"
-      index="07"
-      indexLabel="CONTACT"
       title="Contact"
       description={hasHeadline && contact.headline ? contact.headline : undefined}
     >
@@ -95,7 +87,6 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
 
         {validEmail || validSocialLinks.length > 0 ? (
           <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
-            {/* Left 7 columns: Reconstructed Direct Signal Terminal Console */}
             {validEmail && (
               <SideReveal
                 direction="left"
@@ -105,23 +96,11 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                   as="article"
                   padding="lg"
                   variant="strong"
-                  className="relative overflow-hidden h-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-6 border-[var(--planet-contact)]/40"
+                  className="h-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-6 border-[var(--planet-contact)]/40"
                 >
-                  {/* Nova Rose orbital beacon geometry */}
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 260 260"
-                    className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 opacity-20"
-                    fill="none"
-                  >
-                    <circle cx="130" cy="130" r="95" stroke="#F472B6" strokeDasharray="4 6" />
-                    <circle cx="130" cy="130" r="58" stroke="#DCE4F0" strokeOpacity="0.45" />
-                    <circle cx="225" cy="130" r="4" fill="#F472B6" />
-                  </svg>
-
-                  <div className="relative z-10 space-y-5">
-                    <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-contact)]">
-                      DIRECT SIGNAL // PRIMARY INBOX
+                  <div className="space-y-5">
+                    <p className="type-meta text-xs font-medium text-[var(--planet-contact)]">
+                      Direct email
                     </p>
 
                     <div className="space-y-5">
@@ -129,9 +108,9 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         ref={emailRef}
                         href={`mailto:${validEmail}`}
                         onClick={() => playClick()}
-                        className="inline-flex min-h-[44px] items-center gap-3.5 text-xl sm:text-2xl lg:text-[2.15rem] xl:text-[2.45rem] leading-tight font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-200 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="inline-flex min-h-[44px] items-center gap-3.5 text-xl sm:text-2xl lg:text-[2.1rem] leading-tight font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-150 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
-                        <MailIcon className="size-7 shrink-0 text-[var(--planet-contact)]" />
+                        <MailIcon className="size-6 shrink-0 text-[var(--planet-contact)]" />
                         <span>{validEmail}</span>
                       </a>
 
@@ -155,13 +134,13 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                               : 'Copy Email'
                           }
                         >
-                          {status === 'copied' ? 'Copied!' : 'Copy'}
+                          {status === 'copied' ? 'Copied' : 'Copy'}
                         </Button>
 
                         <a
                           href={`mailto:${validEmail}`}
                           onClick={() => playClick()}
-                          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-5 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                          className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-5 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                         >
                           <span>Compose Mail</span>
                           <ArrowUpRight className="size-4 text-[var(--planet-contact)]" aria-hidden="true" />
@@ -188,21 +167,15 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     </m.div>
                   </div>
 
-                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-5">
-                    <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                      Open to <span className="font-medium text-[var(--text-primary)]">Software Engineering</span>,{' '}
-                      <span className="font-medium text-[var(--text-primary)]">Python Backend</span> &amp;{' '}
-                      <span className="font-medium text-[var(--text-primary)]">Applied AI/ML</span> roles.
-                    </p>
-                    <p className="type-meta text-xs uppercase tracking-[0.14em] text-[var(--planet-contact)]">
-                      Chennai, India
-                    </p>
-                  </div>
+                  <p className="type-body text-sm md:text-base text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-5">
+                    Open to <span className="font-medium text-[var(--text-primary)]">Software Engineering</span>,{' '}
+                    <span className="font-medium text-[var(--text-primary)]">Python Backend</span>, and{' '}
+                    <span className="font-medium text-[var(--text-primary)]">Applied AI/ML</span> roles.
+                  </p>
                 </GlassCard>
               </SideReveal>
             )}
 
-            {/* Right 5 columns: Reconstructed Celestial Relay Hub with Minimal Circular Icon Nodes */}
             <SideReveal
               direction="right"
               className="col-span-4 md:col-span-8 lg:col-span-5 pointer-events-auto flex"
@@ -210,21 +183,21 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
               <GlassCard
                 padding="lg"
                 variant="default"
-                className="relative overflow-hidden w-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-7 border-[var(--planet-contact)]/25"
+                className="w-full p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-7 border-[var(--planet-contact)]/25"
               >
-                <div className="space-y-2.5">
-                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-contact)]">
-                    CELESTIAL RELAY // VERIFIED NODES
+                <div className="space-y-2">
+                  <p className="type-meta text-xs font-medium text-[var(--planet-contact)]">
+                    Profiles
                   </p>
                   <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                    Explore verified code repositories, connect directly, or download the résumé dossier.
+                    Source repositories and direct professional profiles.
                   </p>
                 </div>
 
                 <nav
                   aria-label="Verified Contact & Social Links"
                   data-testid="contact-relay-dock"
-                  className="grid grid-cols-3 gap-4 py-2"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1"
                 >
                   {validSocialLinks.map((link) => {
                     const Icon = PLATFORM_ICONS[link.platform] ?? ArrowUpRight;
@@ -235,18 +208,18 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => playClick()}
-                        className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
+                        className="group flex min-h-[48px] items-center gap-3.5 rounded-[var(--radius-control)] border border-[var(--border-subtle)] bg-[var(--surface-elevated)]/80 px-4 py-3.5 transition-colors duration-150 hover:border-[var(--planet-contact)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
-                        <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--planet-contact)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-contact)] group-hover:shadow-[0_0_24px_rgba(244,114,182,0.34)]">
-                          <Icon className="size-6 md:size-7" />
+                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-card)] text-[var(--planet-contact)]">
+                          <Icon className="size-[18px]" />
                         </span>
-                        <span className="flex flex-col items-center">
-                          <span className="font-display text-sm md:text-base font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-200">
+                        <span className="min-w-0 flex flex-col">
+                          <span className="font-display text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--planet-contact)] transition-colors duration-150">
                             {link.label}
                             <span className="sr-only">{` — Austin Joshua on ${link.label}`}</span>
                           </span>
                           {hasNonEmptyText(link.handle) && (
-                            <span className="font-mono text-xs text-[var(--text-muted)]">
+                            <span className="font-mono text-xs text-[var(--text-muted)] truncate">
                               {link.handle}
                             </span>
                           )}
@@ -254,36 +227,18 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                       </a>
                     );
                   })}
-
-                  {hasResume && profileData.resume && (
-                    <a
-                      href={profileData.resume.url}
-                      download="Austin_Joshua_Resume.pdf"
-                      onClick={() => playClick()}
-                      className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
-                    >
-                      <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--planet-sun)]/50 bg-[var(--planet-sun)]/12 text-[var(--planet-sun)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-sun)] group-hover:shadow-[0_0_24px_rgba(255,179,71,0.34)]">
-                        <Download className="size-6 md:size-7" aria-hidden="true" />
-                      </span>
-                      <span className="flex flex-col items-center">
-                        <span className="font-display text-sm md:text-base font-semibold text-[var(--planet-sun)]">
-                          Résumé
-                          <span className="sr-only"> — Download Austin Joshua</span>
-                        </span>
-                        <span className="font-mono text-xs text-[var(--text-muted)]">
-                          PDF Dossier
-                        </span>
-                      </span>
-                    </a>
-                  )}
                 </nav>
+
+                <p className="type-meta text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-4">
+                  Based in Chennai, India
+                </p>
               </GlassCard>
             </SideReveal>
           </div>
         ) : (
           <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">
-            <p className="type-meta uppercase text-[var(--text-muted)] mb-2">
-              CONTACT // PENDING_VERIFICATION
+            <p className="type-meta text-xs text-[var(--text-muted)] mb-2">
+              Contact
             </p>
             <p className="type-body text-[var(--text-secondary)] max-w-[68ch]">
               Contact links will be published here prior to release.

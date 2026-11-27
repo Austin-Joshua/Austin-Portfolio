@@ -1,10 +1,6 @@
 import { m } from 'motion/react';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
-import {
-  markCosmicIntroSeen,
-  shouldPlayCosmicIntroOnMount,
-} from '@/utils/introStorage';
 
 type IntroPhase = 'holding' | 'splitting' | 'done';
 
@@ -16,21 +12,16 @@ export interface CosmicIntroLoaderProps {
 }
 
 /**
- * Intro curtain modeled on Austin-Joshua/infinitus `IntroCurtain.jsx`:
- * - Adapted to AJ Cosmic Universe vertical-seam horizontal left/right curtain split
- *   and pitch-black / solar metallic cosmic aesthetic.
- * - Matches Infinitus animation timing (0–800ms hold + 360° clockwise medallion unseal,
- *   800–1400ms curtain part + medallion dive, 1400ms unmount).
- * - No visible Skip button: click/tap anywhere on the curtain or press Escape to skip.
+ * Full-screen entrance curtain modeled on Austin-Joshua/infinitus IntroCurtain:
+ * replays cleanly on each refresh unless reduced motion is active; click or Escape skips.
  */
 export function CosmicIntroLoader({ onComplete }: CosmicIntroLoaderProps) {
   const { prefersReducedMotion } = useMotionPreference();
   const [phase, setPhase] = useState<IntroPhase>(() =>
-    shouldPlayCosmicIntroOnMount(prefersReducedMotion) ? 'holding' : 'done',
+    prefersReducedMotion ? 'done' : 'holding',
   );
 
   const finishIntro = useCallback(() => {
-    markCosmicIntroSeen();
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('aj-intro-pending');
       document.documentElement.classList.add('aj-intro-seen');

@@ -17,8 +17,7 @@ import { PRIMARY_NAV_SECTIONS, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
 import { getSectionRoute } from '@/routes/routes';
 import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
-import { scrollToSection } from '@/utils/scrollNavigation';
-import { playPlanetSound } from '@/utils/soundEffects';
+import { navigateToSection } from '@/utils/scrollNavigation';
 
 export interface NavbarProps {
   scrollProgressRef?: RefObject<number>;
@@ -51,17 +50,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
     targetId: SectionId,
   ) => {
     event.preventDefault();
-    if (universeNav) {
-      universeNav.navigateToPlanet(targetId === 'hero' ? 'sun' : targetId);
-      return;
-    }
-
-    playPlanetSound(targetId === 'hero' ? 'sun' : targetId);
-    scrollToSection(targetId, {
-      prefersReducedMotion,
-      focusTarget: false,
-      updateHash: true,
-    });
+    navigateToSection(targetId, { universeNav, prefersReducedMotion });
   };
 
   return (
@@ -110,11 +99,10 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                   >
                     <span
                       aria-hidden="true"
-                      className="size-2 rounded-full transition-transform duration-200 group-hover:scale-125"
+                      className="size-2 rounded-full transition-opacity duration-150"
                       style={{
                         backgroundColor: planetColor,
-                        opacity: isActive ? 1 : 0.6,
-                        boxShadow: isActive ? `0 0 10px ${planetColor}` : 'none',
+                        opacity: isActive ? 1 : 0.65,
                       }}
                     />
                     <span>{section.label}</span>

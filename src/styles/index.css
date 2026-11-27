@@ -282,28 +282,14 @@
     overflow-wrap: anywhere;
   }
 
-  /* Section eyebrow label — replaces numbered index */
   .eyebrow-label {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--accent-primary);
     margin-bottom: 0.75rem;
     display: block;
-  }
-
-  /* Accent text gradient — neutral brushed chrome & starlight */
-  .text-gradient-accent {
-    background: linear-gradient(
-      135deg,
-      var(--accent-chrome) 0%,
-      var(--accent-primary-deep) 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   .section-rail {

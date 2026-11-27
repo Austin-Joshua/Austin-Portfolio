@@ -62,7 +62,7 @@ describe('Phase 4 Sections & Components', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Austin Joshua' })).toBeInTheDocument();
     expect(screen.getByText('Verified narrative pending.')).toBeInTheDocument();
-    expect(screen.getByText('ABOUT // PENDING_VERIFICATION')).toBeInTheDocument();
+    expect(screen.getByText('Profile pending')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /Austin Joshua portrait/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Résumé/i })).not.toBeInTheDocument();
 

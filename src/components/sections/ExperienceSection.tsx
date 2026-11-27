@@ -1,4 +1,4 @@
-import { Compass, Layers, Sparkles } from 'lucide-react';
+import { BookOpen, Code2, Calendar } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -10,31 +10,30 @@ import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
 import { getSectionRoute } from '@/routes/routes';
 import type { ExperienceItem } from '@/types/portfolio';
 import { hasNonEmptyText } from '@/utils/dataGuards';
-import { scrollToSection } from '@/utils/scrollNavigation';
-import { playPlanetSound } from '@/utils/soundEffects';
+import { navigateToSection } from '@/utils/scrollNavigation';
 
 export interface ExperienceSectionProps {
   entries?: readonly ExperienceItem[];
 }
 
-const VERIFIED_READINESS_MILESTONES = [
+const INTERNSHIP_READINESS_DETAILS = [
   {
-    icon: Sparkles,
-    label: 'Hackathon Honors',
-    value: '3 National & International Awards',
-    detail: 'Techathon 2K26 · Code of Thrones · INNOCLASH \'26',
+    icon: Calendar,
+    label: 'Availability',
+    value: '2026–2027 Engineering Internships',
+    detail: 'Open to software, backend, and applied AI roles (Chennai / Remote).',
   },
   {
-    icon: Layers,
-    label: 'Production Builds',
-    value: '5 Deployed Engineering Worlds',
-    detail: 'AgriFlux · CIVIQ · ResQ Meal · RIT Digital Twin · NeuroRAM',
+    icon: Code2,
+    label: 'Engineering workflow',
+    value: 'CI/CD, Containers & Type-Safe Codebases',
+    detail: 'GitHub Actions, Docker, REST/WebSocket APIs, and automated testing.',
   },
   {
-    icon: Compass,
-    label: 'Technical Leadership',
-    value: 'President · Infinitus Math Club',
-    detail: '2026–2027 · Overall Non-Technical Coordinator, TECHritz',
+    icon: BookOpen,
+    label: 'Core coursework',
+    value: 'B.E. CSE (2024–2028)',
+    detail: 'Data Structures & Algorithms, DBMS, Operating Systems, AI Foundations.',
   },
 ] as const;
 
@@ -47,16 +46,7 @@ export function ExperienceSection({
   const spineFillRef = useRef<HTMLDivElement>(null);
 
   const handleJump = (target: 'projects' | 'contact') => {
-    if (universeNav) {
-      universeNav.navigateToPlanet(target);
-      return;
-    }
-    playPlanetSound(target);
-    scrollToSection(target, {
-      prefersReducedMotion,
-      focusTarget: false,
-      updateHash: true,
-    });
+    navigateToSection(target, { universeNav, prefersReducedMotion });
   };
 
   const validEntries = entries.filter(
@@ -100,10 +90,8 @@ export function ExperienceSection({
   return (
     <SectionShell
       id="experience"
-      index="05"
-      indexLabel="EXPERIENCE"
       title="Experience"
-      description="Orbital timeline trajectory mapped across Viridis Teal."
+      description="Undergraduate background and internship readiness in software engineering and applied AI."
     >
       <div className="pointer-events-none">
         {validEntries.length === 0 ? (
@@ -115,28 +103,11 @@ export function ExperienceSection({
               <GlassCard
                 padding="lg"
                 variant="strong"
-                className="relative overflow-hidden h-full p-6 sm:p-8 lg:p-9 flex flex-col justify-between gap-6 border-[var(--planet-experience)]/35"
+                className="relative h-full p-6 sm:p-8 lg:p-9 flex flex-col justify-between gap-6 border-[var(--planet-experience)]/35"
               >
-                {/* Emerald orbital station trajectory schematic */}
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 600 140"
-                  className="pointer-events-none absolute right-0 top-0 h-40 w-80 opacity-25"
-                  fill="none"
-                >
-                  <path
-                    d="M10 110 Q 190 15, 590 78"
-                    stroke="#2DD4BF"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 6"
-                  />
-                  <circle cx="190" cy="52" r="6" fill="#2DD4BF" />
-                  <circle cx="430" cy="60" r="4" stroke="#2DD4BF" strokeWidth="1.5" />
-                </svg>
-
-                <div className="relative z-10 space-y-5">
-                  <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-experience)]">
-                    ORBITAL TRAJECTORY // STANDING BY
+                <div className="space-y-5">
+                  <p className="type-meta text-xs font-medium text-[var(--planet-experience)]">
+                    Current status
                   </p>
                   <h3 className="type-h3 text-2xl sm:text-3xl text-[var(--text-primary)]">
                     No experience entries added yet.
@@ -146,46 +117,29 @@ export function ExperienceSection({
                   </p>
 
                   <div className="flex flex-wrap gap-2.5 pt-1">
-                    {['Software Engineering Intern', 'Python & Backend Developer', 'Applied AI / ML Intern'].map(
-                      (roleTag) => (
-                        <span
-                          key={roleTag}
-                          className="rounded-full border border-[var(--planet-experience)]/35 bg-[var(--planet-experience)]/10 px-3.5 py-1.5 font-mono text-xs text-[var(--planet-experience)]"
-                        >
-                          {roleTag}
-                        </span>
-                      ),
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-[var(--border-subtle)]/70">
-                    <div>
-                      <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
-                        Core Production Stack
-                      </p>
-                      <p className="text-sm font-medium text-[var(--text-primary)] mt-1">
-                        Python · TypeScript · React · Next.js · Go (Gin) · Spring Boot
-                      </p>
-                    </div>
-                    <div>
-                      <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
-                        Current Readiness
-                      </p>
-                      <p className="text-sm font-medium text-[var(--text-primary)] mt-1">
-                        Chennai, India · Available for Engineering Internships
-                      </p>
-                    </div>
+                    {[
+                      'Software Engineering Intern',
+                      'Python & Backend Developer',
+                      'Applied AI / ML Intern',
+                    ].map((roleTag) => (
+                      <span
+                        key={roleTag}
+                        className="rounded-[var(--radius-control)] border border-[var(--planet-experience)]/35 bg-[var(--planet-experience)]/10 px-3 py-1.5 font-mono text-xs text-[var(--planet-experience)]"
+                      >
+                        {roleTag}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                <div className="relative z-10 flex flex-wrap gap-3 border-t border-[var(--border-subtle)] pt-5">
+                <div className="flex flex-wrap gap-3 border-t border-[var(--border-subtle)] pt-5">
                   <a
                     href={getSectionRoute('projects')}
                     onClick={(e) => {
                       e.preventDefault();
                       handleJump('projects');
                     }}
-                    className="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] border border-[var(--planet-experience)]/50 bg-[var(--planet-experience)]/12 px-4 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-experience)] hover:bg-[var(--planet-experience)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                    className="inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] border border-[var(--planet-experience)]/50 bg-[var(--planet-experience)]/12 px-4 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-experience)] hover:bg-[var(--planet-experience)]/20 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                   >
                     Inspect Shipped Projects
                   </a>
@@ -195,7 +149,7 @@ export function ExperienceSection({
                       e.preventDefault();
                       handleJump('contact');
                     }}
-                    className="glass-surface inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-4 py-2.5 font-mono text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--planet-experience)] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                    className="glass-surface inline-flex min-h-[44px] items-center rounded-[var(--radius-control)] px-4 py-2.5 font-mono text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--planet-experience)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                   >
                     Connect for Roles
                   </a>
@@ -208,23 +162,23 @@ export function ExperienceSection({
               className="col-span-4 md:col-span-8 lg:col-span-5 pointer-events-auto"
             >
               <GlassCard padding="lg" variant="default" className="h-full p-6 sm:p-8 space-y-5">
-                <p className="type-meta uppercase tracking-[0.16em] text-[var(--planet-experience)]">
-                  VERIFIED PRE-CAREER EXECUTION
+                <p className="type-meta text-xs font-medium text-[var(--planet-experience)]">
+                  Internship readiness
                 </p>
 
                 <div className="space-y-4">
-                  {VERIFIED_READINESS_MILESTONES.map((item) => {
-                    const MilestoneIcon = item.icon;
+                  {INTERNSHIP_READINESS_DETAILS.map((item) => {
+                    const ItemIcon = item.icon;
                     return (
                       <div
                         key={item.label}
                         className="flex items-start gap-3.5 rounded-[var(--radius-control)] border border-[var(--border-subtle)]/80 bg-[var(--surface-elevated)]/70 p-4"
                       >
                         <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--planet-experience)]/35 bg-[var(--planet-experience)]/10 text-[var(--planet-experience)]">
-                          <MilestoneIcon className="size-4" aria-hidden="true" />
+                          <ItemIcon className="size-4" aria-hidden="true" />
                         </span>
                         <div className="space-y-0.5">
-                          <p className="type-meta text-[11px] uppercase text-[var(--text-muted)]">
+                          <p className="type-meta text-[11px] text-[var(--text-muted)]">
                             {item.label}
                           </p>
                           <p className="text-base font-semibold text-[var(--text-primary)]">

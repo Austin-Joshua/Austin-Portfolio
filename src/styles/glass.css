@@ -1,9 +1,4 @@
-/*
- * Glassmorphism, cosmic surfaces and cinematic reveal utilities
- */
-
 @layer components {
-  /* ── Core dark cosmic glass surfaces ───────────────────────────────────── */
   .glass-surface {
     background-color: var(--surface-elevated);
     border: 1px solid var(--border-glass);
@@ -11,8 +6,7 @@
     box-shadow: var(--shadow-glass);
     transition:
       background-color var(--transition-cosmic),
-      border-color var(--transition-cosmic),
-      box-shadow var(--transition-cosmic);
+      border-color var(--transition-cosmic);
   }
 
   .glass-surface-strong {
@@ -22,8 +16,7 @@
     box-shadow: var(--shadow-elevated);
     transition:
       background-color var(--transition-cosmic),
-      border-color var(--transition-cosmic),
-      box-shadow var(--transition-cosmic);
+      border-color var(--transition-cosmic);
   }
 
   @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -40,55 +33,6 @@
     }
   }
 
-  /* ── Atmospheric hero & modal scrims ──────────────────────────────────── */
-  .scrim-surface {
-    background-color: var(--surface-scrim);
-  }
-
-  .scrim-hero-gradient {
-    background:
-      var(--grad-hero-radial),
-      linear-gradient(
-        180deg,
-        var(--surface-canvas) 0%,
-        rgba(2, 3, 7, 0) 28%,
-        rgba(2, 3, 7, 0) 72%,
-        var(--surface-canvas) 100%
-      );
-  }
-
-  /* ── Cinematic cosmic card ────────────────────────────────────────────── */
-  .glass-card-cinematic {
-    background: var(--surface-glass);
-    background-image: var(--grad-card-accent);
-    border: 1px solid var(--border-glass);
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-glass);
-    transition:
-      border-color var(--transition-cosmic),
-      box-shadow var(--transition-cosmic),
-      transform var(--transition-cosmic);
-  }
-
-  .glass-card-cinematic:hover {
-    border-color: var(--border-glass-strong);
-    box-shadow: var(--shadow-card-hover);
-    transform: translateY(-2px);
-  }
-
-  /* ── Atmospheric glow halo ───────────────────────────────────────────── */
-  .accent-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .glass-border {
-    border: 1px solid var(--border-glass);
-  }
-
-  .glass-border-strong {
-    border: 1px solid var(--border-glass-strong);
-  }
-
   .surface-elevated-fallback {
     background-color: var(--surface-elevated);
     border: 1px solid var(--border-subtle);
@@ -96,44 +40,10 @@
     box-shadow: var(--shadow-elevated);
   }
 
-  /* ── Portrait frame ──────────────────────────────────────────────────── */
-  .portrait-frame {
-    border: 1px solid var(--border-glass);
-    border-radius: var(--radius-portrait);
-    overflow: hidden;
-    box-shadow: var(--shadow-elevated), var(--shadow-glow);
-    transition:
-      border-color var(--transition-cosmic),
-      box-shadow var(--transition-cosmic);
-  }
-
-  /* ── Accent hairline ─────────────────────────────────────────────────── */
-  .accent-hairline {
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      var(--planet-sun) 0%,
-      var(--accent-primary) 50%,
-      transparent 100%
-    );
-    border-radius: 999px;
-    opacity: 0.85;
-  }
-
-  .section-eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--text-meta);
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent-primary);
-  }
-
-  /* ── Interactive Hero Portrait Silhouette-to-Reveal ──────────────────── */
   .portrait-cutout-img {
     transition:
-      filter 420ms cubic-bezier(0.22, 1, 0.36, 1),
-      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+      filter 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .portrait-cutout-reduced {
@@ -152,7 +62,7 @@
       contrast(1.32)
       saturate(0)
       drop-shadow(0 0 2px rgba(255, 198, 109, 0.72))
-      drop-shadow(0 0 26px rgba(255, 179, 71, 0.42));
+      drop-shadow(0 0 22px rgba(255, 179, 71, 0.35));
   }
 
   .portrait-cutout-revealed {
@@ -160,10 +70,9 @@
       brightness(1.03)
       contrast(1.04)
       saturate(1.04)
-      drop-shadow(0 16px 36px rgba(2, 3, 7, 0.65));
+      drop-shadow(0 16px 32px rgba(2, 3, 7, 0.65));
   }
 
-  /* ── Cosmic Intro Loader aura keyframes (behind static AJ emblem) ────── */
   @keyframes cosmicSpinSlow {
     from {
       transform: rotate(0deg);

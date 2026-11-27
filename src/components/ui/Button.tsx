@@ -51,7 +51,7 @@ export function Button({
       className={[
         'inline-flex items-center justify-center rounded-[var(--radius-control)]',
         'select-none whitespace-nowrap cursor-pointer',
-        'transition-[background-color,border-color,color,box-shadow,filter] duration-[var(--transition-theme)]',
+        'transition-[background-color,border-color,color,transform,filter] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]',
         'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         VARIANT_CLASSES[variant],

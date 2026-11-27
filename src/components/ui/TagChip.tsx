@@ -61,7 +61,7 @@ export function TagChip(props: TagChipProps) {
         className={[
           ...baseClasses,
           'min-h-[44px] md:min-h-[28px] min-w-[28px] cursor-pointer',
-          'transition-[background-color,border-color,color] duration-[var(--transition-theme)]',
+          'transition-[background-color,border-color,color,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]',
           'hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]',
           'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
           'disabled:opacity-50 disabled:cursor-not-allowed',

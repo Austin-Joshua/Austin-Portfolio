@@ -34,25 +34,22 @@ export function SectionShell({
   const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
 
   const headerContent = title ? (
-    <SideReveal direction="left" className="pointer-events-none mb-10 md:mb-12">
+    <SideReveal direction="left" className="pointer-events-none mb-8 md:mb-10">
       <div className="pointer-events-auto w-fit max-w-[78ch]">
         {planet && (
-          <div className="inline-flex items-center gap-3 mb-3.5">
+          <div className="inline-flex items-center gap-2.5 mb-2.5">
             <span
               aria-hidden="true"
-              className="size-3 rounded-full"
-              style={{
-                backgroundColor: planet.color,
-                boxShadow: `0 0 14px ${planet.color}`,
-              }}
+              className="size-2.5 rounded-full"
+              style={{ backgroundColor: planet.color }}
             />
-            <p className="type-meta uppercase tracking-[0.18em] text-xs sm:text-sm" style={{ color: planet.color }}>
+            <p className="type-meta text-xs sm:text-sm" style={{ color: planet.color }}>
               {planet.cosmicTitle}
             </p>
           </div>
         )}
         {!planet && indexLabel && (
-          <p className="type-meta uppercase tracking-[0.16em] text-[var(--text-muted)] mb-3">
+          <p className="type-meta text-xs text-[var(--text-muted)] mb-2.5">
             {indexLabel}
           </p>
         )}

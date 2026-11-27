@@ -1,5 +1,11 @@
-import { isSectionId } from '@/data/sections';
+import { isSectionId, type SectionId } from '@/data/sections';
 import { buildRouteTitle, buildSectionUrl } from '@/routes/routes';
+import type { PlanetId } from '@/three/universeConfig';
+import { playPlanetSound } from '@/utils/soundEffects';
+
+export interface UniverseNavigatorLike {
+  navigateToPlanet: (planet: PlanetId) => void;
+}
 
 export interface ScrollNavigationOptions {
   prefersReducedMotion: boolean;
@@ -94,4 +100,28 @@ export function scrollToSection(
   }
 
   return true;
+}
+
+/**
+ * Unified section/planet navigation helper shared across Hero, Navbar, Skills, and Experience.
+ */
+export function navigateToSection(
+  targetId: SectionId,
+  options: {
+    universeNav?: UniverseNavigatorLike | null;
+    prefersReducedMotion: boolean;
+  },
+): void {
+  const planet: PlanetId = targetId === 'hero' ? 'sun' : targetId;
+  if (options.universeNav) {
+    options.universeNav.navigateToPlanet(planet);
+    return;
+  }
+
+  playPlanetSound(planet);
+  scrollToSection(targetId, {
+    prefersReducedMotion: options.prefersReducedMotion,
+    focusTarget: false,
+    updateRoute: true,
+  });
 }

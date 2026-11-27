@@ -27,7 +27,7 @@ export function SideReveal({
     return <div className={className}>{children}</div>;
   }
 
-  const offset = direction === 'left' ? -52 : 52;
+  const offset = direction === 'left' ? -44 : 44;
 
   return (
     <m.div
@@ -35,11 +35,11 @@ export function SideReveal({
       data-direction={direction}
       initial={{ opacity: 0, x: offset }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: false, amount: 0.08 }}
+      viewport={{ once: false, amount: 0.06 }}
       transition={{
-        duration: 0.5,
+        duration: 0.36,
         delay,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.22, 1, 0.36, 1],
       }}
       className={className}
     >

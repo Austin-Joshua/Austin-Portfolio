@@ -9,8 +9,8 @@ import { profileData } from '@/data/profile';
 import { getSectionRoute } from '@/routes/routes';
 import type { ProfileData } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
-import { scrollToSection } from '@/utils/scrollNavigation';
-import { playClick, playPlanetSound } from '@/utils/soundEffects';
+import { navigateToSection } from '@/utils/scrollNavigation';
+import { playClick } from '@/utils/soundEffects';
 
 export interface HeroSectionProps {
   profile?: ProfileData;
@@ -26,16 +26,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
     targetId: 'projects' | 'contact' | 'about',
   ) => {
     event.preventDefault();
-    if (universeNav) {
-      universeNav.navigateToPlanet(targetId);
-      return;
-    }
-    playPlanetSound(targetId);
-    scrollToSection(targetId, {
-      prefersReducedMotion,
-      focusTarget: false,
-      updateHash: true,
-    });
+    navigateToSection(targetId, { universeNav, prefersReducedMotion });
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -62,7 +53,6 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
   return (
     <SectionShell
       id="hero"
-      indexLabel="SUN"
       title={undefined}
       labelledbyId="hero-heading"
       headingLevel={1}
@@ -141,10 +131,10 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
             </p>
           </div>
 
-          {/* Right Credential Column & Minimal Circular Actions */}
+            {/* Right Credential Column & Minimal Circular Actions */}
           <div className="pointer-events-auto flex flex-col items-center text-center gap-2.5 sm:gap-3 max-w-[40ch] lg:max-w-[20.5rem] lg:items-end lg:text-right lg:absolute lg:right-4 lg:bottom-10">
             <div className="space-y-1 hidden sm:block">
-              <p className="type-meta text-[11px] uppercase tracking-[0.14em] text-[var(--accent-primary)]">
+              <p className="type-meta text-[11px] font-medium text-[var(--accent-primary)]">
                 5 Shipped Systems · 3 Hackathon Awards
               </p>
               <p className="type-meta text-[11px] text-[var(--text-muted)]">
@@ -152,14 +142,13 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
               </p>
             </div>
 
-            {/* Minimal Circular Cosmic Icon Actions */}
-            <div className="flex items-center justify-center lg:justify-end gap-3.5 sm:gap-4 pt-1">
+            <div className="flex items-center justify-center lg:justify-end gap-3 sm:gap-3.5 pt-1">
               <a
                 href={getSectionRoute('projects')}
                 onClick={(event) => handleJump(event, 'projects')}
                 aria-label="View Projects"
                 title="Projects"
-                className="group inline-flex min-h-[44px] min-w-[44px] md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/80 text-[var(--text-secondary)] hover:text-[var(--planet-projects)] hover:border-[var(--planet-projects)] hover:scale-110 active:scale-95 transition-[color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                className="group inline-flex min-h-[44px] min-w-[44px] md:h-11 md:w-11 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--text-secondary)] hover:text-[var(--planet-projects)] hover:border-[var(--planet-projects)] active:scale-95 transition-[color,border-color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
               >
                 <FolderGit2 className="size-4 md:size-[18px] shrink-0" aria-hidden="true" />
               </a>
@@ -169,7 +158,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
                 onClick={(event) => handleJump(event, 'contact')}
                 aria-label="Contact Me"
                 title="Contact"
-                className="group inline-flex min-h-[44px] min-w-[44px] md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/80 text-[var(--text-secondary)] hover:text-[var(--planet-contact)] hover:border-[var(--planet-contact)] hover:scale-110 active:scale-95 transition-[color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                className="group inline-flex min-h-[44px] min-w-[44px] md:h-11 md:w-11 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--text-secondary)] hover:text-[var(--planet-contact)] hover:border-[var(--planet-contact)] active:scale-95 transition-[color,border-color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
               >
                 <Mail className="size-4 md:size-[18px] shrink-0" aria-hidden="true" />
               </a>
@@ -181,7 +170,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
                   onClick={() => playClick()}
                   aria-label="Résumé"
                   title="Download Résumé (PDF)"
-                  className="group inline-flex min-h-[44px] min-w-[44px] md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/80 text-[var(--text-secondary)] hover:text-[var(--planet-sun)] hover:border-[var(--planet-sun)] hover:scale-110 active:scale-95 transition-[color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                  className="group inline-flex min-h-[44px] min-w-[44px] md:h-11 md:w-11 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--text-secondary)] hover:text-[var(--planet-sun)] hover:border-[var(--planet-sun)] active:scale-95 transition-[color,border-color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                 >
                   <Download className="size-4 md:size-[18px] shrink-0" aria-hidden="true" />
                 </a>
@@ -192,7 +181,7 @@ export function HeroSection({ profile = profileData }: HeroSectionProps) {
                 onClick={(event) => handleJump(event, 'about')}
                 aria-label="Explore About Planet"
                 title="Explore Planets"
-                className="group inline-flex min-h-[44px] min-w-[44px] md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/80 text-[var(--text-secondary)] hover:text-[var(--planet-about)] hover:border-[var(--planet-about)] hover:scale-110 active:scale-95 transition-[color,border-color,transform] duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                className="group inline-flex min-h-[44px] min-w-[44px] md:h-11 md:w-11 items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--text-secondary)] hover:text-[var(--planet-about)] hover:border-[var(--planet-about)] active:scale-95 transition-[color,border-color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
               >
                 <Compass className="size-4 md:size-[18px] shrink-0" aria-hidden="true" />
               </a>
