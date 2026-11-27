@@ -12,6 +12,7 @@ import {
   isValidHttpUrl,
   isValidLocalOrHttpAssetUrl,
 } from '@/utils/dataGuards';
+import { playClick, playCloseModal, playOpenModal } from '@/utils/soundEffects';
 
 export interface ProjectDetailModalProps {
   project: ProjectItem | null;
@@ -86,12 +87,23 @@ function ProjectDetailDialogInner({
     prefersReducedMotion,
   );
 
+  const handleCloseWithSound = () => {
+    playCloseModal();
+    onClose();
+  };
+
+  useEffect(() => {
+    if (isPresent) {
+      playOpenModal();
+    }
+  }, [isPresent, project.slug]);
+
   // Immediately release trap and restore focus when AnimatePresence begins exiting
   useFocusTrap({
     active: isPresent,
     containerRef: dialogRef,
     initialFocusRef: closeButtonRef,
-    onEscape: onClose,
+    onEscape: handleCloseWithSound,
     fallbackFocusRef,
   });
 
@@ -188,7 +200,7 @@ function ProjectDetailDialogInner({
       exit="exit"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onClose();
+          handleCloseWithSound();
         }
       }}
       className={[
@@ -235,7 +247,7 @@ function ProjectDetailDialogInner({
           <button
             ref={closeButtonRef}
             type="button"
-            onClick={onClose}
+            onClick={handleCloseWithSound}
             aria-label="Close project details"
             className={[
               'glass-surface inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
@@ -338,6 +350,7 @@ function ProjectDetailDialogInner({
                   href={project.links.github}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => playClick()}
                   className={[
                     'glass-surface inline-flex min-h-[44px] items-center gap-2 px-4 py-2.5',
                     'rounded-[var(--radius-control)] font-mono text-xs font-medium text-[var(--text-primary)]',
@@ -354,6 +367,7 @@ function ProjectDetailDialogInner({
                   href={project.links.live}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => playClick()}
                   className={[
                     'inline-flex min-h-[44px] items-center gap-2 px-4 py-2.5',
                     'rounded-[var(--radius-control)] bg-[var(--accent-primary)] text-[var(--text-on-accent)]',

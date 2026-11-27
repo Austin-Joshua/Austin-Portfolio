@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
 import { ProjectDetailModal } from '@/components/ui/ProjectDetailModal';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { TagChip } from '@/components/ui/TagChip';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { projectsData } from '@/data/projects';
@@ -21,6 +22,7 @@ import {
   type ProjectCategoryOption,
 } from '@/utils/projectFilters';
 import { scrollToSection } from '@/utils/scrollNavigation';
+import { playClick, playProjectWorldSound } from '@/utils/soundEffects';
 
 export interface ProjectsSectionProps {
   projects?: readonly ProjectItem[];
@@ -184,12 +186,14 @@ export function ProjectsSection({
     null;
 
   const handleSelectCategory = (option: ProjectCategoryOption) => {
+    playClick();
     setActiveCategory(option.id);
     const nextFiltered = filterProjectsByCategory(validProjects, option.id);
     setAnnouncement(formatProjectCountAnnouncement(nextFiltered.length, option.label));
   };
 
   const handleResetFilters = () => {
+    playClick();
     setActiveCategory(ALL_PROJECT_CATEGORY);
     setAnnouncement(formatProjectCountAnnouncement(validProjects.length, 'All'));
   };
@@ -210,53 +214,56 @@ export function ProjectsSection({
         {invalidNoticeBanner}
 
         {/* Category Filter Strip */}
-        <div className="pointer-events-auto flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
-          <div
-            role="group"
-            aria-label="Filter projects by category"
-            className="flex flex-wrap gap-2.5"
-          >
-            {filterOptions.map((option) => {
-              const isSelected = option.id === resolvedCategory;
+        <SideReveal direction="left">
+          <div className="pointer-events-auto flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+            <div
+              role="group"
+              aria-label="Filter projects by category"
+              className="flex flex-wrap gap-2.5"
+            >
+              {filterOptions.map((option) => {
+                const isSelected = option.id === resolvedCategory;
 
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => handleSelectCategory(option)}
-                  className={[
-                    'inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
-                    'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-[background-color,border-color,color] duration-200',
-                    'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
-                    isSelected
-                      ? 'bg-[var(--planet-projects)] text-[#020307] border-[var(--planet-projects)] font-semibold'
-                      : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--planet-projects)] hover:text-[var(--text-primary)]',
-                  ].join(' ')}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => handleSelectCategory(option)}
+                    className={[
+                      'inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
+                      'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-[background-color,border-color,color] duration-200',
+                      'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
+                      isSelected
+                        ? 'bg-[var(--planet-projects)] text-[#020307] border-[var(--planet-projects)] font-semibold'
+                        : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--planet-projects)] hover:text-[var(--text-primary)]',
+                    ].join(' ')}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
+              {filteredProjects.length}{' '}
+              {filteredProjects.length === 1 ? 'PROJECT WORLD' : 'PROJECT WORLDS'}
+            </p>
           </div>
-
-          <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
-            {filteredProjects.length}{' '}
-            {filteredProjects.length === 1 ? 'PROJECT WORLD' : 'PROJECT WORLDS'}
-          </p>
-        </div>
+        </SideReveal>
 
         <LiveAnnouncer message={announcement} politeness="polite" />
 
         {filteredProjects.length > 0 && selectedWorld ? (
           <div className="pointer-events-none space-y-7">
             {/* Orbital World Inspector Panel for the active selected project world */}
-            <GlassCard
-              variant="strong"
-              padding="lg"
-              data-testid="featured-project-world"
-              className="pointer-events-auto relative overflow-hidden p-6 sm:p-8 lg:p-10 border-[var(--border-glass-strong)]"
-            >
+            <SideReveal direction="right">
+              <GlassCard
+                variant="strong"
+                padding="lg"
+                data-testid="featured-project-world"
+                className="pointer-events-auto relative overflow-hidden p-6 sm:p-8 lg:p-10 border-[var(--border-glass-strong)]"
+              >
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full blur-3xl opacity-35"
@@ -298,7 +305,10 @@ export function ProjectsSection({
                   <Button
                     variant="primary"
                     size="md"
-                    onClick={() => openProject(selectedWorld.slug)}
+                    onClick={() => {
+                      playProjectWorldSound(selectedWorld.slug);
+                      openProject(selectedWorld.slug);
+                    }}
                     aria-label={`Launch World Details for ${selectedWorld.title}`}
                   >
                     Launch World Details
@@ -308,6 +318,7 @@ export function ProjectsSection({
                       href={selectedWorld.links.github}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => playClick()}
                       className="glass-surface inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2.5 rounded-[var(--radius-control)] font-mono text-xs sm:text-sm text-[var(--text-primary)] hover:border-[var(--planet-projects)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>GitHub</span>
@@ -319,6 +330,7 @@ export function ProjectsSection({
                       href={selectedWorld.links.live}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => playClick()}
                       className="inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2.5 rounded-[var(--radius-control)] font-mono text-xs sm:text-sm font-semibold text-[#020307] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       style={{ backgroundColor: getWorldTheme(selectedWorld.slug).primary }}
                     >
@@ -329,6 +341,7 @@ export function ProjectsSection({
                 </div>
               </div>
             </GlassCard>
+            </SideReveal>
 
             {/* Orbital Project Trajectory Grid */}
             <div className="pointer-events-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -344,20 +357,17 @@ export function ProjectsSection({
                 const isSelectedWorld = selectedWorld.slug === project.slug;
                 const hasGithub = isValidHttpUrl(project.links.github);
                 const hasLive = isValidHttpUrl(project.links.live);
-                const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
                 return (
-                  <m.div
+                  <SideReveal
                     key={project.slug}
-                    layout={!prefersReducedMotion}
-                    initial={canUseInView ? { x: idx % 2 === 0 ? -22 : 22 } : false}
-                    whileInView={canUseInView ? { x: 0 } : undefined}
-                    viewport={{ once: true, amount: 0.12 }}
-                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
-                    transition={layoutTransition}
+                    direction={idx % 2 === 0 ? 'left' : 'right'}
                     className="pointer-events-auto flex"
                   >
-                    <article
+                    <m.article
+                      layout={!prefersReducedMotion}
+                      whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                      transition={layoutTransition}
                       onMouseEnter={() => setFocusedWorldSlug(project.slug)}
                       className={[
                         'glass-surface flex w-full flex-col justify-between gap-5 p-6 md:p-7 transition-all duration-200',
@@ -382,7 +392,10 @@ export function ProjectsSection({
 
                         <button
                           type="button"
-                          onClick={() => setFocusedWorldSlug(project.slug)}
+                          onClick={() => {
+                            playProjectWorldSound(project.slug);
+                            setFocusedWorldSlug(project.slug);
+                          }}
                           className="text-left w-full rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px] cursor-pointer"
                         >
                           <h3 className="type-h3 text-[var(--text-primary)] hover:underline">
@@ -408,7 +421,10 @@ export function ProjectsSection({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => openProject(project.slug)}
+                          onClick={() => {
+                            playProjectWorldSound(project.slug);
+                            openProject(project.slug);
+                          }}
                           aria-label={`Inspect Details — ${project.title}`}
                         >
                           Inspect Details
@@ -420,6 +436,7 @@ export function ProjectsSection({
                               href={project.links.github}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => playClick()}
                               className="inline-flex min-h-[44px] items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-control)] font-mono text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
                             >
                               <span>GitHub</span>
@@ -431,6 +448,7 @@ export function ProjectsSection({
                               href={project.links.live}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => playClick()}
                               className="inline-flex min-h-[44px] items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-control)] font-mono text-xs font-semibold focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px]"
                               style={{ color: world.primary }}
                             >
@@ -440,8 +458,8 @@ export function ProjectsSection({
                           )}
                         </div>
                       </div>
-                    </article>
-                  </m.div>
+                    </m.article>
+                  </SideReveal>
                 );
               })}
             </div>

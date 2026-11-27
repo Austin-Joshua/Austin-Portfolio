@@ -1,8 +1,8 @@
 import { Compass, Layers, Sparkles } from 'lucide-react';
-import { m } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { experienceData } from '@/data/experience';
@@ -10,6 +10,7 @@ import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
 import type { ExperienceItem } from '@/types/portfolio';
 import { hasNonEmptyText } from '@/utils/dataGuards';
 import { scrollToSection } from '@/utils/scrollNavigation';
+import { playPlanetSound } from '@/utils/soundEffects';
 
 export interface ExperienceSectionProps {
   entries?: readonly ExperienceItem[];
@@ -44,13 +45,12 @@ export function ExperienceSection({
   const timelineScopeRef = useRef<HTMLDivElement>(null);
   const spineFillRef = useRef<HTMLDivElement>(null);
 
-  const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
-
   const handleJump = (target: 'projects' | 'contact') => {
     if (universeNav) {
       universeNav.navigateToPlanet(target);
       return;
     }
+    playPlanetSound(target);
     scrollToSection(target, {
       prefersReducedMotion,
       focusTarget: false,
@@ -107,11 +107,8 @@ export function ExperienceSection({
       <div className="pointer-events-none">
         {validEntries.length === 0 ? (
           <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
-            <m.div
-              initial={canUseInView ? { x: -24 } : false}
-              whileInView={canUseInView ? { x: 0 } : undefined}
-              viewport={{ once: true, amount: 0.12 }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            <SideReveal
+              direction="left"
               className="col-span-4 md:col-span-8 lg:col-span-7 pointer-events-auto"
             >
               <GlassCard
@@ -203,13 +200,10 @@ export function ExperienceSection({
                   </a>
                 </div>
               </GlassCard>
-            </m.div>
+            </SideReveal>
 
-            <m.div
-              initial={canUseInView ? { x: 24 } : false}
-              whileInView={canUseInView ? { x: 0 } : undefined}
-              viewport={{ once: true, amount: 0.12 }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            <SideReveal
+              direction="right"
               className="col-span-4 md:col-span-8 lg:col-span-5 pointer-events-auto"
             >
               <GlassCard padding="lg" variant="default" className="h-full p-6 sm:p-8 space-y-5">
@@ -244,7 +238,7 @@ export function ExperienceSection({
                   })}
                 </div>
               </GlassCard>
-            </m.div>
+            </SideReveal>
           </div>
         ) : (
           <div ref={timelineScopeRef} className="pointer-events-none relative pl-5 md:pl-8">
@@ -268,7 +262,10 @@ export function ExperienceSection({
 
                 return (
                   <li key={entry.id} className="swiss-grid items-start pointer-events-none">
-                    <div className="col-span-4 md:col-span-3 space-y-1 md:pt-6 pointer-events-auto">
+                    <SideReveal
+                      direction="left"
+                      className="col-span-4 md:col-span-3 space-y-1 md:pt-6 pointer-events-auto"
+                    >
                       <p className="type-meta text-sm text-[var(--planet-experience)]">
                         {entry.period}
                       </p>
@@ -277,36 +274,41 @@ export function ExperienceSection({
                           {entry.locationOrMode}
                         </p>
                       )}
-                    </div>
+                    </SideReveal>
 
-                    <GlassCard
-                      as="div"
-                      padding="lg"
-                      className="pointer-events-auto col-span-4 md:col-span-5 lg:col-span-9 p-6 md:p-8 space-y-3 border-l-2 border-l-[var(--planet-experience)]"
+                    <SideReveal
+                      direction="right"
+                      className="pointer-events-auto col-span-4 md:col-span-5 lg:col-span-9"
                     >
-                      <div>
-                        <h3 className="type-h3 text-[var(--text-primary)]">
-                          {entry.role}
-                        </h3>
-                        <p className="type-lead text-[var(--text-secondary)]">
-                          {entry.organization}
-                        </p>
-                      </div>
+                      <GlassCard
+                        as="div"
+                        padding="lg"
+                        className="w-full p-6 md:p-8 space-y-3 border-l-2 border-l-[var(--planet-experience)]"
+                      >
+                        <div>
+                          <h3 className="type-h3 text-[var(--text-primary)]">
+                            {entry.role}
+                          </h3>
+                          <p className="type-lead text-[var(--text-secondary)]">
+                            {entry.organization}
+                          </p>
+                        </div>
 
-                      {hasNonEmptyText(entry.description) && (
-                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                          {entry.description}
-                        </p>
-                      )}
+                        {hasNonEmptyText(entry.description) && (
+                          <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                            {entry.description}
+                          </p>
+                        )}
 
-                      {validHighlights.length > 0 && (
-                        <ul className="space-y-1.5 pl-4 text-sm md:text-base text-[var(--text-secondary)] list-disc">
-                          {validHighlights.map((highlight, idx) => (
-                            <li key={`${entry.id}-hl-${idx}`}>{highlight}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </GlassCard>
+                        {validHighlights.length > 0 && (
+                          <ul className="space-y-1.5 pl-4 text-sm md:text-base text-[var(--text-secondary)] list-disc">
+                            {validHighlights.map((highlight, idx) => (
+                              <li key={`${entry.id}-hl-${idx}`}>{highlight}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </GlassCard>
+                    </SideReveal>
                   </li>
                 );
               })}

@@ -10,12 +10,14 @@ import {
 import type { MouseEvent, RefObject } from 'react';
 import { DesktopSectionRail } from '@/components/layout/DesktopSectionRail';
 import { ScrollProgressBar } from '@/components/layout/ScrollProgressBar';
+import { SoundToggle } from '@/components/ui/SoundToggle';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import { useOptionalUniverseNavigation } from '@/context/UniverseNavigationContext';
 import { PRIMARY_NAV_SECTIONS, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
 import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 import { scrollToSection } from '@/utils/scrollNavigation';
+import { playPlanetSound } from '@/utils/soundEffects';
 
 export interface NavbarProps {
   scrollProgressRef?: RefObject<number>;
@@ -53,6 +55,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
       return;
     }
 
+    playPlanetSound(targetId === 'hero' ? 'sun' : targetId);
     scrollToSection(targetId, {
       prefersReducedMotion,
       focusTarget: false,
@@ -64,7 +67,7 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
     <>
       <header className="relative z-40 pointer-events-none pt-[max(0.75rem,env(safe-area-inset-top))] pb-1 md:fixed md:inset-x-0 md:top-3 md:pt-0 md:pb-0">
         <div className="container-portfolio">
-          {/* Desktop sticky pill (AJ Logo ONLY + minimal section links, zero extra text or download icon) */}
+          {/* Desktop sticky pill (AJ Logo ONLY + minimal section links + sound icon toggle) */}
           <div className="hidden md:flex relative glass-surface pointer-events-auto flex-nowrap w-full min-h-[58px] items-center justify-between gap-x-4 px-5 lg:px-7">
             <a
               href="#hero"
@@ -126,10 +129,14 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
               })}
             </nav>
 
+            <div className="flex items-center shrink-0">
+              <SoundToggle />
+            </div>
+
             <ScrollProgressBar scrollProgressRef={scrollProgressRef} />
           </div>
 
-          {/* Mobile minimal floating AJ emblem badge only (no wide empty header bar or download button) */}
+          {/* Mobile minimal floating AJ emblem badge + Sound toggle */}
           <div className="flex md:hidden items-center justify-between">
             <a
               href="#hero"
@@ -145,6 +152,8 @@ export function Navbar({ scrollProgressRef }: NavbarProps) {
                 className="h-8 w-8 rounded-full object-contain"
               />
             </a>
+
+            <SoundToggle />
           </div>
         </div>
       </header>

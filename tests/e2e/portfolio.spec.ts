@@ -158,9 +158,26 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     );
     expect(renderedIds).toEqual([...SECTION_IDS]);
 
-    // Honest neutral Experience state, verified Achievements awards, zero contact forms/TBD
+    // Automated axe WCAG scan & keyboard SkipLink before any pointer interactions shift focus anchor
+    const axeResult = await new AxeBuilder({ page }).analyze();
+    expect(axeResult.violations).toEqual([]);
+
+    const skipLink = page.locator('a[href="#main-content"]');
+    if (browserName === 'webkit') {
+      await skipLink.focus();
+    } else {
+      await page.keyboard.press('Tab');
+    }
+    await expect(skipLink).toBeFocused();
+    await skipLink.press('Enter');
+    await expect(page.locator('#main-content')).toBeFocused();
+
+    // Honest neutral Experience state, verified Achievements awards, zero contact forms/TBD, zero section border dividers
+    await page.locator('#experience').scrollIntoViewIfNeeded();
     await expect(page.getByText('No experience entries added yet.')).toBeVisible();
+
     const achievementsSection = page.locator('#achievements');
+    await achievementsSection.scrollIntoViewIfNeeded();
     await expect(
       achievementsSection.getByRole('heading', { name: 'Best Performance Award — Techathon 2K26' }),
     ).toBeVisible();
@@ -172,23 +189,43 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     ).toBeVisible();
     await expect(page.locator('form')).toHaveCount(0);
 
+    const sectionBorderWidths = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('main section[id]')).map((sec) =>
+        parseFloat(getComputedStyle(sec).borderTopWidth || '0'),
+      ),
+    );
+    expect(sectionBorderWidths.every((w) => w === 0)).toBe(true);
+
+    // Sound toggle persists user preference
+    const soundBtn = page.getByTestId('sound-toggle-button').first();
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
+    await soundBtn.click();
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+      page.evaluate(() => window.localStorage.getItem('aj_cosmic_sound_enabled')),
+    ).resolves.toBe('false');
+    await soundBtn.click();
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
+
+    // Return to Hero top for Gyroscope verification
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(150);
+
+    // Gyroscope DeviceOrientation drives portrait tilt + glare sheen across Chromium/Firefox/WebKit
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        Object.assign(new Event('deviceorientation'), {
+          alpha: 0,
+          beta: 62,
+          gamma: 18,
+        }),
+      );
+    });
+    await expect(page.getByTestId('hero-portrait-figure')).toHaveAttribute('data-gyro-active', 'true');
+    await expect(page.getByTestId('gyro-specular-glare')).toHaveCSS('opacity', '0.65');
+
     const bodyText = await page.locator('body').innerText();
     expect(bodyText).not.toMatch(/\bTBD\b|Lorem ipsum/i);
-
-    // Automated axe WCAG scan passes with zero violations
-    const axeResult = await new AxeBuilder({ page }).analyze();
-    expect(axeResult.violations).toEqual([]);
-
-    // Keyboard SkipLink -> main content
-    const skipLink = page.locator('a[href="#main-content"]');
-    if (browserName === 'webkit') {
-      await skipLink.focus();
-    } else {
-      await page.keyboard.press('Tab');
-    }
-    await expect(skipLink).toBeFocused();
-    await skipLink.press('Enter');
-    await expect(page.locator('#main-content')).toBeFocused();
 
     // Solar System HUD navigation + reset + Atomic Skills cross-ref + 5 Project Worlds
     const hud = page.getByTestId('solar-system-hud');
@@ -610,7 +647,6 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
 
       const topCheck = await page.evaluate(() => {
         const html = document.documentElement;
-        const utilCapsule = document.querySelector('header a[href="#hero"]')?.getBoundingClientRect();
         const utilControls = Array.from(document.querySelectorAll('header a, header button'))
           .map((el) => el.getBoundingClientRect())
           .filter((r) => r.width > 0 && r.height > 0);
@@ -629,12 +665,15 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
           controlsInBounds: utilControls.every(
             (r) => r.left >= 0 && r.right <= html.clientWidth && r.width >= 43.5 && r.height >= 43.5,
           ),
-          anyOverlapAtTop: utilCapsule ? heroNodes.some((n) => intersects(utilCapsule, n)) : true,
+          anyOverlapAtTop:
+            utilControls.length > 0
+              ? utilControls.some((ctrl) => heroNodes.some((n) => intersects(ctrl, n)))
+              : true,
         };
       });
 
       expect(topCheck.overflowX, `Overflow at ${width}px`).toBeLessThanOrEqual(0);
-      expect(topCheck.controlsCount, `Mobile top logo control at ${width}px`).toBe(1);
+      expect(topCheck.controlsCount, `Mobile top logo + sound controls at ${width}px`).toBe(2);
       expect(topCheck.controlsInBounds, `Utility bounds & >=44px target at ${width}px`).toBe(true);
       expect(topCheck.anyOverlapAtTop, `Hero overlap at top ${width}px`).toBe(false);
 
@@ -642,7 +681,9 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
       await page.waitForTimeout(100);
 
       const scrolledCheck = await page.evaluate(() => {
-        const utilCapsule = document.querySelector('header a[href="#hero"]')?.getBoundingClientRect();
+        const utilControls = Array.from(document.querySelectorAll('header a, header button'))
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 && r.height > 0);
         const heroNodes = Array.from(
           document.querySelectorAll(
             '#hero .eyebrow-label, #hero h1, #hero .type-lead, #hero a, [data-testid="hero-3d-stage"]',
@@ -651,7 +692,10 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
         const intersects = (a: DOMRect, b: DOMRect) =>
           a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         return {
-          anyOverlapScrolled: utilCapsule ? heroNodes.some((n) => intersects(utilCapsule, n)) : true,
+          anyOverlapScrolled:
+            utilControls.length > 0
+              ? utilControls.some((ctrl) => heroNodes.some((n) => intersects(ctrl, n)))
+              : true,
         };
       });
       expect(scrolledCheck.anyOverlapScrolled, `Hero overlap scrolled at ${width}px`).toBe(false);
@@ -671,5 +715,35 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await expect(heroToggle).toHaveAttribute('aria-pressed', 'false');
     await page.mouse.move(10, 10);
     await expect(heroPortrait).toHaveAttribute('data-portrait-revealed', 'false');
+  });
+
+  test('supports bidirectional SideReveal scroll discovery (hidden offscreen, reveals on scroll down, hides when past, re-reveals on scroll up)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/', { waitUntil: 'load' });
+    await waitForIntroToFinish(page);
+    await page.waitForTimeout(150);
+
+    const contactReveal = page.locator('#contact [data-testid="side-reveal"]').first();
+    const aboutReveal = page.locator('#about [data-testid="side-reveal"]').first();
+
+    // Initially offscreen below at Hero top -> hidden with opacity 0
+    await expect(contactReveal).toHaveCSS('opacity', '0');
+    await expect(aboutReveal).toHaveCSS('opacity', '0');
+
+    // Scroll down to About -> reveals from side to opacity 1
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await expect(aboutReveal).toHaveCSS('opacity', '1');
+
+    // Scroll far down past About into Contact -> Contact reveals and About returns hidden
+    await page.locator('#contact').scrollIntoViewIfNeeded();
+    await expect(contactReveal).toHaveCSS('opacity', '1');
+    await expect(aboutReveal).toHaveCSS('opacity', '0');
+
+    // Scroll back up to About -> About re-reveals and Contact hides again
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await expect(aboutReveal).toHaveCSS('opacity', '1');
+    await expect(contactReveal).toHaveCSS('opacity', '0');
   });
 });

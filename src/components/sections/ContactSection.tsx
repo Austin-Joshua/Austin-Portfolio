@@ -6,7 +6,7 @@ import { SectionShell } from '@/components/layout/SectionShell';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
-import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { contactData } from '@/data/contact';
 import { profileData } from '@/data/profile';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -18,6 +18,7 @@ import {
   isValidHttpUrl,
   isValidLocalOrHttpAssetUrl,
 } from '@/utils/dataGuards';
+import { playClick, playSuccess } from '@/utils/soundEffects';
 
 export interface ContactSectionProps {
   contact?: ContactData;
@@ -46,7 +47,6 @@ function selectTextNode(element: HTMLElement | null): void {
 
 export function ContactSection({ contact = contactData }: ContactSectionProps) {
   const { status, announcement, copy } = useClipboard();
-  const { prefersReducedMotion } = useOptionalMotionPreference();
   const emailRef = useRef<HTMLAnchorElement>(null);
 
   const hasEmail = isValidEmailAddress(contact.email);
@@ -67,11 +67,13 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
   const handleCopyEmail = async () => {
     if (!validEmail) return;
     const copied = await copy(validEmail);
-    if (!copied) selectTextNode(emailRef.current);
+    if (copied) {
+      playSuccess();
+    } else {
+      playClick();
+      selectTextNode(emailRef.current);
+    }
   };
-
-  const canUseInView =
-    !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
   return (
     <SectionShell
@@ -95,11 +97,8 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
           <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
             {/* Left 7 columns: Reconstructed Direct Signal Terminal Console */}
             {validEmail && (
-              <m.div
-                initial={canUseInView ? { x: -24 } : false}
-                whileInView={canUseInView ? { x: 0 } : undefined}
-                viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+              <SideReveal
+                direction="left"
                 className="col-span-4 md:col-span-8 lg:col-span-7 pointer-events-auto"
               >
                 <GlassCard
@@ -129,6 +128,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                       <a
                         ref={emailRef}
                         href={`mailto:${validEmail}`}
+                        onClick={() => playClick()}
                         className="inline-flex min-h-[44px] items-center gap-3.5 text-xl sm:text-2xl lg:text-[2.15rem] xl:text-[2.45rem] leading-tight font-display font-bold text-[var(--text-primary)] hover:text-[var(--planet-contact)] transition-colors duration-200 break-all focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                       >
                         <MailIcon className="size-7 shrink-0 text-[var(--planet-contact)]" />
@@ -160,6 +160,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
 
                         <a
                           href={`mailto:${validEmail}`}
+                          onClick={() => playClick()}
                           className="inline-flex min-h-[44px] items-center gap-2 rounded-[var(--radius-control)] border border-[var(--planet-contact)]/45 bg-[var(--planet-contact)]/12 px-5 py-2.5 font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:border-[var(--planet-contact)] hover:bg-[var(--planet-contact)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                         >
                           <span>Compose Mail</span>
@@ -198,15 +199,12 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     </p>
                   </div>
                 </GlassCard>
-              </m.div>
+              </SideReveal>
             )}
 
             {/* Right 5 columns: Reconstructed Celestial Relay Hub with Minimal Circular Icon Nodes */}
-            <m.div
-              initial={canUseInView ? { x: 24 } : false}
-              whileInView={canUseInView ? { x: 0 } : undefined}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            <SideReveal
+              direction="right"
               className="col-span-4 md:col-span-8 lg:col-span-5 pointer-events-auto flex"
             >
               <GlassCard
@@ -236,6 +234,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => playClick()}
                         className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
                       >
                         <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--border-glass)] bg-[var(--surface-elevated)]/85 text-[var(--planet-contact)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-contact)] group-hover:shadow-[0_0_24px_rgba(244,114,182,0.34)]">
@@ -260,6 +259,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                     <a
                       href={profileData.resume.url}
                       download="Austin_Joshua_Resume.pdf"
+                      onClick={() => playClick()}
                       className="group inline-flex min-h-[48px] min-w-[48px] flex-col items-center gap-3 text-center focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[4px]"
                     >
                       <span className="inline-flex h-16 w-16 md:h-[72px] md:w-[72px] items-center justify-center rounded-full border border-[var(--planet-sun)]/50 bg-[var(--planet-sun)]/12 text-[var(--planet-sun)] transition-[border-color,transform,box-shadow] duration-200 group-hover:scale-110 group-hover:border-[var(--planet-sun)] group-hover:shadow-[0_0_24px_rgba(255,179,71,0.34)]">
@@ -278,7 +278,7 @@ export function ContactSection({ contact = contactData }: ContactSectionProps) {
                   )}
                 </nav>
               </GlassCard>
-            </m.div>
+            </SideReveal>
           </div>
         ) : (
           <GlassCard padding="lg" variant="elevated" className="pointer-events-auto">

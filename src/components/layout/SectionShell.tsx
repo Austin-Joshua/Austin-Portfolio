@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SideReveal } from '@/components/ui/SideReveal';
 import type { SectionId } from '@/data/sections';
 import { SOLAR_SYSTEM_PLANETS } from '@/three/universeConfig';
 
@@ -24,7 +25,7 @@ export function SectionShell({
   description,
   headingLevel = 2,
   fullBleed = false,
-  withDivider = true,
+  withDivider = false,
   className = '',
   children,
 }: SectionShellProps) {
@@ -33,7 +34,7 @@ export function SectionShell({
   const planet = SOLAR_SYSTEM_PLANETS.find((p) => p.sectionId === id);
 
   const headerContent = title ? (
-    <div className="pointer-events-none mb-10 md:mb-12">
+    <SideReveal direction="left" className="pointer-events-none mb-10 md:mb-12">
       <div className="pointer-events-auto w-fit max-w-[78ch]">
         {planet && (
           <div className="inline-flex items-center gap-3 mb-3.5">
@@ -86,7 +87,7 @@ export function SectionShell({
           </p>
         )}
       </div>
-    </div>
+    </SideReveal>
   ) : null;
 
   return (

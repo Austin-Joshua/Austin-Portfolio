@@ -2,11 +2,13 @@ import { ArrowUpRight, Compass, Cpu, GraduationCap } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { profileData } from '@/data/profile';
 import { setupScopedScrollAnimation } from '@/motion/gsapConfig';
 import type { ProfileData } from '@/types/portfolio';
 import { hasNonEmptyText, isValidLocalOrHttpAssetUrl } from '@/utils/dataGuards';
+import { playClick } from '@/utils/soundEffects';
 
 export interface AboutSectionProps {
   profile?: ProfileData;
@@ -22,7 +24,6 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   const { prefersReducedMotion } = useOptionalMotionPreference();
   const contentScopeRef = useRef<HTMLDivElement>(null);
   const hairlineRef = useRef<HTMLDivElement>(null);
-  const leftColRef = useRef<HTMLDivElement>(null);
   const stationParallaxRef = useRef<HTMLDivElement>(null);
 
   const validParagraphs = profile.aboutParagraphs.filter((p) => hasNonEmptyText(p));
@@ -32,7 +33,6 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
   useEffect(() => {
     const scope = contentScopeRef.current;
     const hairline = hairlineRef.current;
-    const leftCol = leftColRef.current;
     const stationCard = stationParallaxRef.current;
     if (!scope || !hairline || !stationCard) return;
 
@@ -50,36 +50,16 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
             scrollTrigger: {
               trigger: scope,
               start: 'top 82%',
-              once: true,
             },
           },
         );
-
-        // Alternating Left & Right horizontal scroll reveal (handwritten scroll format)
-        if (leftCol) {
-          gsap.fromTo(
-            leftCol,
-            { x: -28 },
-            {
-              x: 0,
-              duration: 0.65,
-              ease: 'power2.out',
-              scrollTrigger: {
-                trigger: scope,
-                start: 'top 84%',
-                once: true,
-              },
-            },
-          );
-        }
 
         stationCard.style.transform = 'none';
         mm.add('(min-width: 1024px)', () => {
           gsap.fromTo(
             stationCard,
-            { x: 28, y: 12 },
+            { y: 12 },
             {
-              x: 0,
               y: -12,
               ease: 'none',
               scrollTrigger: {
@@ -94,7 +74,6 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
       },
       () => {
         hairline.style.transform = 'scaleX(1)';
-        if (leftCol) leftCol.style.transform = 'none';
         stationCard.style.transform = 'none';
       },
     );
@@ -107,22 +86,22 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
         data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
         className="pointer-events-none space-y-8 md:space-y-10"
       >
-        {/* Cyan-accented orbital trajectory divider */}
+        {/* Subtle Cyan-accented orbital accent */}
         <div
           ref={hairlineRef}
           aria-hidden="true"
           data-testid="about-hairline"
-          className="h-[2px] w-full origin-left rounded-full opacity-80"
+          className="h-[2px] w-36 origin-left rounded-full opacity-55"
           style={{
             background:
-              'linear-gradient(90deg, var(--planet-about) 0%, rgba(56,189,248,0.22) 55%, transparent 100%)',
+              'linear-gradient(90deg, var(--planet-about) 0%, rgba(56,189,248,0.18) 65%, transparent 100%)',
           }}
         />
 
         <div className="swiss-grid items-stretch gap-y-8 pointer-events-none">
           {/* Left column: Reconstructed Narrative Lead & Core Engineering Focus (Zero duplicate portrait) */}
-          <div
-            ref={leftColRef}
+          <SideReveal
+            direction="left"
             className="col-span-4 md:col-span-5 lg:col-span-7 flex flex-col justify-between gap-6 pointer-events-auto"
           >
             {validParagraphs.length > 0 ? (
@@ -172,10 +151,13 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                 </p>
               </GlassCard>
             )}
-          </div>
+          </SideReveal>
 
           {/* Right column: Reconstructed Orbital Dossier (no duplicate portrait) */}
-          <div className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col pointer-events-auto">
+          <SideReveal
+            direction="right"
+            className="col-span-4 md:col-span-3 lg:col-span-5 flex flex-col pointer-events-auto"
+          >
             <div
               ref={stationParallaxRef}
               data-testid="about-station-parallax"
@@ -269,6 +251,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                     <a
                       href={profile.resume.url}
                       download="Austin_Joshua_Resume.pdf"
+                      onClick={() => playClick()}
                       className="inline-flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[var(--radius-control)] border border-[var(--planet-about)]/40 bg-[var(--planet-about)]/12 px-5 py-3 text-sm sm:text-base font-medium text-[var(--text-primary)] hover:border-[var(--planet-about)] hover:bg-[var(--planet-about)]/20 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
                     >
                       <span>{profile.resume.label} (PDF)</span>
@@ -278,7 +261,7 @@ export function AboutSection({ profile = profileData }: AboutSectionProps) {
                 )}
               </GlassCard>
             </div>
-          </div>
+          </SideReveal>
         </div>
       </div>
     </SectionShell>

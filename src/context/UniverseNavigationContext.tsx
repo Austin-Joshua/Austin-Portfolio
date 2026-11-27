@@ -13,7 +13,9 @@ import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { parseSectionHash, type SectionId } from '@/data/sections';
 import { useActiveSection } from '@/hooks/useActiveSection';
 import type { PlanetId } from '@/three/universeConfig';
+import { computeGyroTilt, subscribeDeviceOrientation } from '@/utils/gyroParallax';
 import { scrollToSection } from '@/utils/scrollNavigation';
+import { playPlanetSound } from '@/utils/soundEffects';
 
 export type UniverseNavigationMode = 'explore' | 'guided';
 
@@ -159,15 +161,26 @@ export function UniverseNavigationProvider({
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
 
+    const cleanupOrientation = prefersReducedMotion
+      ? () => {}
+      : subscribeDeviceOrientation((event) => {
+          if (event.beta == null && event.gamma == null) return;
+          const tilt = computeGyroTilt(event.gamma, event.beta, 14);
+          pointerRef.current.x = Math.max(-1, Math.min(1, tilt.px * 2));
+          pointerRef.current.y = Math.max(-1, Math.min(1, tilt.py * 2));
+        });
+
     return () => {
       window.clearTimeout(decayTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('scroll', handleScroll);
+      cleanupOrientation();
     };
-  }, []);
+  }, [prefersReducedMotion]);
 
   const navigateToPlanet = useCallback(
     (planet: PlanetId) => {
+      playPlanetSound(planet);
       const targetSection: SectionId = planet === 'sun' ? 'hero' : planet;
       setSelectedPlanet(planet);
       setHoveredPlanet(null);
@@ -192,6 +205,7 @@ export function UniverseNavigationProvider({
   );
 
   const resetSolarOverview = useCallback(() => {
+    playPlanetSound('sun');
     orbitControlRef.current.yaw = 0;
     orbitControlRef.current.pitch = 0;
     orbitControlRef.current.zoom = 1;

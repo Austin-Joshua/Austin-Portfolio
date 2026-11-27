@@ -1,11 +1,11 @@
 import { ArrowUpRight, Star } from 'lucide-react';
-import { m } from 'motion/react';
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { achievementsData } from '@/data/achievements';
 import type { AchievementAccent, AchievementItem } from '@/types/portfolio';
 import { hasNonEmptyText, isValidHttpUrl } from '@/utils/dataGuards';
+import { playClick } from '@/utils/soundEffects';
 
 export interface AchievementsSectionProps {
   items?: readonly AchievementItem[];
@@ -29,7 +29,6 @@ const VERIFIED_CERTIFICATIONS = [
 export function AchievementsSection({
   items = achievementsData,
 }: AchievementsSectionProps) {
-  const { prefersReducedMotion } = useOptionalMotionPreference();
   const validItems = items.filter(
     (item) =>
       hasNonEmptyText(item.id) &&
@@ -84,59 +83,59 @@ export function AchievementsSection({
                 const accent: AchievementAccent = item.accent ?? 'gold';
                 const starColor = ACCENT_COLOR_MAP[accent];
                 const hasVerificationLink = isValidHttpUrl(item.verificationUrl);
-                const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
                 return (
-                  <m.article
+                  <SideReveal
                     key={item.id}
-                    initial={canUseInView ? { x: idx % 2 === 0 ? -24 : 24 } : false}
-                    whileInView={canUseInView ? { x: 0 } : undefined}
-                    viewport={{ once: true, amount: 0.12 }}
-                    whileHover={prefersReducedMotion ? undefined : { y: -4 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="pointer-events-auto glass-surface relative flex flex-col justify-between gap-5 p-6 md:p-8 transition-colors duration-200 hover:border-[var(--planet-achievements)]/60"
-                    style={{
-                      borderTop: `2px solid ${starColor}`,
-                    }}
+                    direction={idx % 2 === 0 ? 'left' : 'right'}
+                    className="pointer-events-auto flex"
                   >
-                    <div className="space-y-3.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className="inline-flex items-center gap-1.5 type-meta text-xs sm:text-sm font-semibold"
-                          style={{ color: starColor }}
-                        >
-                          <Star className="size-4 fill-current" aria-hidden="true" />
-                          <span>{item.date}</span>
-                        </span>
+                    <article
+                      className="glass-surface relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-[border-color,transform] duration-200 hover:-translate-y-1 hover:border-[var(--planet-achievements)]/60"
+                      style={{
+                        borderTop: `2px solid ${starColor}`,
+                      }}
+                    >
+                      <div className="space-y-3.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className="inline-flex items-center gap-1.5 type-meta text-xs sm:text-sm font-semibold"
+                            style={{ color: starColor }}
+                          >
+                            <Star className="size-4 fill-current" aria-hidden="true" />
+                            <span>{item.date}</span>
+                          </span>
+                        </div>
+
+                        <h3 className="type-h3 text-[var(--text-primary)]">
+                          {item.title}
+                        </h3>
+
+                        <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
+                          {item.issuer}
+                        </p>
+
+                        {hasNonEmptyText(item.context) && (
+                          <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
+                            {item.context}
+                          </p>
+                        )}
                       </div>
 
-                      <h3 className="type-h3 text-[var(--text-primary)]">
-                        {item.title}
-                      </h3>
-
-                      <p className="type-meta text-xs sm:text-sm text-[var(--text-muted)]">
-                        {item.issuer}
-                      </p>
-
-                      {hasNonEmptyText(item.context) && (
-                        <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
-                          {item.context}
-                        </p>
+                      {hasVerificationLink && item.verificationUrl && (
+                        <a
+                          href={item.verificationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => playClick()}
+                          className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        >
+                          <span>Verify Repository</span>
+                          <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                        </a>
                       )}
-                    </div>
-
-                    {hasVerificationLink && item.verificationUrl && (
-                      <a
-                        href={item.verificationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
-                      >
-                        <span>Verify Repository</span>
-                        <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
-                      </a>
-                    )}
-                  </m.article>
+                    </article>
+                  </SideReveal>
                 );
               })}
             </div>
@@ -144,7 +143,10 @@ export function AchievementsSection({
         )}
 
         {/* Verified Credentials & Campus Leadership Orbit Strip */}
-        <div className="pointer-events-auto glass-surface p-6 md:p-8 space-y-5">
+        <SideReveal
+          direction="left"
+          className="pointer-events-auto glass-surface p-6 md:p-8 space-y-5"
+        >
           <p className="type-meta uppercase tracking-[0.14em] text-[var(--planet-achievements)]">
             CERTIFICATIONS &amp; CAMPUS MILESTONES
           </p>
@@ -163,7 +165,7 @@ export function AchievementsSection({
               </div>
             ))}
           </div>
-        </div>
+        </SideReveal>
       </div>
     </SectionShell>
   );

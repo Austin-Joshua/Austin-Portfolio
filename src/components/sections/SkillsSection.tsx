@@ -4,6 +4,7 @@ import { useId, useRef, useState, type KeyboardEvent, type MouseEvent } from 're
 import { SectionShell } from '@/components/layout/SectionShell';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { LiveAnnouncer } from '@/components/ui/LiveAnnouncer';
+import { SideReveal } from '@/components/ui/SideReveal';
 import { useOptionalMotionPreference } from '@/context/MotionPreferenceContext';
 import { projectsData } from '@/data/projects';
 import { skillsData } from '@/data/skills';
@@ -12,6 +13,7 @@ import type { ProjectItem, SkillCategory, SkillItem } from '@/types/portfolio';
 import { hasNonEmptyText } from '@/utils/dataGuards';
 import { scrollToSection } from '@/utils/scrollNavigation';
 import { getProjectsForSkill } from '@/utils/skillCrossRef';
+import { playClick } from '@/utils/soundEffects';
 
 export interface SkillsSectionProps {
   categories?: readonly SkillCategory[];
@@ -117,6 +119,7 @@ export function SkillsSection({
   };
 
   const handleToggleSkill = (skill: SkillItem) => {
+    playClick();
     const nextId = selectedSkillId === skill.id ? null : skill.id;
     setSelectedSkillId(nextId);
 
@@ -135,6 +138,7 @@ export function SkillsSection({
 
   const handleJumpToProjects = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
+    playClick();
     scrollToSection('projects', {
       prefersReducedMotion,
       focusTarget: false,
@@ -158,51 +162,56 @@ export function SkillsSection({
     >
       <div className="pointer-events-none space-y-8 md:space-y-10">
         <LayoutGroup id={`${baseId}-tabs`}>
-          <div
-            role="tablist"
-            aria-label="Skill categories"
-            className="pointer-events-auto inline-flex flex-wrap gap-2.5 border-b border-[var(--border-subtle)] pb-4 max-w-full"
-          >
-            {tabs.map((tab, index) => {
-              const isSelected = tab.id === resolvedActiveTab;
+          <SideReveal direction="left">
+            <div
+              role="tablist"
+              aria-label="Skill categories"
+              className="pointer-events-auto inline-flex flex-wrap gap-2.5 border-b border-[var(--border-subtle)] pb-4 max-w-full"
+            >
+              {tabs.map((tab, index) => {
+                const isSelected = tab.id === resolvedActiveTab;
 
-              return (
-                <button
-                  key={tab.id}
-                  ref={(el) => {
-                    tabRefs.current[index] = el;
-                  }}
-                  id={`${baseId}-tab-${tab.id}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={isSelected}
-                  aria-controls={tabPanelId}
-                  tabIndex={isSelected ? 0 : -1}
-                  onClick={() => setActiveTabId(tab.id)}
-                  onKeyDown={(event) => handleTabKeyDown(event, index)}
-                  className={[
-                    'relative isolate inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
-                    'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-colors duration-200',
-                    'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
-                    isSelected
-                      ? 'border-[var(--planet-skills)] text-[#020307] font-semibold'
-                      : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--planet-skills)] hover:text-[var(--text-primary)]',
-                  ].join(' ')}
-                >
-                  {isSelected && (
-                    <m.span
-                      layoutId={`${baseId}-active-indicator`}
-                      data-testid="skills-active-indicator"
-                      transition={indicatorTransition}
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-10 rounded-[var(--radius-control)] bg-[var(--planet-skills)]"
-                    />
-                  )}
-                  <span className="relative z-10">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={tab.id}
+                    ref={(el) => {
+                      tabRefs.current[index] = el;
+                    }}
+                    id={`${baseId}-tab-${tab.id}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    aria-controls={tabPanelId}
+                    tabIndex={isSelected ? 0 : -1}
+                    onClick={() => {
+                      playClick();
+                      setActiveTabId(tab.id);
+                    }}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
+                    className={[
+                      'relative isolate inline-flex min-h-[44px] items-center px-4 sm:px-5 py-2.5 rounded-[var(--radius-control)]',
+                      'font-mono text-xs sm:text-sm font-medium cursor-pointer border transition-colors duration-200',
+                      'focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]',
+                      isSelected
+                        ? 'border-[var(--planet-skills)] text-[#020307] font-semibold'
+                        : 'glass-surface text-[var(--text-secondary)] hover:border-[var(--planet-skills)] hover:text-[var(--text-primary)]',
+                    ].join(' ')}
+                  >
+                    {isSelected && (
+                      <m.span
+                        layoutId={`${baseId}-active-indicator`}
+                        data-testid="skills-active-indicator"
+                        transition={indicatorTransition}
+                        aria-hidden="true"
+                        className="absolute inset-0 -z-10 rounded-[var(--radius-control)] bg-[var(--planet-skills)]"
+                      />
+                    )}
+                    <span className="relative z-10">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </SideReveal>
         </LayoutGroup>
 
         <LiveAnnouncer message={announcement} politeness="polite" />
@@ -218,15 +227,11 @@ export function SkillsSection({
           {visibleCategories.map((category, catIdx) => {
             const accent = CLUSTER_ACCENTS[catIdx % CLUSTER_ACCENTS.length];
             const itemCount = category.items.length;
-            const canUseInView = !prefersReducedMotion && typeof IntersectionObserver !== 'undefined';
 
             return (
-              <m.div
+              <SideReveal
                 key={category.id}
-                initial={canUseInView ? { x: catIdx % 2 === 0 ? -24 : 24 } : false}
-                whileInView={canUseInView ? { x: 0 } : undefined}
-                viewport={{ once: true, amount: 0.12 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                direction={catIdx % 2 === 0 ? 'left' : 'right'}
                 className="pointer-events-auto relative glass-surface p-6 md:p-8 overflow-hidden transition-[border-color,box-shadow] duration-200 hover:border-[var(--border-glass-strong)]"
               >
                 {/* Molecular ring SVG bonding atom coordinates to central category nucleus */}
@@ -343,7 +348,7 @@ export function SkillsSection({
                     </p>
                   )}
                 </div>
-              </m.div>
+              </SideReveal>
             );
           })}
         </div>
@@ -363,7 +368,10 @@ export function SkillsSection({
               </p>
               <button
                 type="button"
-                onClick={() => setSelectedSkillId(null)}
+                onClick={() => {
+                  playClick();
+                  setSelectedSkillId(null);
+                }}
                 className="type-meta inline-flex min-h-[44px] items-center px-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
               >
                 Clear
