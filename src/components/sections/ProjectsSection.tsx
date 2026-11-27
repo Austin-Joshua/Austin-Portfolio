@@ -226,7 +226,7 @@ export function ProjectsSection({
                   <m.article
                     layout={!prefersReducedMotion}
                     transition={layoutTransition}
-                    className="glass-surface flex w-full flex-col justify-between gap-5 p-6 md:p-7 transition-[border-color,background-color] duration-150 hover:border-[var(--border-glass-strong)] hover:bg-[var(--surface-card)]/90"
+                    className="glass-surface group relative flex w-full flex-col justify-between gap-5 p-6 md:p-7 cursor-pointer transition-[border-color,background-color] duration-150 hover:border-[var(--planet-projects)]/70 hover:bg-[var(--surface-card)]/90"
                     style={{ borderTop: `2px solid ${accent}` }}
                   >
                     <div className="space-y-3.5">
@@ -241,18 +241,9 @@ export function ProjectsSection({
                         )}
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          playProjectWorldSound(project.slug);
-                          openProject(project.slug);
-                        }}
-                        className="text-left w-full rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[2px] cursor-pointer group"
-                      >
-                        <h3 className="type-h3 text-[var(--text-primary)] group-hover:text-[var(--planet-projects)] transition-colors duration-150">
-                          {project.title}
-                        </h3>
-                      </button>
+                      <h3 className="type-h3 text-[var(--text-primary)] group-hover:text-[var(--planet-projects)] transition-colors duration-150">
+                        {project.title}
+                      </h3>
 
                       <p className="type-body text-sm md:text-base text-[var(--text-secondary)]">
                         {project.summary}
@@ -269,9 +260,9 @@ export function ProjectsSection({
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <button
+                        type="button"
+                        className="inline-flex min-h-[44px] md:min-h-[36px] min-w-[44px] items-center justify-center rounded-[var(--radius-control)] border border-[var(--border-glass)] bg-transparent px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] select-none whitespace-nowrap cursor-pointer transition-[background-color,border-color,color] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--surface-card)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                         onClick={() => {
                           playProjectWorldSound(project.slug);
                           openProject(project.slug);
@@ -279,9 +270,9 @@ export function ProjectsSection({
                         aria-label={`Inspect Details — ${project.title}`}
                       >
                         Inspect Details
-                      </Button>
+                      </button>
 
-                      <div className="flex items-center gap-2">
+                      <div className="relative z-10 flex items-center gap-2">
                         {externalLinks.map((ext) => (
                           <a
                             key={ext.label}

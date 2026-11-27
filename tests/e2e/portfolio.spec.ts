@@ -623,6 +623,18 @@ test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
     await page.goForward({ waitUntil: 'load' });
     await expect(page).toHaveURL(/\/projects\/agriflux$/);
     await expect(page.getByRole('dialog', { name: 'AgriFlux' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // Clicking anywhere on a project card (body/whitespace, not only Inspect Details button) opens its modal
+    const civiqCard = page.locator('#projects article', { hasText: 'CIVIQ' });
+    await civiqCard.scrollIntoViewIfNeeded();
+    await civiqCard.click({ position: { x: 40, y: 90 } });
+    await expect(page.getByRole('dialog', { name: 'CIVIQ' })).toBeVisible();
+    await expect(page).toHaveURL(/\/projects\/civiq$/);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/projects$/);
   });
 
   test('raycasts 3D planets through exposed background and redirects cleanly on click', async ({

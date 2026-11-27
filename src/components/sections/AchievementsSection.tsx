@@ -67,7 +67,12 @@ export function AchievementsSection({
                   className="pointer-events-auto flex"
                 >
                   <article
-                    className="glass-surface relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-colors duration-150 hover:border-[var(--planet-achievements)]/60"
+                    className={[
+                      'glass-surface group relative flex w-full flex-col justify-between gap-5 p-6 md:p-8 transition-[border-color,background-color] duration-150 hover:border-[var(--planet-achievements)]/60',
+                      hasVerificationLink ? 'cursor-pointer hover:bg-[var(--surface-card)]/90' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                     style={{
                       borderTop: `2px solid ${starColor}`,
                     }}
@@ -102,7 +107,7 @@ export function AchievementsSection({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => playClick()}
-                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 self-start font-mono text-xs sm:text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--planet-achievements)] hover:text-[var(--planet-achievements)] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px] after:content-[''] after:absolute after:inset-0 after:z-[1]"
                       >
                         <span>Verify Repository</span>
                         <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
