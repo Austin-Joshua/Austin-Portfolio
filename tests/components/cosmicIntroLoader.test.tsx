@@ -19,7 +19,7 @@ function renderLoader(ui: React.ReactElement) {
   );
 }
 
-describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal split', () => {
+describe('CosmicIntroLoader — Infinitus-style spinning medallion + horizontal split curtains', () => {
   const originalMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
 
   beforeEach(() => {
@@ -35,7 +35,7 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
     vi.restoreAllMocks();
   });
 
-  it('plays on every load/refresh with static AJ emblem over separate cosmic aura and splits horizontally', async () => {
+  it('plays on every load/refresh with circular AJ medallion over ambient aura and splits horizontally', async () => {
     const { container, unmount: unmountAxe } = renderLoader(<CosmicIntroLoader />);
     expect(await axe(container)).toHaveNoViolations();
     unmountAxe();
@@ -46,7 +46,8 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
 
     const loader = screen.getByTestId('cosmic-intro-loader');
     expect(loader).toHaveAttribute('data-phase', 'holding');
-    expect(screen.getByRole('img', { name: /AJ metallic circular emblem/i })).toHaveAttribute(
+    expect(screen.queryByTestId('intro-skip-button')).not.toBeInTheDocument();
+    expect(screen.getByAltText(/AJ metallic circular emblem/i)).toHaveAttribute(
       'src',
       '/assets/brand/aj-emblem.png',
     );
@@ -55,12 +56,12 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
     expect(screen.getByTestId('intro-curtain-right')).toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(900);
+      vi.advanceTimersByTime(820);
     });
     expect(screen.getByTestId('cosmic-intro-loader')).toHaveAttribute('data-phase', 'splitting');
 
     act(() => {
-      vi.advanceTimersByTime(850);
+      vi.advanceTimersByTime(620);
     });
     expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
     unmount();
@@ -70,11 +71,12 @@ describe('CosmicIntroLoader — AJ emblem + separate cosmic aura + horizontal sp
     expect(screen.getByTestId('cosmic-intro-loader')).toHaveAttribute('data-phase', 'holding');
   });
 
-  it('allows immediate skip via Skip button and Escape key', async () => {
+  it('allows immediate skip via overlay click/tap and Escape key without a visible Skip button', async () => {
     const user = userEvent.setup();
     renderLoader(<CosmicIntroLoader />);
 
-    await user.click(screen.getByTestId('intro-skip-button'));
+    expect(screen.queryByTestId('intro-skip-button')).not.toBeInTheDocument();
+    await user.click(screen.getByTestId('cosmic-intro-loader'));
     expect(screen.queryByTestId('cosmic-intro-loader')).not.toBeInTheDocument();
 
     renderLoader(<CosmicIntroLoader />);

@@ -1,3 +1,4 @@
+import { m } from 'motion/react';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { useMotionPreference } from '@/context/MotionPreferenceContext';
 import {
@@ -10,25 +11,17 @@ type IntroPhase = 'holding' | 'splitting' | 'done';
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-const STAR_SPARKS = [
-  { x: '18%', y: '22%', size: 3, delay: '0s' },
-  { x: '78%', y: '18%', size: 4, delay: '0.2s' },
-  { x: '26%', y: '74%', size: 3, delay: '0.35s' },
-  { x: '82%', y: '68%', size: 3, delay: '0.15s' },
-  { x: '50%', y: '12%', size: 2, delay: '0.45s' },
-  { x: '12%', y: '52%', size: 2, delay: '0.25s' },
-  { x: '88%', y: '48%', size: 2, delay: '0.3s' },
-  { x: '44%', y: '86%', size: 3, delay: '0.1s' },
-] as const;
-
 export interface CosmicIntroLoaderProps {
   onComplete?: () => void;
 }
 
 /**
- * First-visit cinematic AJ emblem curtain loader inspired by Infinitus IntroCurtain,
- * adapted to a horizontal left/right curtain split with a separate cosmic aura layer
- * behind the static metallic AJ emblem.
+ * Intro curtain modeled on Austin-Joshua/infinitus `IntroCurtain.jsx`:
+ * - Adapted to AJ Cosmic Universe vertical-seam horizontal left/right curtain split
+ *   and pitch-black / solar metallic cosmic aesthetic.
+ * - Matches Infinitus animation timing (0–800ms hold + 360° clockwise medallion unseal,
+ *   800–1400ms curtain part + medallion dive, 1400ms unmount).
+ * - No visible Skip button: click/tap anywhere on the curtain or press Escape to skip.
  */
 export function CosmicIntroLoader({ onComplete }: CosmicIntroLoaderProps) {
   const { prefersReducedMotion } = useMotionPreference();
@@ -49,16 +42,7 @@ export function CosmicIntroLoader({ onComplete }: CosmicIntroLoaderProps) {
   useIsomorphicLayoutEffect(() => {
     if (prefersReducedMotion) {
       finishIntro();
-      return;
-    }
-
-    if (phase === 'done') {
-      markCosmicIntroSeen();
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.remove('aj-intro-pending');
-        document.documentElement.classList.add('aj-intro-seen');
-      }
-      return;
+      return undefined;
     }
 
     if (typeof document !== 'undefined') {
@@ -66,26 +50,23 @@ export function CosmicIntroLoader({ onComplete }: CosmicIntroLoaderProps) {
       document.documentElement.classList.add('aj-intro-seen');
     }
 
-    if (phase === 'holding') {
-      const splitTimer = window.setTimeout(() => {
-        setPhase('splitting');
-      }, 850);
-      return () => window.clearTimeout(splitTimer);
-    }
+    const openTimer = window.setTimeout(() => {
+      setPhase((prev) => (prev === 'done' ? 'done' : 'splitting'));
+    }, 800);
 
-    if (phase === 'splitting') {
-      const doneTimer = window.setTimeout(() => {
-        finishIntro();
-      }, 770);
-      return () => window.clearTimeout(doneTimer);
-    }
+    const doneTimer = window.setTimeout(() => {
+      finishIntro();
+    }, 1400);
 
-    return;
-  }, [finishIntro, prefersReducedMotion, phase]);
+    return () => {
+      window.clearTimeout(openTimer);
+      window.clearTimeout(doneTimer);
+    };
+  }, [finishIntro, prefersReducedMotion]);
 
   useEffect(() => {
     if (phase === 'done') {
-      return;
+      return undefined;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -108,123 +89,75 @@ export function CosmicIntroLoader({ onComplete }: CosmicIntroLoaderProps) {
     <div
       data-testid="cosmic-intro-loader"
       data-phase={phase}
-      role="region"
-      aria-label="AJ Cosmic Universe Introduction"
-      className="fixed inset-0 z-[100] overflow-hidden select-none"
+      onClick={finishIntro}
+      role="presentation"
+      aria-hidden="true"
+      className="fixed inset-0 z-[100] cursor-pointer overflow-hidden select-none"
     >
-      {/* Left half curtain separating horizontally left */}
-      <div
+      {/* Left curtain panel — seamless obsidian overlay parting left along vertical seam */}
+      <m.div
         data-testid="intro-curtain-left"
-        aria-hidden="true"
-        className="absolute inset-y-0 left-0 z-10 w-[calc(50%+2px)] bg-[#020307] border-r border-white/15 will-change-transform transition-transform duration-[820ms] ease-[cubic-bezier(0.76,0,0.24,1)]"
-        style={{
-          transform: isSplitting ? 'translate3d(-104%, 0, 0)' : 'translate3d(0%, 0, 0)',
-        }}
+        initial={{ x: '0%' }}
+        animate={{ x: isSplitting ? '-100%' : '0%' }}
+        transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
+        className="absolute inset-y-0 left-0 z-10 w-[calc(50%+1px)] bg-[#020307] will-change-transform"
       />
 
-      {/* Right half curtain separating horizontally right */}
-      <div
+      {/* Right curtain panel — seamless obsidian overlay parting right along vertical seam */}
+      <m.div
         data-testid="intro-curtain-right"
-        aria-hidden="true"
-        className="absolute inset-y-0 right-0 z-10 w-[calc(50%+2px)] bg-[#020307] border-l border-white/15 will-change-transform transition-transform duration-[820ms] ease-[cubic-bezier(0.76,0,0.24,1)]"
-        style={{
-          transform: isSplitting ? 'translate3d(104%, 0, 0)' : 'translate3d(0%, 0, 0)',
-        }}
+        initial={{ x: '0%' }}
+        animate={{ x: isSplitting ? '100%' : '0%' }}
+        transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
+        className="absolute inset-y-0 right-0 z-10 w-[calc(50%+1px)] bg-[#020307] will-change-transform"
       />
 
-      {/* Separate cosmic animation layer behind the static AJ emblem */}
-      <div
-        data-testid="intro-cosmic-aura"
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[15] flex items-center justify-center transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{
-          opacity: isSplitting ? 0 : 1,
-          transform: isSplitting ? 'scale(1.42)' : 'scale(1.04)',
-        }}
+      {/* Center Seal Medallion: spins 360° clockwise briskly on unseal, then dives as curtains part */}
+      <m.div
+        initial={{ opacity: 0, scale: 0.85, rotate: 0 }}
+        animate={
+          isSplitting
+            ? { opacity: 0, scale: 0.35, rotate: 360 }
+            : { opacity: 1, scale: 1, rotate: 360 }
+        }
+        transition={
+          isSplitting
+            ? {
+                opacity: { duration: 0.22, ease: 'easeInOut' },
+                scale: { duration: 0.25, ease: 'easeInOut' },
+              }
+            : {
+                rotate: { duration: 0.62, ease: [0.16, 1, 0.3, 1] },
+                scale: { duration: 0.45, ease: 'easeOut' },
+                opacity: { duration: 0.2, ease: 'easeOut' },
+              }
+        }
+        className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center will-change-transform"
       >
-        <div className="relative h-72 w-72 sm:h-96 sm:w-96 flex items-center justify-center">
-          {/* Solar corona radial mist */}
+        <div className="relative flex items-center justify-center">
+          {/* Luminous ambient cosmic solar backlight behind the lifted circular seal */}
           <div
-            className="cosmic-aura-pulse absolute inset-4 rounded-full blur-2xl"
+            data-testid="intro-cosmic-aura"
+            aria-hidden="true"
+            className="absolute -inset-4 rounded-full blur-2xl"
             style={{
               background:
-                'radial-gradient(circle, rgba(220,228,240,0.28) 0%, rgba(56,189,248,0.18) 38%, rgba(255,179,71,0.12) 64%, transparent 78%)',
+                'radial-gradient(circle, rgba(255, 179, 71, 0.32) 0%, rgba(220, 228, 240, 0.14) 52%, transparent 78%)',
             }}
           />
-          {/* Spinning orbital particle ring behind logo */}
-          <svg
-            viewBox="0 0 240 240"
-            className="cosmic-aura-spin h-full w-full opacity-85"
-            fill="none"
-          >
-            <circle
-              cx="120"
-              cy="120"
-              r="98"
-              stroke="rgba(220,228,240,0.42)"
-              strokeWidth="1"
-              strokeDasharray="4 8"
-            />
-            <circle
-              cx="120"
-              cy="120"
-              r="112"
-              stroke="rgba(255,179,71,0.38)"
-              strokeWidth="0.8"
-              strokeDasharray="2 12"
-            />
-            <circle cx="120" cy="22" r="2.8" fill="#38BDF8" />
-            <circle cx="218" cy="120" r="2.4" fill="#FFB347" />
-            <circle cx="120" cy="218" r="2.4" fill="#DCE4F0" />
-          </svg>
-          {/* Controlled sparkling particle layer */}
-          {STAR_SPARKS.map((star, idx) => (
-            <span
-              key={idx}
-              className="cosmic-aura-pulse absolute rounded-full bg-white/90"
-              style={{
-                left: star.x,
-                top: star.y,
-                width: `${star.size}px`,
-                height: `${star.size}px`,
-                animationDelay: star.delay,
-                boxShadow: '0 0 8px rgba(220, 228, 240, 0.9)',
-              }}
-            />
-          ))}
-        </div>
-      </div>
 
-      {/* Static foreground circular metallic AJ emblem */}
-      <div
-        className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{
-          opacity: isSplitting ? 0 : 1,
-          transform: isSplitting ? 'scale(0.68)' : 'scale(1)',
-        }}
-      >
-        <div className="relative h-36 w-36 sm:h-44 sm:w-44 rounded-full shadow-[0_16px_48px_rgba(0,0,0,0.92)]">
-          <img
-            src="/assets/brand/aj-emblem.png"
-            alt="AJ metallic circular emblem"
-            width={512}
-            height={512}
-            className="h-full w-full rounded-full object-contain"
-          />
+          {/* Lifted circular seal medallion with solar rim & opaque obsidian core */}
+          <div className="relative flex items-center justify-center rounded-full border-2 sm:border-[3px] border-[#FFB347]/85 bg-[#020307] shadow-[0_16px_40px_rgba(0,0,0,0.75),0_0_26px_rgba(255,179,71,0.45)]">
+            <img
+              src="/assets/brand/aj-emblem.png"
+              alt="AJ metallic circular emblem"
+              width={200}
+              height={200}
+              className="h-40 w-40 sm:h-44 sm:w-44 rounded-full object-contain"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Keyboard-accessible skip control */}
-      <div className="absolute bottom-6 inset-x-0 z-30 flex justify-center">
-        <button
-          type="button"
-          data-testid="intro-skip-button"
-          onClick={finishIntro}
-          className="glass-surface-strong inline-flex min-h-[44px] items-center gap-2 px-5 py-2 rounded-full font-mono text-xs uppercase tracking-[0.14em] text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent-chrome)] focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
-        >
-          <span>Skip Intro</span>
-        </button>
-      </div>
+      </m.div>
     </div>
   );
 }

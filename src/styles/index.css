@@ -126,6 +126,36 @@
     }
   }
 
+  /* Pre-paint curtain cover matching Infinitus so hero never flashes before loader mounts */
+  html.aj-intro-pending::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background-color: #020307;
+    pointer-events: auto;
+    animation: ajIntroCoverFallback 3.5s forwards ease-in-out;
+  }
+
+  @keyframes ajIntroCoverFallback {
+    0%,
+    80% {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    100% {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.aj-intro-pending::before {
+      display: none !important;
+    }
+  }
+
   body {
     margin: 0;
     background-color: var(--surface-canvas);

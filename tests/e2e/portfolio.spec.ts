@@ -31,9 +31,9 @@ async function waitForIntroToFinish(page: Page) {
 async function dismissIntroForSuite(page: Page) {
   await page
     .evaluate(() => {
-      const btn = document.querySelector('[data-testid="intro-skip-button"]');
-      if (btn instanceof HTMLElement) {
-        btn.click();
+      const overlay = document.querySelector('[data-testid="cosmic-intro-loader"]');
+      if (overlay instanceof HTMLElement) {
+        overlay.click();
       }
     })
     .catch(() => undefined);
@@ -41,51 +41,66 @@ async function dismissIntroForSuite(page: Page) {
 }
 
 test.describe('AJ Cosmic Universe — Production E2E Verification', () => {
-  test('plays Cosmic Intro curtain loader on load/refresh, supports Skip/Escape/reduced-motion, and handles restricted storage', async ({
+  test('plays Cosmic Intro curtain loader on load/refresh, supports click-to-skip/Escape/reduced-motion, and handles restricted storage', async ({
     browser,
   }) => {
     test.setTimeout(150_000);
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
 
-    // First visit shows AJ emblem, cosmic aura behind it, and left/right curtains (fastForward avoids 100+ WebGL rAF ticks)
+    // First visit shows Infinitus-style AJ medallion, ambient cosmic aura, and left/right curtains without a Skip button
     await page.clock.install({ time: 1000 });
     await page.clock.pauseAt(1500);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.clock.fastForward(200);
+    await page.clock.fastForward(450);
     const loader = page.getByTestId('cosmic-intro-loader');
     await expect(loader).toBeVisible();
+    await expect(page.getByTestId('intro-skip-button')).toHaveCount(0);
     await expect(page.getByTestId('intro-curtain-left')).toBeVisible();
     await expect(page.getByTestId('intro-curtain-right')).toBeVisible();
     await expect(page.getByTestId('intro-cosmic-aura')).toBeVisible();
     await expect(loader.locator('img[src="/assets/brand/aj-emblem.png"]')).toBeVisible();
 
-    // Completes automatically across holding -> splitting -> done
-    await page.clock.fastForward(900);
-    await page.clock.fastForward(900);
+    // Completes automatically across holding (800ms) -> splitting -> done (1400ms)
+    await page.clock.fastForward(600);
+    await page.clock.fastForward(650);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     // Subsequent full page reload OR fresh navigation REPLAYS the intro loader every refresh
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.clock.fastForward(200);
+    await page.clock.fastForward(350);
     await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
-    await page.clock.fastForward(950);
-    await page.clock.fastForward(950);
+    await page.clock.fastForward(650);
+    await page.clock.fastForward(650);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
 
     await page.goto('about:blank');
     await page.goto('/#projects', { waitUntil: 'domcontentloaded' });
-    await page.clock.fastForward(200);
+    await page.clock.fastForward(350);
     await expect(page.getByTestId('cosmic-intro-loader')).toBeVisible();
-    await page.clock.fastForward(950);
-    await page.clock.fastForward(950);
+    await page.clock.fastForward(650);
+    await page.clock.fastForward(650);
     await expect(page.getByTestId('cosmic-intro-loader')).toHaveCount(0);
     await context.close();
 
-    // Escape key dismisses immediately on a clean first visit
+    // Clicking anywhere on overlay OR pressing Escape dismisses immediately
+    const clickContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const clickPage = await clickContext.newPage();
+    await clickPage.clock.install({ time: 1000 });
+    await clickPage.clock.pauseAt(1500);
+    await clickPage.goto('/', { waitUntil: 'domcontentloaded' });
+    await clickPage.clock.fastForward(350);
+    await expect(clickPage.getByTestId('cosmic-intro-loader')).toBeVisible();
+    await clickPage.getByTestId('cosmic-intro-loader').click({ force: true });
+    await expect(clickPage.getByTestId('cosmic-intro-loader')).toHaveCount(0);
+    await clickContext.close();
+
     const escContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const escPage = await escContext.newPage();
+    await escPage.clock.install({ time: 1000 });
+    await escPage.clock.pauseAt(1500);
     await escPage.goto('/', { waitUntil: 'domcontentloaded' });
+    await escPage.clock.fastForward(350);
     await expect(escPage.getByTestId('cosmic-intro-loader')).toBeVisible();
     await escPage.keyboard.press('Escape');
     await expect(escPage.getByTestId('cosmic-intro-loader')).toHaveCount(0);
